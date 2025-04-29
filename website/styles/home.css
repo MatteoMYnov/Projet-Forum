@@ -14,6 +14,7 @@ body {
 
 :root {
     --main-color: #000000;
+    --main-color-hover: #181818;
     --main-border-color: #2F3336;
     --main-text-color: #DBDDDE;
     --second-text-color: #71767B;
@@ -35,7 +36,7 @@ body {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    width: 65%;
+    width: 70%;
     margin-top: 2vh;
 }
 
@@ -78,7 +79,7 @@ body {
 
 /* Button Styling */
 .logo-button {
-    padding-bottom: 2vh;
+    padding: 0px 0px 2vh 15px;
 }
 
 .bar-button {
@@ -86,9 +87,23 @@ body {
     flex-direction: row;
     align-items: center;
     gap: 2vh;
-    padding: 13px 0px 13px 0px;
+    padding: 13px 0px 13px 15px;
     text-decoration: none;
     width: auto;
+    cursor: pointer;
+}
+
+.bar-button:hover {
+    background-color: var(--main-color-hover);
+    border-radius: 30px;
+}
+
+.account {
+    height: 8vh;
+    width: 100%;
+    margin-top: auto;
+    margin-bottom: 7vh;
+    border-top: var(--main-border-color) solid 1px;
 }
 
 .bar-button p {
