@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- J’utilise le même chemin que vous aviez, mais vous pouvez ajouter un paramètre de version si besoin -->
+    <link rel="stylesheet" href="../styles/profile.css?v=1.1">
+    <title>Home / Y</title>
+    <link id="favicon" rel="icon" href="../img/logo/inverted.png" type="image/png">
+</head>
+<body>
+    <!-- ===================== -->
+    <!-- COLONNE DE GAUCHE (BANNIÈRE + BAR) -->
+    <!-- ===================== -->
+    <div class="banner">
+        <div class="bar">
+            <div class="logo-button">
+                <img src="../img/logo/inverted.png" alt="Logo" class="icon-logo">
+            </div>
+            <div class="bar-button">
+                <img src="../img/icon/home-r.png" alt="Home" class="icon">
+                <p>Home</p>
+            </div>
+            <div class="bar-button">
+                <img src="../img/icon/brush-r.png" alt="Theme" class="icon">
+                <p>Theme</p>
+            </div>
+            <div class="bar-button">
+                <img src="../img/icon/profile-r.png" alt="Profile" class="icon">
+                <p>Profile</p>
+            </div>
+            <div class="account">
+                <!-- Vous pouvez mettre ici l’avatar / nom de l’utilisateur connecté -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== -->
+    <!-- CONTENU PRINCIPAL + SIDEBAR DROITE -->
+    <!-- ===================== -->
+    <div class="container">
+        <!-- ======== COLONNE PRINCIPALE ======== -->
+        <div class="main">
+            <!-- ================= -->
+            <!-- PROFILE HEAD      -->
+            <!-- ================= -->
+            <div class="profile-head">
+                <!-- ---> Bannière de profil (fond + couleur) -->
+                <div class="profile-banner">
+                    <img
+                      src="../img/avatar/photo-profil.jpg"
+                      alt="Photo de profil"
+                      class="profile-pic"
+                    />
+                    <!-- Optionnel : vous pouvez mettre une image en background via CSS -->
+                </div>
+
+                <!-- ---> Conteneur des informations (photo, bouton, nom, handle, date, stats) -->
+                <div class="profile-info">
+                    <!-- Photo de profil -->
+
+                    <!-- Bouton “Edit profile” -->
+                    <button class="edit-profile">Edit profile</button>
+
+                    <!-- Nom et @handle -->
+                    <h1 class="name">%s</h1>
+                    <span class="handle">@%s</span>
+
+                    <!-- Date d’inscription -->
+                    <div class="join-date">
+                        <!-- Icône calendrier (inline SVG) -->
+                        <svg
+                          class="icon-calendar"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          viewBox="0 0 16 16"
+                        >
+                          <path
+                            d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h.5A1.5 1.5 0 0 1 15 2.5v11A1.5 1.5 0 0 1 13.5 15h-11A1.5 1.5 0 0 1 1 13.5v-11A1.5 1.5 0 0 1 2.5 1H3v-.5a.5.5 0 0 1 .5-.5zM2 4v9.5a.5.5 0 0 0 .5.5H13.5a.5.5 0 0 0 .5-.5V4H2z"
+                          />
+                        </svg>
+                        Joined September 2024
+                    </div>
+
+                    <!-- Stats “Following / Followers” -->
+                    <div class="follow-stats">
+                        <span><strong>%x</strong> Following</span>
+                        <span><strong>%x</strong> Followers</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= -->
+            <!-- MUR DE PUBLICATION -->
+            <!-- ================= -->
+            <div class="wall">
+                <h2>Mur</h2>
+
+                <!-- Formulaire pour écrire sur le mur -->
+                <form class="post-form">
+                    <textarea
+                      name="post-content"
+                      placeholder="Écrivez quelque chose…"
+                    ></textarea>
+                    <button type="submit">Publier</button>
+                </form>
+
+                <!-- Exemple de post (dupliquez-le dynamiquement en JS/PHP/etc.) -->
+                <div class="post">
+                    <div class="post-header">
+                        <img
+                          src="../img/avatar/avatar-utilisateur.jpg"
+                          alt="Avatar utilisateur"
+                          class="post-avatar"
+                        />
+                        <div class="post-user-info">
+                            <span class="post-user-name">%s</span>
+                            <span class="post-user-handle">%s</span>
+                            <span class="post-timestamp">il y a 2 h</span>
+                        </div>
+                    </div>
+                    <p class="post-content">
+                        Félicitations %s pour ta nouvelle page ! 🎉
+                    </p>
+                </div>
+                <!-- … autres posts dynamiques … -->
+            </div>
+        </div>
+
+        <!-- ======== SIDEBAR DROITE (vide pour l’instant) ======== -->
+        <div class="sidebar"></div>
+    </div>
+</body>
+</html>

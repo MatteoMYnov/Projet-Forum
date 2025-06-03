@@ -1,0 +1,334 @@
+/* ================================================= */
+/*  RESET & STYLE GLOBAL                             */
+/* ================================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    flex-direction: row;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+}
+
+:root {
+    --main-color: #000000;
+    --main-color-hover: #181818;
+    --main-border-color: #2F3336;
+    --main-text-color: #DBDDDE;
+    --second-text-color: #71767B;
+}
+
+/* ================================= */
+/*  Banner (colonne de gauche)       */
+/* ================================= */
+.banner {
+    display: flex;
+    flex-direction: row-reverse;
+    height: 100vh;
+    width: 25%;
+    background-color: var(--main-color);
+    border-right: var(--main-border-color) solid 1px;
+    overflow: hidden;
+}
+
+/* ================================= */
+/*  Bar (menu vertical)              */
+/* ================================= */
+.bar {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 70%;
+    margin-top: 2vh;
+}
+
+.icon-logo {
+    height: 5vh;
+    width: auto;
+}
+
+.icon {
+    height: 4vh;
+    width: 4vh;
+}
+
+.logo-button {
+    padding: 0px 0px 2vh 15px;
+}
+
+.bar-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2vh;
+    padding: 13px 0px 13px 15px;
+    text-decoration: none;
+    width: auto;
+    cursor: pointer;
+}
+
+.bar-button:hover {
+    background-color: var(--main-color-hover);
+    border-radius: 30px;
+}
+
+.account {
+    height: 8vh;
+    width: 100%;
+    margin-top: auto;
+    margin-bottom: 7vh;
+    border-top: var(--main-border-color) solid 1px;
+}
+
+.bar-button p {
+    font-size: 2.7vh;
+    color: var(--main-text-color);
+}
+
+/* ================================= */
+/*  Container (Main Content Area)    */
+/* ================================= */
+.container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    flex-grow: 1;
+    background-color: var(--main-color);
+}
+
+/* ================================= */
+/*  Main Section (colonne centrale)  */
+/* ================================= */
+.main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 66%;
+}
+
+/* ================================= */
+/*  Sidebar droite (vide pour l’instant) */
+/* ================================= */
+.sidebar {
+    height: 100vh;
+    flex-grow: 1;
+    background-color: var(--main-color);
+    border-left: var(--main-border-color) solid 1px;
+    overflow: hidden;
+}
+
+/* ================================================= */
+/*  NOUVEAUX STYLES POUR LA PARTIE “PROFIL” & “MUR”   */
+/* ================================================= */
+
+/* ========== 1) PROFILE HEAD ========== */
+.profile-head {
+    /* Rien de spécial ici : on laisse la <div> prendre ce qu’il faut */
+    position: relative;
+    width: 100%;
+    background-color: var(--main-color);
+}
+
+/* 1.a) Bannière de profil (fond au-dessus) */
+.profile-banner {
+    width: 100%;
+    height: 200px;                        /* On donne 200px de hauteur à la bannière */
+    background-color: var(--main-border-color);
+    /* Pour mettre une image, décommentez la ligne ci-dessous et remplacez par votre URL :
+       background-image: url("../img/votre-banniere.jpg");
+       background-size: cover;
+       background-position: center;
+    */
+}
+
+/* 1.b) Conteneur “profile-info” sous la bannière */
+.profile-info {
+    position: relative;
+    padding-top: 20px;                   /* Laisser la place pour que la photo chevauche */
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
+    color: var(--main-text-color);
+}
+
+/* 1.c) Photo de profil (chevauche la bannière) */
+.profile-pic {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid var(--main-color);  /* Bordure noire pour séparer du fond */
+    position: absolute;
+    top: 140px;                            /* 200px (bannière) – (120px/2) = 140px */
+    left: 20px;                            /* Même décalage gauche que .profile-info */
+    background-color: #444;                /* Couleur de secours si l’image ne charge pas */
+    object-fit: cover;
+}
+
+/* 1.d) Bouton “Edit profile” */
+.edit-profile {
+    position: absolute;
+    top: 10px;                            /* Pour qu’il soit aligné avec le bas de la photo */
+    right: 20px;
+    padding: 6px 16px;
+    border: 1px solid var(--main-text-color);
+    border-radius: 20px;
+    background-color: transparent;
+    color: var(--main-text-color);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+.edit-profile:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 1.e) Nom et handle */
+.name {
+    font-size: 1.6rem;
+    font-weight: bold;
+    margin-left: 10px;                   /* 120px (photo) + 20px (espace) + 20px (padding) */
+    margin-bottom: 4px;
+    color: var(--main-text-color);
+}
+
+.handle {
+    display: block;
+    margin-left: 10px;
+    font-size: 1rem;
+    color: var(--second-text-color);
+    margin-bottom: 8px;
+}
+
+/* 1.f) Date d’inscription */
+.join-date {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    font-size: 0.9rem;
+    color: var(--second-text-color);
+}
+.join-date .icon-calendar {
+    margin-right: 4px;
+    color: var(--second-text-color);
+}
+
+/* 1.g) Stats “Following / Followers” */
+.follow-stats {
+    display: flex;
+    gap: 16px;
+    margin-left: 10px;
+    margin-top: 8px;
+}
+.follow-stats span {
+    font-size: 0.9rem;
+    color: var(--main-text-color);
+}
+.follow-stats strong {
+    color: var(--main-text-color);
+    font-weight: bold;
+}
+
+/* ========== 2) MUR DE PUBLICATION ========== */
+.wall {
+    background-color: var(--main-color);
+    padding: 20px;
+    border-top: 1px solid var(--main-border-color);
+}
+
+/* Titre “Mur” */
+.wall h2 {
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+    color: var(--main-text-color);
+}
+
+/* 2.a) Formulaire de publication */
+.post-form {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+}
+
+.post-form textarea {
+    resize: vertical;
+    min-height: 80px;
+    padding: 10px;
+    background-color: #15202b;
+    border: 1px solid #38444d;
+    border-radius: 8px;
+    color: var(--main-text-color);
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.post-form textarea::placeholder {
+    color: var(--second-text-color);
+}
+
+.post-form button {
+    align-self: flex-end;
+    padding: 8px 16px;
+    background-color: #1da1f2;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+.post-form button:hover {
+    background-color: #0d8ddb;
+}
+
+/* 2.b) Exemple de post */
+.post {
+    border: 1px solid #38444d;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    background-color: #15202b;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.post-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+    object-fit: cover;
+    background-color: #555;
+}
+
+.post-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.post-user-name {
+    font-weight: bold;
+    font-size: 1rem;
+    color: var(--main-text-color);
+}
+
+.post-user-handle {
+    font-size: 0.9rem;
+    color: var(--second-text-color);
+}
+
+.post-timestamp {
+    font-size: 0.8rem;
+    color: #555;
+}
+
+.post-content {
+    font-size: 1rem;
+    color: var(--main-text-color);
+    line-height: 1.4;
+}
