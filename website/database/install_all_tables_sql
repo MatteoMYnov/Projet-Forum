@@ -1,0 +1,60 @@
+-- =====================================================
+-- Script d'installation complète de la base de données
+-- Fichier: database/install_all_tables.sql
+-- =====================================================
+
+-- =====================================================
+-- 1. Création de la base de données
+-- =====================================================
+SOURCE create_database.sql;
+
+-- =====================================================
+-- 2. Création des tables dans l'ordre des dépendances
+-- =====================================================
+
+-- Tables sans dépendances (peuvent être créées en premier)
+SOURCE 01_users.sql;
+SOURCE 02_categories.sql;
+SOURCE 07_hashtags.sql;
+
+-- Tables avec dépendances (créées après les tables référencées)
+SOURCE 03_threads.sql;        -- Dépend de users et categories
+SOURCE 04_messages.sql;       -- Dépend de threads et users
+SOURCE 05_reactions.sql;      -- Dépend de users, threads et messages
+SOURCE 06_follows.sql;        -- Dépend de users
+SOURCE 08_thread_hashtags.sql; -- Dépend de threads et hashtags
+
+-- =====================================================
+-- 3. Vérification de l'installation
+-- =====================================================
+
+-- Afficher la liste des tables créées
+SHOW TABLES;
+
+-- Afficher le nombre de colonnes par table
+SELECT 
+    TABLE_NAME as 'Table',
+    TABLE_ROWS as 'Lignes',
+    ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024, 2) as 'Taille (MB)'
+FROM information_schema.TABLES 
+WHERE TABLE_SCHEMA = 'forum_y'
+ORDER BY TABLE_NAME;
+
+-- =====================================================
+-- Installation terminée !
+-- 
+-- Tables créées :
+-- ✓ users              - Utilisateurs
+-- ✓ categories         - Catégories/Tags  
+-- ✓ threads            - Posts/Fils de discussion
+-- ✓ messages           - Messages/Réponses
+-- ✓ reactions          - Likes/Dislikes/Reposts
+-- ✓ follows            - Abonnements
+-- ✓ hashtags           - Hashtags
+-- ✓ thread_hashtags    - Liaison threads-hashtags
+-- 
+-- Prochaines étapes :
+-- 1. Optionnel : Exécuter seed_data.sql pour les données de test
+-- 2. Configurer la connexion Go avec ces tables
+-- 3. Développer les modèles Go correspondants
+-- =====================================================
