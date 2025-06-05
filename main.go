@@ -25,11 +25,17 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./website/template/home.html")
 }
 
+// Sert la page de profil depuis /profile
+func profileHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./website/template/profile.html")
+}
+
 func main() {
 	// Redirection de la racine vers /home
 	http.HandleFunc("/", rootRedirectHandler)
 
 	// Page Home
+	http.HandleFunc("/profile", profileHandler)
 	http.HandleFunc("/home", homeHandler)
 
 	// Fichiers statiques
