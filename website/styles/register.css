@@ -1,0 +1,182 @@
+/* Reset & Style Global */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    flex-direction: row;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+}
+
+:root {
+    --main-color: #000000;
+    --main-color-hover: #181818;
+    --main-border-color: #2F3336;
+    --main-text-color: #DBDDDE;
+    --second-text-color: #71767B;
+}
+
+/* Banner */
+.banner {
+    display: flex;
+    flex-direction: row-reverse;
+    height: 100vh;
+    width: 25%;
+    background-color: var(--main-color);
+    border-right: var(--main-border-color) solid 1px;
+    overflow: hidden;
+}
+
+/* Bar */
+.bar {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 70%;
+    margin-top: 2vh;
+}
+
+/* Container (Main Content Area) */
+.container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    flex-grow: 1;
+    background-color: var(--main-color);
+}
+
+/* Main Section */
+.main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 66%;
+}
+
+/* Sidebar */
+.sidebar {
+    height: 100vh;
+    flex-grow: 1;
+    background-color: var(--main-color);
+    border-left: var(--main-border-color) solid 1px;
+    overflow: hidden;
+}
+
+/* Logo & Icon Buttons */
+.icon-logo {
+    height: 5vh;
+    width: auto;
+}
+
+.icon {
+    height: 4vh;
+    width: 4vh;
+}
+
+/* Button Styling */
+.logo-button {
+    padding: 0px 0px 2vh 15px;
+}
+
+.bar-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2vh;
+    padding: 13px 0px 13px 15px;
+    text-decoration: none;
+    width: auto;
+    cursor: pointer;
+}
+
+.bar-button:hover {
+    background-color: var(--main-color-hover);
+    border-radius: 30px;
+}
+
+.account {
+    height: 8vh;
+    width: 100%;
+    margin-top: auto;
+    margin-bottom: 7vh;
+    border-top: var(--main-border-color) solid 1px;
+}
+
+.bar-button p {
+    font-size: 2.7vh;
+    color: var(--main-text-color);
+}
+
+/* Formulaire d'inscription */
+.register-form {
+    margin: auto;
+    padding: 40px;
+    background-color: #111;
+    border: 1px solid var(--main-border-color);
+    border-radius: 10px;
+    width: 80%;
+    color: var(--main-text-color);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.register-form h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.register-form label {
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.register-form input {
+    padding: 10px;
+    border: 1px solid var(--main-border-color);
+    border-radius: 5px;
+    background-color: #222;
+    color: var(--main-text-color);
+}
+
+.register-form input:focus {
+    outline: none;
+    border-color: #555;
+}
+
+.password-hint {
+    font-size: 0.85rem;
+    color: var(--second-text-color);
+}
+
+.register-form button {
+    padding: 12px;
+    background-color: #1d9bf0;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.register-form button:hover {
+    background-color: #1484d4;
+}
+
+.login-link {
+    font-size: 0.9rem;
+    color: var(--second-text-color);
+    margin-top: 10px;
+}
+.login-link a {
+    color: #1d9bf0;
+    text-decoration: none;
+}
+.login-link a:hover {
+    text-decoration: underline;
+}
