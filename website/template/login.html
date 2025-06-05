@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="../styles/login.css?v=1.0" />
+    <title>Connexion / Y</title>
+    <link id="favicon" rel="icon" href="../img/logo/inverted.png" type="image/png" />
+</head>
+<body>
+    <!-- ===== COLONNE GAUCHE (BANNIÈRE + BAR) ===== -->
+    <div class="banner">
+        <div class="bar">
+            <div class="logo-button">
+                <img src="../img/logo/inverted.png" alt="Logo" class="icon-logo" />
+            </div>
+            <div class="account"></div>
+        </div>
+    </div>
+
+    <!-- ===== CONTENU PRINCIPAL + SIDEBAR ===== -->
+    <div class="container">
+        <div class="main">
+            <div class="form-box">
+                <h1>Connexion</h1>
+                <form method="POST" action="/api/login">
+                    <label for="identifiant">Identifiant ou Email</label>
+                    <input type="text" name="identifiant" id="identifiant" required />
+
+                    <label for="password">Mot de passe</label>
+                    <input type="password" name="password" id="password" required />
+
+                    <button type="submit">Se connecter</button>
+                </form>
+                <p class="redirect">Pas encore inscrit ? <a href="/register">Créer un compte</a></p>
+            </div>
+        </div>
+        <div class="sidebar"></div>
+    </div>
+</body>
+</html>
