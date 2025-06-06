@@ -1,0 +1,137 @@
+forum/
+├── 📁 config/                    # Configuration
+│   ├── database.go              # ← À créer
+│   ├── env.go                   # ← À créer
+│   └── jwt.go                   # ← Pour plus tard
+│
+├── 📁 models/                    # ← NOUVEAU - Structures Go
+│   ├── user.go                  # Modèle User
+│   ├── thread.go                # Modèle Thread
+│   ├── message.go               # Modèle Message
+│   ├── category.go              # Modèle Category
+│   ├── reaction.go              # Modèle Reaction
+│   └── response.go              # Réponses API standardisées
+│
+├── 📁 repositories/              # ← NOUVEAU - Accès données
+│   ├── user_repository.go       # CRUD Users
+│   ├── thread_repository.go     # CRUD Threads
+│   ├── message_repository.go    # CRUD Messages
+│   └── auth_repository.go       # Authentification
+│
+├── 📁 services/                  # ← NOUVEAU - Logique métier
+│   ├── auth_service.go          # Service authentification
+│   ├── user_service.go          # Service utilisateur
+│   ├── thread_service.go        # Service threads
+│   └── validation_service.go    # Validation des données
+│
+├── 📁 controllers/               # ← NOUVEAU - Contrôleurs HTTP
+│   ├── auth_controller.go       # Login/Register
+│   ├── user_controller.go       # Profils
+│   ├── thread_controller.go     # Fils de discussion
+│   ├── home_controller.go       # Page d'accueil
+│   └── api_controller.go        # API endpoints
+│
+├── 📁 middleware/                # ← NOUVEAU - Middlewares
+│   ├── auth_middleware.go       # Vérification JWT
+│   ├── cors_middleware.go       # Headers CORS
+│   └── logging_middleware.go    # Logs requêtes
+│
+├── 📁 utils/                     # ← NOUVEAU - Utilitaires
+│   ├── password.go              # Hash/Vérif passwords
+│   ├── validator.go             # Validation formulaires
+│   ├── file_upload.go           # Upload images
+│   ├── pagination.go            # Pagination
+│   └── helpers.go               # Fonctions utiles
+│
+├── 📁 routes/                    # ← NOUVEAU - Définition routes
+│   ├── web_routes.go            # Routes pages HTML
+│   ├── api_routes.go            # Routes API JSON
+│   └── routes.go                # Configuration générale
+│
+├── 📁 uploads/                   # ← NOUVEAU - Fichiers uploadés
+│   ├── avatars/                 # Photos de profil
+│   ├── banners/                 # Bannières de profil
+│   └── temp/                    # Fichiers temporaires
+│
+├── 📁 website/                   # ✅ Frontend (déjà bon)
+│   ├── 📁 database/             # ✅ Scripts SQL
+│   │   ├── create_database.sql
+│   │   ├── 01_users.sql
+│   │   ├── 02_categories.sql
+│   │   ├── ... autres tables
+│   │   └── seed_data.sql        # ← À ajouter
+│   │
+│   ├── 📁 img/                  # ✅ Images bien organisées
+│   │   ├── avatars/
+│   │   │   └── default.png      # ← À ajouter
+│   │   ├── banners/
+│   │   │   └── default.jpg      # ← À ajouter
+│   │   ├── icon/
+│   │   └── logo/
+│   │
+│   ├── 📁 js/                   # ✅ JavaScript
+│   │   ├── home.js              # ✅ Déjà là
+│   │   ├── auth.js              # ← À ajouter (login/register)
+│   │   ├── profile.js           # ← À ajouter
+│   │   ├── threads.js           # ← À ajouter
+│   │   ├── main.js              # ← À ajouter (fonctions globales)
+│   │   └── utils.js             # ← À ajouter (utilitaires JS)
+│   │
+│   ├── 📁 styles/               # ✅ CSS bien organisé
+│   │   ├── home.css             # ✅ Déjà là
+│   │   ├── login.css            # ✅ Déjà là
+│   │   ├── profile.css          # ✅ Déjà là
+│   │   ├── register.css         # ✅ Déjà là
+│   │   ├── globals.css          # ← À ajouter (styles globaux)
+│   │   ├── components.css       # ← À ajouter (composants)
+│   │   ├── threads.css          # ← À ajouter
+│   │   ├── admin.css            # ← À ajouter
+│   │   └── responsive.css       # ← À ajouter (mobile)
+│   │
+│   └── 📁 template/             # ✅ Templates HTML
+│       ├── 📁 layout/           # ← NOUVEAU - Layouts
+│       │   ├── base.html        # Template de base
+│       │   ├── header.html      # Header commun
+│       │   ├── footer.html      # Footer commun
+│       │   └── nav.html         # Navigation
+│       │
+│       ├── 📁 auth/             # ← NOUVEAU - Authentification
+│       │   ├── login.html       # ✅ Déplacer ici
+│       │   └── register.html    # ✅ Déplacer ici
+│       │
+│       ├── 📁 user/             # ← NOUVEAU - Utilisateur
+│       │   ├── profile.html     # ✅ Déplacer ici
+│       │   ├── edit_profile.html
+│       │   └── settings.html
+│       │
+│       ├── 📁 threads/          # ← NOUVEAU - Fils de discussion
+│       │   ├── list.html        # Liste des fils
+│       │   ├── create.html      # Créer un fil
+│       │   ├── view.html        # Voir un fil
+│       │   └── edit.html        # Modifier un fil
+│       │
+│       ├── 📁 admin/            # ← NOUVEAU - Administration
+│       │   ├── dashboard.html   # Dashboard admin
+│       │   ├── users.html       # Gestion utilisateurs
+│       │   └── threads.html     # Gestion fils
+│       │
+│       ├── 📁 errors/           # ← NOUVEAU - Pages d'erreur
+│       │   ├── 404.html         # Page non trouvée
+│       │   ├── 403.html         # Accès interdit
+│       │   └── 500.html         # Erreur serveur
+│       │
+│       └── home.html            # ✅ Page d'accueil
+│
+├── 📁 tests/                    # ← NOUVEAU - Tests (bonus)
+│   ├── controllers_test.go
+│   ├── services_test.go
+│   └── repositories_test.go
+│
+├── 📄 .env                      # ✅ Variables d'environnement
+├── 📄 .env.example              # ← À créer (exemple pour équipe)
+├── 📄 .gitignore                # ✅ Git ignore
+├── 📄 go.mod                    # ✅ Modules Go
+├── 📄 go.sum                    # ✅ Checksums
+├── 📄 main.go                   # ✅ Point d'entrée
+└── 📄 README.md                 # ← À créer (documentation)
+```

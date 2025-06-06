@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link rel="stylesheet" href="../styles/login.css?v=1.0" />
+    <link rel="stylesheet" href="/styles/login.css?v=1.0" />
     <title>Connexion / Y</title>
-    <link id="favicon" rel="icon" href="../img/logo/inverted.png" type="image/png" />
+    <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png" />
 </head>
 <body>
     <!-- ===== COLONNE GAUCHE (BANNIÈRE + BAR) ===== -->
     <div class="banner">
         <div class="bar">
             <div class="logo-button">
-                <img src="../img/logo/inverted.png" alt="Logo" class="icon-logo" />
+                <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo" />
             </div>
+            <a href="/home" class="bar-button">
+                <img src="/img/icon/home-r.png" alt="Home" class="icon">
+                <p>Home</p>
+            </a>
             <div class="account"></div>
         </div>
     </div>
@@ -23,7 +27,12 @@
         <div class="main">
             <div class="form-box">
                 <h1>Connexion</h1>
-                <form method="POST" action="/api/login">
+                
+                <!-- Affichage des messages -->
+                <div id="success-message" style="display: none; color: #4ade80; margin-bottom: 15px; padding: 10px; background: #1f2a1f; border-radius: 5px;"></div>
+                <div id="error-message" style="display: none; color: #ff6b6b; margin-bottom: 15px; padding: 10px; background: #2a1f1f; border-radius: 5px;"></div>
+                
+                <form method="POST" action="/api/login" id="loginForm">
                     <label for="identifiant">Identifiant ou Email</label>
                     <input type="text" name="identifiant" id="identifiant" required />
 
@@ -37,5 +46,63 @@
         </div>
         <div class="sidebar"></div>
     </div>
+
+    <script>
+        // Gestion des messages depuis l'URL
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            const message = urlParams.get('message');
+            
+            if (error) {
+                showError(decodeURIComponent(error));
+            }
+            
+            if (message === 'inscription_reussie') {
+                showSuccess('Inscription réussie ! Vous pouvez maintenant vous connecter.');
+            }
+        });
+        
+        // Gestion du formulaire de connexion
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const identifiant = document.getElementById('identifiant').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!identifiant || !password) {
+                e.preventDefault();
+                showError('Tous les champs sont requis');
+                return;
+            }
+            
+            hideMessages();
+        });
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            hideSuccess();
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            hideError();
+        }
+        
+        function hideError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
+        
+        function hideSuccess() {
+            document.getElementById('success-message').style.display = 'none';
+        }
+        
+        function hideMessages() {
+            hideError();
+            hideSuccess();
+        }
+    </script>
 </body>
 </html>

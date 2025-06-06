@@ -3,35 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../styles/home.css?v=1.0">
+    <link rel="stylesheet" href="/styles/home.css?v=1.0">
     <title>Home / Y</title>
-    <link id="favicon" rel="icon" href="../img/logo/inverted.png" type="image/png">
+    <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
 </head>
 <body>
     <div class="banner">
         <div class="bar">
             <div class="logo-button">
-                <img src="../img/logo/inverted.png" alt="Logo" class="icon-logo">
+                <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo">
             </div>
             <a href="/home" class="bar-button">
-                <img src="../img/icon/home-r.png" alt="Home" class="icon">
+                <img src="/img/icon/home-r.png" alt="Home" class="icon">
                 <p>Home</p>
             </a>
             <div class="bar-button">
-                <img src="../img/icon/brush-r.png" alt="Theme" class="icon">
+                <img src="/img/icon/brush-r.png" alt="Theme" class="icon">
                 <p>Theme</p>
             </div>
             <a href="/profile" class="bar-button">
-                <img src="../img/icon/profile-r.png" alt="Profile" class="icon">
+                <img src="/img/icon/profile-r.png" alt="Profile" class="icon">
                 <p>Profile</p>
             </a>
             <div class="account">
+                <!-- Zone pour les boutons de connexion/déconnexion -->
+                <div id="auth-buttons" style="padding: 10px;">
+                    <!-- Les boutons seront ajoutés dynamiquement par JavaScript -->
+                </div>
             </div>
         </div>
     </div>
     <div class="container">
-        <div class="main"></div>
+        <div class="main">
+            <div style="padding: 20px; color: var(--main-text-color);">
+                <h1>Bienvenue sur le Forum Y</h1>
+                <p>Rejoignez notre communauté et partagez vos idées !</p>
+                
+                <div id="user-welcome" style="display: none; margin-top: 20px; padding: 15px; background-color: var(--main-color-hover); border-radius: 10px;">
+                    <!-- Message de bienvenue pour utilisateur connecté -->
+                </div>
+                
+                <div id="guest-welcome" style="margin-top: 20px; padding: 15px; background-color: var(--main-color-hover); border-radius: 10px;">
+                    <h3>Pas encore membre ?</h3>
+                    <p>Créez votre compte pour accéder à toutes les fonctionnalités du forum.</p>
+                    <div style="margin-top: 15px;">
+                        <a href="/register" style="background-color: #1da1f2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-right: 10px;">S'inscrire</a>
+                        <a href="/login" style="border: 1px solid #1da1f2; color: #1da1f2; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Se connecter</a>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="sidebar"></div>
     </div>
+
+    <script>
+        // Vérifier si l'utilisateur est connecté
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/api/profile');
+                const authButtons = document.getElementById('auth-buttons');
+                const userWelcome = document.getElementById('user-welcome');
+                const guestWelcome = document.getElementById('guest-welcome');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const user = data.data;
+                    
+                    // Utilisateur connecté
+                    authButtons.innerHTML = `
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <span style="color: var(--main-text-color); font-size: 0.9rem;">@${user.username}</span>
+                            <a href="/api/logout" style="color: var(--second-text-color); font-size: 0.8rem; text-decoration: none;">Déconnexion</a>
+                        </div>
+                    `;
+                    
+                    userWelcome.innerHTML = `
+                        <h3>Bonjour ${user.username} ! 👋</h3>
+                        <p>Bon retour sur le forum. Découvrez les dernières discussions et participez aux conversations.</p>
+                        <a href="/profile" style="background-color: #1da1f2; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">Voir mon profil</a>
+                    `;
+                    
+                    userWelcome.style.display = 'block';
+                    guestWelcome.style.display = 'none';
+                    
+                } else {
+                    // Utilisateur non connecté
+                    authButtons.innerHTML = `
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <a href="/login" style="color: var(--main-text-color); font-size: 0.9rem; text-decoration: none;">Connexion</a>
+                            <a href="/register" style="color: var(--second-text-color); font-size: 0.8rem; text-decoration: none;">Inscription</a>
+                        </div>
+                    `;
+                    
+                    userWelcome.style.display = 'none';
+                    guestWelcome.style.display = 'block';
+                }
+            } catch (error) {
+                console.log('Utilisateur non connecté');
+                // Afficher les boutons pour invité
+                const authButtons = document.getElementById('auth-buttons');
+                authButtons.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <a href="/login" style="color: var(--main-text-color); font-size: 0.9rem; text-decoration: none;">Connexion</a>
+                        <a href="/register" style="color: var(--second-text-color); font-size: 0.8rem; text-decoration: none;">Inscription</a>
+                    </div>
+                `;
+            }
+        }
+        
+        // Charger le statut d'authentification au chargement de la page
+        window.addEventListener('load', checkAuthStatus);
+    </script>
 </body>
 </html>

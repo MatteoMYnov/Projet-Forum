@@ -3,17 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="../styles/register.css?v=1.2" />
+  <link rel="stylesheet" href="/styles/register.css" />
   <title>Inscription / Y</title>
-  <link id="favicon" rel="icon" href="../img/logo/inverted.png" type="image/png" />
+  <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png" />
 </head>
 <body>
   <!-- Bannière (barre latérale gauche) -->
   <div class="banner">
     <div class="bar">
       <div class="logo-button">
-        <img src="../img/logo/inverted.png" alt="Logo" class="icon-logo" />
+        <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo" />
       </div>
+      <a href="/home" class="bar-button">
+        <img src="/img/icon/home-r.png" alt="Home" class="icon">
+        <p>Home</p>
+      </a>
       <div class="account"></div>
     </div>
   </div>
@@ -23,9 +27,15 @@
     <div class="main">
       <div class="register-form">
         <h2>Créer un compte</h2>
-        <form action="/api/register" method="POST">
+        
+        <!-- Affichage des erreurs -->
+        <div id="error-message" style="display: none; color: #ff6b6b; margin-bottom: 15px; padding: 10px; background: #2a1f1f; border-radius: 5px;"></div>
+        
+        <form action="/api/register" method="POST" id="registerForm">
           <label for="username">Nom d'utilisateur</label>
-          <input type="text" id="username" name="username" required />
+          <input type="text" id="username" name="username" required 
+                 pattern="[a-zA-Z0-9_]{3,50}" 
+                 title="3-50 caractères, lettres, chiffres et _ uniquement" />
 
           <label for="email">Adresse e-mail</label>
           <input type="email" id="email" name="email" required />
@@ -44,5 +54,54 @@
     </div>
     <div class="sidebar"></div>
   </div>
+
+  <script>
+    // Gestion du formulaire d'inscription
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      const password = document.getElementById('password').value;
+      const errorDiv = document.getElementById('error-message');
+      
+      // Validation côté client
+      if (password.length < 12) {
+        e.preventDefault();
+        showError('Le mot de passe doit contenir au moins 12 caractères');
+        return;
+      }
+      
+      if (!/[A-Z]/.test(password)) {
+        e.preventDefault();
+        showError('Le mot de passe doit contenir au moins une majuscule');
+        return;
+      }
+      
+      if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+        e.preventDefault();
+        showError('Le mot de passe doit contenir au moins un caractère spécial');
+        return;
+      }
+      
+      hideError();
+    });
+    
+    // Afficher les erreurs depuis l'URL
+    window.addEventListener('load', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      if (error) {
+        showError(decodeURIComponent(error));
+      }
+    });
+    
+    function showError(message) {
+      const errorDiv = document.getElementById('error-message');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+    }
+    
+    function hideError() {
+      const errorDiv = document.getElementById('error-message');
+      errorDiv.style.display = 'none';
+    }
+  </script>
 </body>
 </html>
