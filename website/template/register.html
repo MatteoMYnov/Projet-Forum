@@ -45,7 +45,24 @@
         <!-- Affichage des erreurs -->
         <div id="error-message" style="display: none; color: #ff6b6b; margin-bottom: 15px; padding: 10px; background: #2a1f1f; border-radius: 5px;"></div>
         
-        <form action="/api/register" method="POST" id="registerForm">
+        <form action="/api/register" method="POST" enctype="multipart/form-data" id="registerForm">
+          <!-- Section photo de profil -->
+          <div class="profile-picture-section">
+            <label for="profile-picture">Photo de profil (optionnel)</label>
+            <div class="profile-picture-upload">
+              <div class="profile-picture-preview">
+                <img id="profilePreview" src="/img/avatars/default-avatar.png" alt="Aperçu photo de profil" />
+                <div class="upload-overlay">
+                  <span>📷</span>
+                  <p>Cliquer pour choisir</p>
+                </div>
+              </div>
+              <input type="file" id="profile-picture" name="profile_picture" accept="image/*" style="display: none;" />
+              <button type="button" id="removePhoto" class="remove-photo-btn" style="display: none;">Supprimer</button>
+            </div>
+            <p class="photo-hint">JPG, PNG ou GIF. Maximum 5MB.</p>
+          </div>
+
           <label for="username">Nom d'utilisateur</label>
           <input type="text" id="username" name="username" required 
                  pattern="[a-zA-Z0-9_]{3,50}" 
@@ -70,9 +87,61 @@
   </div>
 
   <script>
+    // Gestion de l'upload de photo de profil
+    document.addEventListener('DOMContentLoaded', function() {
+      const profilePictureInput = document.getElementById('profile-picture');
+      const profilePreview = document.getElementById('profilePreview');
+      const uploadArea = document.querySelector('.profile-picture-preview');
+      const removePhotoBtn = document.getElementById('removePhoto');
+      
+      // Cliquer sur la zone d'aperçu ouvre le sélecteur de fichier
+      uploadArea.addEventListener('click', function() {
+        profilePictureInput.click();
+      });
+      
+      // Prévisualiser l'image sélectionnée
+      profilePictureInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          // Validation de la taille (5MB max)
+          if (file.size > 5 * 1024 * 1024) {
+            showError('La taille de l\'image ne doit pas dépasser 5MB');
+            profilePictureInput.value = '';
+            return;
+          }
+          
+          // Validation du type
+          if (!file.type.startsWith('image/')) {
+            showError('Veuillez sélectionner un fichier image valide');
+            profilePictureInput.value = '';
+            return;
+          }
+          
+          // Créer l'aperçu
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            profilePreview.src = e.target.result;
+            removePhotoBtn.style.display = 'block';
+            uploadArea.classList.add('has-image');
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+      
+      // Supprimer la photo
+      removePhotoBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        profilePictureInput.value = '';
+        profilePreview.src = '/img/avatars/default-avatar.png';
+        removePhotoBtn.style.display = 'none';
+        uploadArea.classList.remove('has-image');
+      });
+    });
+
     // Gestion du formulaire d'inscription
     document.getElementById('registerForm').addEventListener('submit', function(e) {
       const password = document.getElementById('password').value;
+      const profilePictureInput = document.getElementById('profile-picture');
       const errorDiv = document.getElementById('error-message');
       
       // Validation côté client
@@ -92,6 +161,22 @@
         e.preventDefault();
         showError('Le mot de passe doit contenir au moins un caractère spécial');
         return;
+      }
+      
+      // Validation de l'image si elle est fournie
+      if (profilePictureInput.files[0]) {
+        const file = profilePictureInput.files[0];
+        if (file.size > 5 * 1024 * 1024) {
+          e.preventDefault();
+          showError('La taille de l\'image ne doit pas dépasser 5MB');
+          return;
+        }
+        
+        if (!file.type.startsWith('image/')) {
+          e.preventDefault();
+          showError('Veuillez sélectionner un fichier image valide');
+          return;
+        }
       }
       
       hideError();

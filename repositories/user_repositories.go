@@ -30,13 +30,14 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 // CreateUser crée un nouvel utilisateur
 func (r *UserRepository) CreateUser(user models.User) (*models.User, error) {
 	query := `
-		INSERT INTO users (username, email, password_hash, created_at, role) 
-		VALUES (?, ?, ?, ?, ?)`
+		INSERT INTO users (username, email, password_hash, profile_picture, created_at, role) 
+		VALUES (?, ?, ?, ?, ?, ?)`
 
 	result, err := r.db.Exec(query,
 		user.Username,
 		user.Email,
 		user.PasswordHash,
+		user.ProfilePicture,
 		time.Now(),
 		"user")
 

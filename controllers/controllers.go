@@ -19,13 +19,18 @@ import (
 type UserControllers struct {
 	authService   *services.AuthService
 	threadService *services.ThreadService
+	uploadService *services.UploadService
 }
 
 // NewUserControllers crée une nouvelle instance du controller
 func NewUserControllers(db *sql.DB) *UserControllers {
+	// Créer le service d'upload avec un dossier d'avatars et une taille max de 5MB
+	uploadService := services.NewUploadService("./website/img/avatars", 5*1024*1024)
+	
 	return &UserControllers{
 		authService:   services.NewAuthService(db),
 		threadService: services.NewThreadService(db),
+		uploadService: uploadService,
 	}
 }
 
@@ -201,17 +206,47 @@ func (c *UserControllers) RegisterHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// Gérer l'upload de l'image de profil (optionnel)
+	var profilePicturePath *string
+	file, header, err := r.FormFile("profile_picture")
+	if err == nil {
+		// Un fichier a été téléchargé
+		defer file.Close()
+		
+		uploadedPath, uploadErr := c.uploadService.UploadProfilePicture(file, header)
+		if uploadErr != nil {
+			log.Printf("❌ Erreur upload image: %v", uploadErr)
+			showErrorPage(w, r, "Erreur lors du téléchargement de l'image: "+uploadErr.Error(), "/register")
+			return
+		}
+		
+		profilePicturePath = &uploadedPath
+		log.Printf("✅ Image de profil téléchargée: %s", uploadedPath)
+	} else {
+		// Aucun fichier téléchargé, utiliser l'image par défaut
+		defaultPath := c.uploadService.GetDefaultAvatarPath()
+		profilePicturePath = &defaultPath
+		log.Printf("📷 Utilisation de l'image par défaut: %s", defaultPath)
+	}
+
 	// Créer la requête d'inscription
 	registerReq := models.RegisterRequest{
-		Username: username,
-		Email:    email,
-		Password: password,
+		Username:       username,
+		Email:          email,
+		Password:       password,
+		ProfilePicture: profilePicturePath,
 	}
 
 	// Appeler le service d'inscription
 	user, err := c.authService.Register(registerReq)
 	if err != nil {
 		log.Printf("❌ Erreur inscription: %v", err)
+		
+		// Si une image a été téléchargée et que l'inscription échoue, la supprimer
+		if profilePicturePath != nil && *profilePicturePath != c.uploadService.GetDefaultAvatarPath() {
+			c.uploadService.DeleteProfilePicture(*profilePicturePath)
+		}
+		
 		showErrorPage(w, r, err.Error(), "/register")
 		return
 	}
@@ -390,6 +425,23 @@ func processProfileTemplate(htmlContent string, user *models.User) string {
 	// Compter les placeholders avant traitement
 	countBefore := strings.Count(htmlContent, "%s") + strings.Count(htmlContent, "%x")
 	log.Printf("📊 Placeholders trouvés: %d", countBefore)
+	
+	// Déterminer l'image de profil à utiliser
+	profilePicture := "/img/avatars/default-avatar.png"
+	if user.ProfilePicture != nil && *user.ProfilePicture != "" {
+		profilePicture = *user.ProfilePicture
+		log.Printf("🖼️ Utilisation image personnalisée: %s", profilePicture)
+	} else {
+		log.Printf("🖼️ Utilisation image par défaut: %s (ProfilePicture=%v)", profilePicture, user.ProfilePicture)
+	}
+	
+	// Remplacer l'image de profil dans la bannière
+	htmlContent = strings.Replace(htmlContent, `src="../img/avatar/photo-profil.jpg"`, 
+		fmt.Sprintf(`src="%s"`, profilePicture), 1)
+	
+	// Remplacer également l'avatar dans les posts (même image)
+	htmlContent = strings.Replace(htmlContent, `src="../img/avatar/avatar-utilisateur.jpg"`, 
+		fmt.Sprintf(`src="%s"`, profilePicture), 1)
 	
 	// Remplacer les placeholders spécifiques
 	htmlContent = strings.Replace(htmlContent, `<h1 class="name">%s</h1>`, 
@@ -726,10 +778,14 @@ func processThreadsListTemplate(htmlContent string, threads []models.Thread, cat
 				hashtags += fmt.Sprintf(`<span class="hashtag">#%s</span>`, tag)
 			}
 
-			// Récupérer le nom de l'auteur
+			// Récupérer le nom de l'auteur et son avatar
 			authorName := "Utilisateur inconnu"
+			authorAvatar := "/img/avatars/default-avatar.png"
 			if thread.Author != nil {
 				authorName = thread.Author.Username
+				if thread.Author.ProfilePicture != nil && *thread.Author.ProfilePicture != "" {
+					authorAvatar = *thread.Author.ProfilePicture
+				}
 			}
 
 			// Récupérer le nom de la catégorie
@@ -742,7 +798,7 @@ func processThreadsListTemplate(htmlContent string, threads []models.Thread, cat
 			<div class="thread-card" data-thread-id="%d">
 				<div class="thread-main">
 					<div class="thread-author">
-						<img src="../img/avatar/photo-profil.jpg" alt="Avatar" class="thread-avatar">
+						<img src="%s" alt="Avatar" class="thread-avatar">
 						<div class="author-info">
 							<span class="author-name">%s</span>
 							<span class="author-handle">@%s</span>
@@ -779,6 +835,7 @@ func processThreadsListTemplate(htmlContent string, threads []models.Thread, cat
 				</div>
 			</div>`,
 				thread.ID,
+				authorAvatar,
 				authorName,
 				authorName,
 				timeAgo,

@@ -67,3 +67,95 @@
 .login-link a:hover {
     text-decoration: underline;
 }
+
+/* Section photo de profil */
+.profile-picture-section {
+    margin-bottom: 20px;
+}
+
+.profile-picture-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.profile-picture-preview {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--main-border-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.profile-picture-preview:hover {
+    border-color: #1d9bf0;
+    transform: scale(1.05);
+}
+
+.profile-picture-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    color: white;
+    font-size: 12px;
+}
+
+.profile-picture-preview:hover .upload-overlay {
+    opacity: 1;
+}
+
+.profile-picture-preview.has-image .upload-overlay {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.upload-overlay span {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.upload-overlay p {
+    text-align: center;
+    margin: 0;
+    font-size: 11px;
+}
+
+.remove-photo-btn {
+    background-color: #f4212e;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.3s ease;
+}
+
+.remove-photo-btn:hover {
+    background-color: #d41e2b;
+}
+
+.photo-hint {
+    font-size: 0.8rem;
+    color: var(--second-text-color);
+    text-align: center;
+    margin: 0;
+}

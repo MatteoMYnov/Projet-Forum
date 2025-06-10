@@ -33,9 +33,10 @@ type LoginRequest struct {
 
 // RegisterRequest représente une demande d'inscription
 type RegisterRequest struct {
-	Username string `json:"username" validate:"required,min=3,max=50,alphanum"`
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=12"`
+	Username       string  `json:"username" validate:"required,min=3,max=50,alphanum"`
+	Email          string  `json:"email" validate:"required,email"`
+	Password       string  `json:"password" validate:"required,min=12"`
+	ProfilePicture *string `json:"profile_picture,omitempty"`
 }
 
 // SessionInfo contient les informations de session utilisateur

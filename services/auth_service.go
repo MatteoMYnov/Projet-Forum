@@ -59,13 +59,14 @@ func (s *AuthService) Register(req models.RegisterRequest) (*models.User, error)
 
 	// 4. Créer l'utilisateur
 	user := models.User{
-		Username:     req.Username,
-		Email:        req.Email,
-		PasswordHash: hashedPassword,
-		CreatedAt:    time.Now(),
-		Role:         "user",
-		IsVerified:   false,
-		IsBanned:     false,
+		Username:       req.Username,
+		Email:          req.Email,
+		PasswordHash:   hashedPassword,
+		ProfilePicture: req.ProfilePicture,
+		CreatedAt:      time.Now(),
+		Role:           "user",
+		IsVerified:     false,
+		IsBanned:       false,
 	}
 
 	createdUser, err := s.userRepo.CreateUser(user)
