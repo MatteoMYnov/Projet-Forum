@@ -80,7 +80,10 @@
                     userWelcome.innerHTML = `
                         <h3>Bonjour ${user.username} ! 👋</h3>
                         <p>Bon retour sur le forum. Découvrez les dernières discussions et participez aux conversations.</p>
-                        <a href="/profile" style="background-color: #1da1f2; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">Voir mon profil</a>
+                        <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <a href="/profile" style="background-color: #1da1f2; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block;">Voir mon profil</a>
+                            <a href="/create-thread" style="background-color: #17bf63; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block;">✏️ Créer un thread</a>
+                        </div>
                     `;
                     
                     userWelcome.style.display = 'block';

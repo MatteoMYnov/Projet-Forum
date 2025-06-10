@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/thread.css?v=1.0">
+    <title>Threads / Y</title>
+    <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+</head>
+<body>
+    <!-- ===================== -->
+    <!-- COLONNE DE GAUCHE (BANNIÈRE + BAR) -->
+    <!-- ===================== -->
+    <div class="banner">
+        <div class="bar">
+            <div class="logo-button">
+                <img src="../img/logo/inverted.png" alt="Logo" class="icon-logo">
+            </div>
+            <a href="/home" class="bar-button">
+                <img src="../img/icon/home-r.png" alt="Home" class="icon">
+                <p>Home</p>
+            </a>
+            <a href="/threads" class="bar-button active">
+                <img src="../img/icon/thread-r.png" alt="Threads" class="icon">
+                <p>Threads</p>
+            </a>
+            <div class="bar-button">
+                <img src="../img/icon/brush-r.png" alt="Theme" class="icon">
+                <p>Theme</p>
+            </div>
+            <a href="/profile" class="bar-button">
+                <img src="../img/icon/profile-r.png" alt="Profile" class="icon">
+                <p>Profile</p>
+            </a>
+            <div class="account">
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== -->
+    <!-- CONTENU PRINCIPAL -->
+    <!-- ===================== -->
+    <div class="container">
+        <div class="main">
+            <!-- En-tête de la page -->
+            <div class="threads-header">
+                <h1>🧵 Tous les threads</h1>
+                <div class="threads-actions">
+                    <a href="/create-thread" class="create-thread-btn">✏️ Créer un thread</a>
+                </div>
+            </div>
+
+            <!-- Filtres et tri -->
+            <div class="threads-filters">
+                <div class="filter-section">
+                    <button class="filter-btn active" data-filter="all">Tous</button>
+                    <button class="filter-btn" data-filter="popular">Populaires</button>
+                    <button class="filter-btn" data-filter="recent">Récents</button>
+                    <button class="filter-btn" data-filter="trending">Tendances</button>
+                </div>
+                
+                <div class="sort-section">
+                    <select class="sort-select" id="sortBy">
+                        <option value="recent">Plus récents</option>
+                        <option value="popular">Plus populaires</option>
+                        <option value="views">Plus vus</option>
+                        <option value="replies">Plus de réponses</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Catégories rapides -->
+            <div class="categories-bar">
+                <div class="category-pills">
+                    <button class="category-pill active" data-category="all">Toutes</button>
+                    %CATEGORIES_LIST%
+                    <!-- Exemple de catégories (sera remplacé dynamiquement) -->
+                    <!-- 
+                    <button class="category-pill" data-category="1">🎮 Gaming</button>
+                    <button class="category-pill" data-category="2">💻 Tech</button>
+                    -->
+                </div>
+            </div>
+
+            <!-- Liste des threads -->
+            <div class="threads-container">
+                %THREADS_LIST%
+                
+                <!-- Template pour thread (sera rempli dynamiquement) -->
+                <!-- 
+                <div class="thread-card" data-thread-id="1">
+                    <div class="thread-main">
+                        <div class="thread-author">
+                            <img src="../img/avatar/photo-profil.jpg" alt="Avatar" class="thread-avatar">
+                            <div class="author-info">
+                                <span class="author-name">Username</span>
+                                <span class="author-handle">@username</span>
+                                <span class="thread-time">il y a 2h</span>
+                            </div>
+                        </div>
+                        
+                        <div class="thread-content">
+                            <h3 class="thread-title">
+                                <a href="/thread/1">Titre du thread</a>
+                            </h3>
+                            <p class="thread-preview">Aperçu du contenu du thread...</p>
+                            
+                            <div class="thread-tags">
+                                <span class="category-tag">🎮 Gaming</span>
+                                <span class="hashtag">#epic</span>
+                                <span class="hashtag">#gaming</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="thread-stats">
+                        <div class="stat-item">
+                            <span class="icon">👁️</span>
+                            <span class="count">1.2k</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="icon">💬</span>
+                            <span class="count">45</span>
+                        </div>
+                        <div class="stat-item likes">
+                            <span class="icon">👍</span>
+                            <span class="count">123</span>
+                        </div>
+                    </div>
+                </div>
+                -->
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <button class="page-btn" id="prevPage">← Précédent</button>
+                <div class="page-numbers">
+                    <button class="page-num active">1</button>
+                    <button class="page-num">2</button>
+                    <button class="page-num">3</button>
+                    <span class="page-dots">...</span>
+                    <button class="page-num">10</button>
+                </div>
+                <button class="page-btn" id="nextPage">Suivant →</button>
+            </div>
+        </div>
+
+        <!-- Sidebar droite -->
+        <div class="sidebar">
+            <!-- Stats générales -->
+            <div class="stats-card">
+                <h4>📊 Statistiques</h4>
+                <div class="stat-row">
+                    <span class="label">Total threads:</span>
+                    <span class="value">%TOTAL_THREADS%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="label">Aujourd'hui:</span>
+                    <span class="value">%TODAY_THREADS%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="label">Cette semaine:</span>
+                    <span class="value">%WEEK_THREADS%</span>
+                </div>
+            </div>
+
+            <!-- Threads populaires -->
+            <div class="trending-card">
+                <h4>🔥 Trending</h4>
+                <div class="trending-list">
+                    %TRENDING_THREADS%
+                    <!-- 
+                    <div class="trending-item">
+                        <span class="trending-title">Thread populaire</span>
+                        <span class="trending-stats">123 👍 • 45 💬</span>
+                    </div>
+                    -->
+                </div>
+            </div>
+
+            <!-- Catégories populaires -->
+            <div class="popular-categories">
+                <h4>📂 Catégories populaires</h4>
+                <div class="category-list">
+                    %POPULAR_CATEGORIES%
+                    <!-- 
+                    <div class="category-item">
+                        <span class="category-icon">🎮</span>
+                        <span class="category-name">Gaming</span>
+                        <span class="category-count">42</span>
+                    </div>
+                    -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gestion des filtres
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Retirer active de tous les boutons
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                // Ajouter active au bouton cliqué
+                this.classList.add('active');
+                
+                const filter = this.dataset.filter;
+                filterThreads(filter);
+            });
+        });
+
+        // Gestion des catégories
+        document.querySelectorAll('.category-pill').forEach(pill => {
+            pill.addEventListener('click', function() {
+                document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                
+                const category = this.dataset.category;
+                filterByCategory(category);
+            });
+        });
+
+        // Gestion du tri
+        document.getElementById('sortBy').addEventListener('change', function() {
+            const sortBy = this.value;
+            sortThreads(sortBy);
+        });
+
+        // Fonctions de filtrage et tri
+        function filterThreads(filter) {
+            console.log('Filtrage par:', filter);
+            // TODO: Implémenter le filtrage via API
+        }
+
+        function filterByCategory(category) {
+            console.log('Filtrage par catégorie:', category);
+            // TODO: Implémenter le filtrage par catégorie
+        }
+
+        function sortThreads(sortBy) {
+            console.log('Tri par:', sortBy);
+            // TODO: Implémenter le tri via API
+        }
+
+        // Recherche en temps réel (optionnelle)
+        function setupSearch() {
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.placeholder = 'Rechercher des threads...';
+            searchInput.className = 'search-input';
+            
+            document.querySelector('.threads-filters').appendChild(searchInput);
+            
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                searchThreads(query);
+            });
+        }
+
+        function searchThreads(query) {
+            const threads = document.querySelectorAll('.thread-card');
+            threads.forEach(thread => {
+                const title = thread.querySelector('.thread-title').textContent.toLowerCase();
+                const preview = thread.querySelector('.thread-preview').textContent.toLowerCase();
+                
+                if (title.includes(query) || preview.includes(query)) {
+                    thread.style.display = 'block';
+                } else {
+                    thread.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialisation
+        window.addEventListener('load', function() {
+            // setupSearch(); // Décommenter pour activer la recherche
+            console.log('Page threads chargée');
+        });
+    </script>
+</body>
+</html> 

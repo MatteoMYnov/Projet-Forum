@@ -3,24 +3,28 @@ package controllers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"forum/middleware"
 	"forum/models"
 	"forum/services"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 )
 
 // UserRepository gère les opérations sur les utilisateurs
 type UserControllers struct {
-	authService *services.AuthService
+	authService   *services.AuthService
+	threadService *services.ThreadService
 }
 
 // NewUserControllers crée une nouvelle instance du controller
 func NewUserControllers(db *sql.DB) *UserControllers {
 	return &UserControllers{
-		authService: services.NewAuthService(db),
+		authService:   services.NewAuthService(db),
+		threadService: services.NewThreadService(db),
 	}
 }
 
@@ -30,12 +34,20 @@ func (c *UserControllers) UserRouter(r *http.ServeMux) {
 	r.HandleFunc("/login", c.LoginPage)
 	r.HandleFunc("/home", c.HomePage)
 	r.HandleFunc("/profile", middleware.RequireAuth(c.ProfilePage))
+	
+	// Routes pour les threads
+	r.HandleFunc("/create-thread", middleware.RequireAuth(c.CreateThreadPage))
+	r.HandleFunc("/thread/", c.ThreadPage) // Pour afficher un thread spécifique
 
 	// Handlers pour les actions
 	r.HandleFunc("/api/register", c.RegisterHandler)
 	r.HandleFunc("/api/login", c.LoginHandler)
 	r.HandleFunc("/api/logout", c.LogoutHandler)
 	r.HandleFunc("/api/profile", middleware.RequireAuth(c.ProfileAPI))
+	
+	// API pour les threads
+	r.HandleFunc("/api/threads", middleware.RequireAuth(c.CreateThreadHandler))
+	r.HandleFunc("/api/threads/", c.ThreadAPI) // Pour récupérer les données d'un thread
 }
 
 // RegisterPage affiche la page d'inscription
@@ -67,7 +79,50 @@ func (c *UserControllers) HomePage(w http.ResponseWriter, r *http.Request) {
 
 // ProfilePage affiche la page de profil (nécessite authentification)
 func (c *UserControllers) ProfilePage(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./website/template/profile.html")
+	log.Printf("🔍 ProfilePage - Début de la fonction")
+	
+	// Récupérer l'utilisateur depuis le contexte
+	sessionInfo := middleware.GetUserFromContext(r)
+	if sessionInfo == nil {
+		log.Printf("❌ ProfilePage - Aucune session trouvée")
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	log.Printf("✅ ProfilePage - Session trouvée: UserID=%d, Username=%s", sessionInfo.UserID, sessionInfo.Username)
+
+	// Récupérer les données complètes de l'utilisateur
+	user, err := c.authService.GetUserByID(sessionInfo.UserID)
+	if err != nil {
+		log.Printf("❌ Erreur récupération profil: %v", err)
+		http.Error(w, "Erreur serveur", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("✅ ProfilePage - Données utilisateur récupérées: %s (%s)", user.Username, user.Email)
+
+	// Lire le template HTML
+	templatePath := "./website/template/profile.html"
+	templateContent, err := os.ReadFile(templatePath)
+	if err != nil {
+		log.Printf("❌ Erreur lecture template: %v", err)
+		http.Error(w, "Erreur serveur", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("✅ ProfilePage - Template lu, taille: %d bytes", len(templateContent))
+
+	// Remplacer les placeholders par les vraies données
+	htmlContent := string(templateContent)
+	
+	// Traitement spécifique pour chaque placeholder
+	htmlWithUserData := processProfileTemplate(htmlContent, user)
+
+	log.Printf("✅ ProfilePage - Template traité, envoi de la réponse")
+
+	// Envoyer la réponse
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write([]byte(htmlWithUserData))
 }
 
 // RegisterHandler gère l'inscription des utilisateurs
@@ -272,3 +327,225 @@ func ParseIntParam(r *http.Request, param string) (int, error) {
 	}
 	return strconv.Atoi(value)
 }
+
+// processProfileTemplate remplace les placeholders dans le template de profil avec les vraies données
+func processProfileTemplate(htmlContent string, user *models.User) string {
+	log.Printf("🔄 Traitement template pour utilisateur: %s", user.Username)
+	
+	// Compter les placeholders avant traitement
+	countBefore := strings.Count(htmlContent, "%s") + strings.Count(htmlContent, "%x")
+	log.Printf("📊 Placeholders trouvés: %d", countBefore)
+	
+	// Remplacer les placeholders spécifiques
+	htmlContent = strings.Replace(htmlContent, `<h1 class="name">%s</h1>`, 
+		fmt.Sprintf(`<h1 class="name">%s</h1>`, user.Username), 1)
+	
+	htmlContent = strings.Replace(htmlContent, `<span class="handle">@%s</span>`, 
+		fmt.Sprintf(`<span class="handle">@%s</span>`, user.Username), 1)
+	
+	// Date d'inscription
+	joinDate := user.CreatedAt.Format("January 2006")
+	htmlContent = strings.Replace(htmlContent, `Joined September 2024`, 
+		fmt.Sprintf(`Joined %s`, joinDate), 1)
+	
+	// Stats Following/Followers
+	htmlContent = strings.Replace(htmlContent, `<span><strong>%x</strong> Following</span>`, 
+		fmt.Sprintf(`<span><strong>%d</strong> Following</span>`, user.FollowingCount), 1)
+	
+	htmlContent = strings.Replace(htmlContent, `<span><strong>%x</strong> Followers</span>`, 
+		fmt.Sprintf(`<span><strong>%d</strong> Followers</span>`, user.FollowerCount), 1)
+	
+	// Post utilisateur dans le mur
+	htmlContent = strings.Replace(htmlContent, `<span class="post-user-name">%s</span>`, 
+		fmt.Sprintf(`<span class="post-user-name">%s</span>`, user.Username), 1)
+	
+	htmlContent = strings.Replace(htmlContent, `<span class="post-user-handle">%s</span>`, 
+		fmt.Sprintf(`<span class="post-user-handle">@%s</span>`, user.Username), 1)
+	
+	htmlContent = strings.Replace(htmlContent, `Félicitations %s pour ta nouvelle page ! 🎉`, 
+		fmt.Sprintf(`Félicitations %s pour ta nouvelle page ! 🎉`, user.Username), 1)
+	
+	// Compter les placeholders après traitement
+	countAfter := strings.Count(htmlContent, "%s") + strings.Count(htmlContent, "%x")
+	log.Printf("✅ Template traité. Placeholders restants: %d", countAfter)
+	
+	return htmlContent
+}
+
+// =====================================
+// CONTRÔLEURS POUR LES THREADS
+// =====================================
+
+// CreateThreadPage affiche la page de création de thread
+func (c *UserControllers) CreateThreadPage(w http.ResponseWriter, r *http.Request) {
+	log.Printf("🔍 CreateThreadPage - Début de la fonction")
+	
+	// Récupérer les catégories pour le formulaire
+	categories, err := c.threadService.GetCategories()
+	if err != nil {
+		log.Printf("❌ Erreur récupération catégories: %v", err)
+		http.Error(w, "Erreur serveur", http.StatusInternalServerError)
+		return
+	}
+
+	// Lire le template HTML
+	templatePath := "./website/template/create_thread.html"
+	templateContent, err := os.ReadFile(templatePath)
+	if err != nil {
+		log.Printf("❌ Erreur lecture template: %v", err)
+		http.Error(w, "Erreur serveur", http.StatusInternalServerError)
+		return
+	}
+
+	// Remplacer les catégories dans le template
+	htmlContent := string(templateContent)
+	categoriesHTML := ""
+	for _, category := range categories {
+		categoriesHTML += fmt.Sprintf(`<option value="%d">%s</option>`, category.ID, category.Name)
+	}
+	
+	htmlContent = strings.Replace(htmlContent, "%CATEGORIES%", categoriesHTML, 1)
+
+	log.Printf("✅ CreateThreadPage - Template préparé avec %d catégories", len(categories))
+
+	// Envoyer la réponse
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write([]byte(htmlContent))
+}
+
+// CreateThreadHandler gère la création d'un nouveau thread
+func (c *UserControllers) CreateThreadHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		return
+	}
+
+	log.Printf("📝 CreateThreadHandler - Tentative de création de thread")
+
+	// Récupérer l'utilisateur depuis le contexte
+	sessionInfo := middleware.GetUserFromContext(r)
+	if sessionInfo == nil {
+		http.Error(w, "Non authentifié", http.StatusUnauthorized)
+		return
+	}
+
+	// Récupérer les données du formulaire
+	title := strings.TrimSpace(r.FormValue("title"))
+	content := strings.TrimSpace(r.FormValue("content"))
+	categoryIDStr := r.FormValue("category_id")
+	hashtags := strings.TrimSpace(r.FormValue("hashtags"))
+
+	log.Printf("📝 Données reçues - Titre: %s, Contenu: %d chars, Catégorie: %s", 
+		title, len(content), categoryIDStr)
+
+	// Traiter la catégorie
+	var categoryID *int
+	if categoryIDStr != "" {
+		if catID, err := strconv.Atoi(categoryIDStr); err == nil && catID > 0 {
+			categoryID = &catID
+		}
+	}
+
+	// Créer la requête
+	request := models.ThreadCreateRequest{
+		Title:      title,
+		Content:    content,
+		CategoryID: categoryID,
+	}
+
+	// Traiter les hashtags si fournis
+	if hashtags != "" {
+		request.Hashtags = c.threadService.ProcessHashtagsFromRequest(hashtags)
+	}
+
+	// Créer le thread
+	thread, err := c.threadService.CreateThread(request, sessionInfo.UserID)
+	if err != nil {
+		log.Printf("❌ Erreur création thread: %v", err)
+		showErrorPage(w, r, err.Error(), "/create-thread")
+		return
+	}
+
+	log.Printf("✅ Thread créé avec succès: ID=%d, Titre=%s", thread.ID, thread.Title)
+
+	// Redirection vers le thread créé
+	http.Redirect(w, r, fmt.Sprintf("/thread/%d", thread.ID), http.StatusSeeOther)
+}
+
+// ThreadPage affiche un thread spécifique
+func (c *UserControllers) ThreadPage(w http.ResponseWriter, r *http.Request) {
+	// Extraire l'ID du thread depuis l'URL
+	path := strings.TrimPrefix(r.URL.Path, "/thread/")
+	threadID, err := strconv.Atoi(path)
+	if err != nil {
+		http.Error(w, "ID de thread invalide", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("🔍 ThreadPage - Affichage du thread ID=%d", threadID)
+
+	// Récupérer le thread
+	thread, err := c.threadService.GetThread(threadID)
+	if err != nil {
+		log.Printf("❌ Erreur récupération thread %d: %v", threadID, err)
+		http.Error(w, "Thread non trouvé", http.StatusNotFound)
+		return
+	}
+
+	// Pour l'instant, retourner une réponse JSON simple
+	// TODO: Créer un template HTML pour afficher le thread
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(models.APIResponse{
+		Success: true,
+		Data:    thread,
+	})
+}
+
+// ThreadAPI gère les requêtes API pour les threads
+func (c *UserControllers) ThreadAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		// Récupérer un thread ou tous les threads
+		path := strings.TrimPrefix(r.URL.Path, "/api/threads/")
+		
+		if path == "" {
+			// Récupérer tous les threads
+			page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+			limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+			
+			threads, err := c.threadService.GetAllThreads(page, limit)
+			if err != nil {
+				WriteErrorResponse(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			
+			WriteJSONResponse(w, models.APIResponse{
+				Success: true,
+				Data:    threads,
+			}, http.StatusOK)
+			return
+		}
+		
+		// Récupérer un thread spécifique
+		threadID, err := strconv.Atoi(path)
+		if err != nil {
+			WriteErrorResponse(w, "ID de thread invalide", http.StatusBadRequest)
+			return
+		}
+		
+		thread, err := c.threadService.GetThread(threadID)
+		if err != nil {
+			WriteErrorResponse(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		
+		WriteJSONResponse(w, models.APIResponse{
+			Success: true,
+			Data:    thread,
+		}, http.StatusOK)
+		return
+	}
+
+	http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+}
+
+

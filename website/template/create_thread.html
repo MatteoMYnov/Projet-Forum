@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/profile.css?v=1.1">
+    <title>Créer un thread / Y</title>
+    <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+    <style>
+        .create-thread-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 15px;
+            border: 1px solid #333;
+        }
+        
+        .create-thread-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-group label {
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: 12px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background: #2a2a2a;
+            color: #fff;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #1d9bf0;
+            box-shadow: 0 0 0 2px rgba(29, 155, 240, 0.2);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #1d9bf0;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1a8cd8;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #fff;
+            border: 1px solid #444;
+        }
+        
+        .btn-secondary:hover {
+            background: #333;
+        }
+        
+        .character-count {
+            text-align: right;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .character-count.warning {
+            color: #ffb347;
+        }
+        
+        .character-count.error {
+            color: #f4212e;
+        }
+        
+        .hashtags-info {
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- ===================== -->
+    <!-- COLONNE DE GAUCHE (BANNIÈRE + BAR) -->
+    <!-- ===================== -->
+    <div class="banner">
+        <div class="bar">
+            <div class="logo-button">
+                <img src="../img/logo/inverted.png" alt="Logo" class="icon-logo">
+            </div>
+            <a href="/home" class="bar-button">
+                <img src="../img/icon/home-r.png" alt="Home" class="icon">
+                <p>Home</p>
+            </a>
+            <div class="bar-button">
+                <img src="../img/icon/brush-r.png" alt="Theme" class="icon">
+                <p>Theme</p>
+            </div>
+            <a href="/profile" class="bar-button">
+                <img src="../img/icon/profile-r.png" alt="Profile" class="icon">
+                <p>Profile</p>
+            </a>
+            <div class="account">
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== -->
+    <!-- CONTENU PRINCIPAL -->
+    <!-- ===================== -->
+    <div class="container">
+        <div class="main">
+            <div class="create-thread-container">
+                <h1 style="color: #fff; margin-bottom: 30px; font-size: 24px;">Créer un nouveau thread</h1>
+                
+                <form class="create-thread-form" action="/api/threads" method="POST">
+                    <div class="form-group">
+                        <label for="title">Titre *</label>
+                        <input type="text" id="title" name="title" maxlength="280" required 
+                               placeholder="Quel est le sujet de votre thread ?">
+                        <div class="character-count" id="title-count">0 / 280</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="content">Contenu *</label>
+                        <textarea id="content" name="content" maxlength="5000" required 
+                                  placeholder="Développez votre sujet..."></textarea>
+                        <div class="character-count" id="content-count">0 / 5000</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category">Catégorie (optionnel)</label>
+                        <select id="category" name="category_id">
+                            <option value="">Choisir une catégorie...</option>
+                            %CATEGORIES%
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hashtags">Hashtags (optionnel)</label>
+                        <input type="text" id="hashtags" name="hashtags" 
+                               placeholder="#gaming #tech #discussion (séparés par des espaces)">
+                        <div class="hashtags-info">
+                            Utilisez # devant chaque mot-clé. Exemple: #gaming #tech #discussion
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <a href="/home" class="btn btn-secondary">Annuler</a>
+                        <button type="submit" class="btn btn-primary">Publier le thread</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Compteur de caractères pour le titre
+        const titleInput = document.getElementById('title');
+        const titleCount = document.getElementById('title-count');
+        
+        titleInput.addEventListener('input', function() {
+            const length = this.value.length;
+            titleCount.textContent = length + ' / 280';
+            
+            if (length > 250) {
+                titleCount.className = 'character-count warning';
+            } else if (length > 280) {
+                titleCount.className = 'character-count error';
+            } else {
+                titleCount.className = 'character-count';
+            }
+        });
+        
+        // Compteur de caractères pour le contenu
+        const contentInput = document.getElementById('content');
+        const contentCount = document.getElementById('content-count');
+        
+        contentInput.addEventListener('input', function() {
+            const length = this.value.length;
+            contentCount.textContent = length + ' / 5000';
+            
+            if (length > 4500) {
+                contentCount.className = 'character-count warning';
+            } else if (length > 5000) {
+                contentCount.className = 'character-count error';
+            } else {
+                contentCount.className = 'character-count';
+            }
+        });
+    </script>
+</body>
+</html> 

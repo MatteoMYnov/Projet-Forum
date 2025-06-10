@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/thread.css?v=1.0">
+    <title>Threads Demo / Y</title>
+    <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+</head>
+<body>
+    <!-- BANNIÈRE LATÉRALE -->
+    <div class="banner">
+        <div class="bar">
+            <div class="logo-button">
+                <img src="../img/logo/inverted.png" alt="Logo" class="icon-logo">
+            </div>
+            <a href="/home" class="bar-button">
+                <img src="../img/icon/home-r.png" alt="Home" class="icon">
+                <p>Home</p>
+            </a>
+            <a href="/threads" class="bar-button active">
+                <img src="../img/icon/thread-r.png" alt="Threads" class="icon">
+                <p>Threads</p>
+            </a>
+            <div class="bar-button">
+                <img src="../img/icon/brush-r.png" alt="Theme" class="icon">
+                <p>Theme</p>
+            </div>
+            <a href="/profile" class="bar-button">
+                <img src="../img/icon/profile-r.png" alt="Profile" class="icon">
+                <p>Profile</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- CONTENU PRINCIPAL -->
+    <div class="container">
+        <div class="main">
+            <!-- En-tête -->
+            <div class="threads-header">
+                <h1>🧵 Tous les threads</h1>
+                <div class="threads-actions">
+                    <a href="/create-thread" class="create-thread-btn">✏️ Créer un thread</a>
+                </div>
+            </div>
+
+            <!-- Filtres -->
+            <div class="threads-filters">
+                <div class="filter-section">
+                    <button class="filter-btn active" data-filter="all">Tous</button>
+                    <button class="filter-btn" data-filter="popular">Populaires</button>
+                    <button class="filter-btn" data-filter="recent">Récents</button>
+                    <button class="filter-btn" data-filter="trending">Tendances</button>
+                </div>
+                <div class="sort-section">
+                    <select class="sort-select">
+                        <option value="recent">Plus récents</option>
+                        <option value="popular">Plus populaires</option>
+                        <option value="views">Plus vus</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Catégories -->
+            <div class="categories-bar">
+                <div class="category-pills">
+                    <button class="category-pill active">Toutes</button>
+                    <button class="category-pill">🎮 Gaming</button>
+                    <button class="category-pill">💻 Tech</button>
+                    <button class="category-pill">🎬 Cinéma</button>
+                    <button class="category-pill">🏈 Sport</button>
+                </div>
+            </div>
+
+            <!-- Liste des threads -->
+            <div class="threads-container">
+                <!-- Thread 1 -->
+                <div class="thread-card">
+                    <div class="thread-main">
+                        <div class="thread-author">
+                            <img src="../img/avatar/photo-profil.jpg" alt="Avatar" class="thread-avatar">
+                            <div class="author-info">
+                                <span class="author-name">Alexandre</span>
+                                <span class="author-handle">@alex_dev</span>
+                                <span class="thread-time">il y a 2h</span>
+                            </div>
+                        </div>
+                        
+                        <div class="thread-content">
+                            <h3 class="thread-title">
+                                <a href="/thread/1">🎮 Nouveau jeu incroyable sorti cette semaine !</a>
+                            </h3>
+                            <p class="thread-preview">
+                                J'ai découvert ce jeu indie génial qui mérite vraiment le détour. 
+                                Les graphismes sont époustouflants et le gameplay est addictif. 
+                                Quelqu'un d'autre l'a essayé ?
+                            </p>
+                            
+                            <div class="thread-tags">
+                                <span class="category-tag">🎮 Gaming</span>
+                                <span class="hashtag">#indie</span>
+                                <span class="hashtag">#nouveauté</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="thread-stats">
+                        <div class="stat-item">
+                            <span class="icon">👁️</span>
+                            <span class="count">1.2k</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="icon">💬</span>
+                            <span class="count">45</span>
+                        </div>
+                        <div class="stat-item likes">
+                            <span class="icon">👍</span>
+                            <span class="count">123</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thread 2 -->
+                <div class="thread-card">
+                    <div class="thread-main">
+                        <div class="thread-author">
+                            <img src="../img/avatar/photo-profil.jpg" alt="Avatar" class="thread-avatar">
+                            <div class="author-info">
+                                <span class="author-name">Marie Tech</span>
+                                <span class="author-handle">@marie_tech</span>
+                                <span class="thread-time">il y a 4h</span>
+                            </div>
+                        </div>
+                        
+                        <div class="thread-content">
+                            <h3 class="thread-title">
+                                <a href="/thread/2">💻 Guide complet : Débuter en programmation en 2024</a>
+                            </h3>
+                            <p class="thread-preview">
+                                Voici un guide détaillé pour tous ceux qui veulent se lancer dans la programmation. 
+                                Je partage mes conseils après 10 ans d'expérience dans le développement web.
+                            </p>
+                            
+                            <div class="thread-tags">
+                                <span class="category-tag">💻 Tech</span>
+                                <span class="hashtag">#programmation</span>
+                                <span class="hashtag">#débutant</span>
+                                <span class="hashtag">#guide</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="thread-stats">
+                        <div class="stat-item">
+                            <span class="icon">👁️</span>
+                            <span class="count">3.4k</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="icon">💬</span>
+                            <span class="count">89</span>
+                        </div>
+                        <div class="stat-item likes">
+                            <span class="icon">👍</span>
+                            <span class="count">256</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thread 3 -->
+                <div class="thread-card">
+                    <div class="thread-main">
+                        <div class="thread-author">
+                            <img src="../img/avatar/photo-profil.jpg" alt="Avatar" class="thread-avatar">
+                            <div class="author-info">
+                                <span class="author-name">Lucas Cinéma</span>
+                                <span class="author-handle">@lucas_films</span>
+                                <span class="thread-time">il y a 6h</span>
+                            </div>
+                        </div>
+                        
+                        <div class="thread-content">
+                            <h3 class="thread-title">
+                                <a href="/thread/3">🎬 Mon top 10 des films de science-fiction</a>
+                            </h3>
+                            <p class="thread-preview">
+                                Après avoir regardé plus de 500 films de SF, voici ma sélection personnelle 
+                                des 10 films qui ont marqué le genre. Certains choix vont vous surprendre !
+                            </p>
+                            
+                            <div class="thread-tags">
+                                <span class="category-tag">🎬 Cinéma</span>
+                                <span class="hashtag">#scifi</span>
+                                <span class="hashtag">#top10</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="thread-stats">
+                        <div class="stat-item">
+                            <span class="icon">👁️</span>
+                            <span class="count">892</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="icon">💬</span>
+                            <span class="count">34</span>
+                        </div>
+                        <div class="stat-item likes">
+                            <span class="icon">👍</span>
+                            <span class="count">67</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thread 4 -->
+                <div class="thread-card">
+                    <div class="thread-main">
+                        <div class="thread-author">
+                            <img src="../img/avatar/photo-profil.jpg" alt="Avatar" class="thread-avatar">
+                            <div class="author-info">
+                                <span class="author-name">Sophie Sport</span>
+                                <span class="author-handle">@sophie_sport</span>
+                                <span class="thread-time">il y a 1j</span>
+                            </div>
+                        </div>
+                        
+                        <div class="thread-content">
+                            <h3 class="thread-title">
+                                <a href="/thread/4">🏃‍♀️ Mes 5 conseils pour commencer la course à pied</a>
+                            </h3>
+                            <p class="thread-preview">
+                                Vous voulez vous mettre au running mais ne savez pas par où commencer ? 
+                                Voici mes conseils pratiques pour débuter sans se blesser et prendre du plaisir !
+                            </p>
+                            
+                            <div class="thread-tags">
+                                <span class="category-tag">🏈 Sport</span>
+                                <span class="hashtag">#running</span>
+                                <span class="hashtag">#débutant</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="thread-stats">
+                        <div class="stat-item">
+                            <span class="icon">👁️</span>
+                            <span class="count">542</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="icon">💬</span>
+                            <span class="count">28</span>
+                        </div>
+                        <div class="stat-item likes">
+                            <span class="icon">👍</span>
+                            <span class="count">95</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <button class="page-btn">← Précédent</button>
+                <div class="page-numbers">
+                    <button class="page-num active">1</button>
+                    <button class="page-num">2</button>
+                    <button class="page-num">3</button>
+                    <span class="page-dots">...</span>
+                    <button class="page-num">10</button>
+                </div>
+                <button class="page-btn">Suivant →</button>
+            </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <!-- Stats -->
+            <div class="stats-card">
+                <h4>📊 Statistiques</h4>
+                <div class="stat-row">
+                    <span class="label">Total threads:</span>
+                    <span class="value">1,248</span>
+                </div>
+                <div class="stat-row">
+                    <span class="label">Aujourd'hui:</span>
+                    <span class="value">23</span>
+                </div>
+                <div class="stat-row">
+                    <span class="label">Cette semaine:</span>
+                    <span class="value">157</span>
+                </div>
+            </div>
+
+            <!-- Trending -->
+            <div class="trending-card">
+                <h4>🔥 Trending</h4>
+                <div class="trending-list">
+                    <div class="trending-item">
+                        <span class="trending-title">Nouvelle mise à jour du forum</span>
+                        <span class="trending-stats">234 👍 • 67 💬</span>
+                    </div>
+                    <div class="trending-item">
+                        <span class="trending-title">Discussion IA et futur</span>
+                        <span class="trending-stats">189 👍 • 45 💬</span>
+                    </div>
+                    <div class="trending-item">
+                        <span class="trending-title">Recette cuisine facile</span>
+                        <span class="trending-stats">156 👍 • 32 💬</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Catégories populaires -->
+            <div class="popular-categories">
+                <h4>📂 Catégories populaires</h4>
+                <div class="category-list">
+                    <div class="category-item">
+                        <span class="category-icon">🎮</span>
+                        <span class="category-name">Gaming</span>
+                        <span class="category-count">342</span>
+                    </div>
+                    <div class="category-item">
+                        <span class="category-icon">💻</span>
+                        <span class="category-name">Tech</span>
+                        <span class="category-count">289</span>
+                    </div>
+                    <div class="category-item">
+                        <span class="category-icon">🎬</span>
+                        <span class="category-name">Cinéma</span>
+                        <span class="category-count">156</span>
+                    </div>
+                    <div class="category-item">
+                        <span class="category-icon">🏈</span>
+                        <span class="category-name">Sport</span>
+                        <span class="category-count">134</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gestion des filtres
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Gestion des catégories
+        document.querySelectorAll('.category-pill').forEach(pill => {
+            pill.addEventListener('click', function() {
+                document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Clic sur thread card
+        document.querySelectorAll('.thread-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Ne pas déclencher si on clique sur le titre (qui a déjà son lien)
+                if (!e.target.closest('.thread-title a')) {
+                    const titleLink = this.querySelector('.thread-title a');
+                    if (titleLink) {
+                        window.location.href = titleLink.href;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

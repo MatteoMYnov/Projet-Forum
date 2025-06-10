@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/thread.css?v=1.0">
+    <title>%THREAD_TITLE% / Y</title>
+    <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+</head>
+<body>
+    <!-- ===================== -->
+    <!-- COLONNE DE GAUCHE (BANNIÈRE + BAR) -->
+    <!-- ===================== -->
+    <div class="banner">
+        <div class="bar">
+            <div class="logo-button">
+                <img src="../img/logo/inverted.png" alt="Logo" class="icon-logo">
+            </div>
+            <a href="/home" class="bar-button">
+                <img src="../img/icon/home-r.png" alt="Home" class="icon">
+                <p>Home</p>
+            </a>
+            <a href="/threads" class="bar-button">
+                <img src="../img/icon/thread-r.png" alt="Threads" class="icon">
+                <p>Threads</p>
+            </a>
+            <div class="bar-button">
+                <img src="../img/icon/brush-r.png" alt="Theme" class="icon">
+                <p>Theme</p>
+            </div>
+            <a href="/profile" class="bar-button">
+                <img src="../img/icon/profile-r.png" alt="Profile" class="icon">
+                <p>Profile</p>
+            </a>
+            <div class="account">
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== -->
+    <!-- CONTENU PRINCIPAL -->
+    <!-- ===================== -->
+    <div class="container">
+        <div class="main">
+            <!-- Bouton de retour -->
+            <div class="thread-nav">
+                <a href="/threads" class="back-button">← Retour aux threads</a>
+                <div class="thread-actions">
+                    <a href="/create-thread" class="create-btn">✏️ Nouveau thread</a>
+                </div>
+            </div>
+
+            <!-- Thread principal -->
+            <div class="thread-detail">
+                <!-- En-tête du thread -->
+                <div class="thread-header">
+                    <div class="thread-meta">
+                        <div class="author-info">
+                            <img src="../img/avatar/photo-profil.jpg" alt="Avatar" class="author-avatar">
+                            <div class="author-details">
+                                <span class="author-name">%AUTHOR_NAME%</span>
+                                <span class="author-handle">@%AUTHOR_USERNAME%</span>
+                            </div>
+                        </div>
+                        <div class="thread-time">
+                            <span class="created-at">%CREATED_AT%</span>
+                            <span class="thread-views">👁️ %VIEW_COUNT% vues</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenu du thread -->
+                <div class="thread-content">
+                    <h1 class="thread-title">%THREAD_TITLE%</h1>
+                    <div class="thread-body">
+                        %THREAD_CONTENT%
+                    </div>
+                    
+                    <!-- Catégorie et hashtags -->
+                    <div class="thread-tags">
+                        %CATEGORY_TAG%
+                        %HASHTAGS%
+                    </div>
+                </div>
+
+                <!-- Actions du thread -->
+                <div class="thread-stats">
+                    <div class="thread-reactions">
+                        <button class="reaction-btn like-btn" data-action="like">
+                            <span class="icon">👍</span>
+                            <span class="count">%LIKE_COUNT%</span>
+                        </button>
+                        <button class="reaction-btn dislike-btn" data-action="dislike">
+                            <span class="icon">👎</span>
+                            <span class="count">%DISLIKE_COUNT%</span>
+                        </button>
+                        <div class="reply-count">
+                            <span class="icon">💬</span>
+                            <span class="count">%MESSAGE_COUNT% réponses</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone de réponse -->
+            <div class="reply-section">
+                <h3>Répondre au thread</h3>
+                <form class="reply-form" action="/api/messages" method="POST">
+                    <input type="hidden" name="thread_id" value="%THREAD_ID%">
+                    <textarea name="content" placeholder="Écrivez votre réponse..." maxlength="2000" required></textarea>
+                    <div class="form-actions">
+                        <div class="character-count">0 / 2000</div>
+                        <button type="submit" class="reply-btn">Répondre</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Messages/Réponses -->
+            <div class="messages-section">
+                <h3>Réponses (%MESSAGE_COUNT%)</h3>
+                <div class="messages-container">
+                    %MESSAGES_LIST%
+                    <!-- Template pour message (sera rempli dynamiquement) -->
+                    <!-- 
+                    <div class="message">
+                        <div class="message-author">
+                            <img src="../img/avatar/avatar-utilisateur.jpg" alt="Avatar" class="message-avatar">
+                            <div class="message-author-info">
+                                <span class="message-author-name">Nom d'utilisateur</span>
+                                <span class="message-author-handle">@username</span>
+                                <span class="message-time">il y a 2h</span>
+                            </div>
+                        </div>
+                        <div class="message-content">
+                            Contenu du message...
+                        </div>
+                        <div class="message-actions">
+                            <button class="message-like">👍 5</button>
+                            <button class="message-reply">Répondre</button>
+                        </div>
+                    </div>
+                    -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar droite -->
+        <div class="sidebar">
+            <div class="thread-info-card">
+                <h4>Informations du thread</h4>
+                <div class="info-item">
+                    <span class="label">Créé par:</span>
+                    <span class="value">@%AUTHOR_USERNAME%</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Date:</span>
+                    <span class="value">%CREATED_AT%</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Catégorie:</span>
+                    <span class="value">%CATEGORY_NAME%</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Vues:</span>
+                    <span class="value">%VIEW_COUNT%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Compteur de caractères pour la réponse
+        const textarea = document.querySelector('.reply-form textarea');
+        const charCount = document.querySelector('.character-count');
+        
+        textarea.addEventListener('input', function() {
+            const length = this.value.length;
+            charCount.textContent = length + ' / 2000';
+            
+            if (length > 1800) {
+                charCount.style.color = '#ffb347';
+            } else if (length > 2000) {
+                charCount.style.color = '#f4212e';
+            } else {
+                charCount.style.color = '#666';
+            }
+        });
+
+        // Gestion des réactions
+        document.querySelectorAll('.reaction-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const action = this.dataset.action;
+                const threadId = '%THREAD_ID%';
+                
+                // TODO: Implémenter l'API pour les réactions
+                console.log(`Action: ${action} sur thread ${threadId}`);
+            });
+        });
+    </script>
+</body>
+</html> 
