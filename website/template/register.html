@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/styles/home.css" />
   <link rel="stylesheet" href="/styles/register.css" />
   <title>Inscription / Y</title>
   <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png" />
@@ -11,15 +12,28 @@
   <!-- Bannière (barre latérale gauche) -->
   <div class="banner">
     <div class="bar">
-      <div class="logo-button">
-        <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo" />
-      </div>
-      <a href="/home" class="bar-button">
-        <img src="/img/icon/home-r.png" alt="Home" class="icon">
-        <p>Home</p>
-      </a>
-      <div class="account"></div>
-    </div>
+            <div class="logo-button">
+                <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo">
+            </div>
+            <a href="/home" class="bar-button">
+                <img src="/img/icon/home-r.png" alt="Home" class="icon">
+                <p>Home</p>
+            </a>
+            <a href="/theme" class="bar-button">
+                <img src="/img/icon/brush-r.png" alt="Theme" class="icon">
+                <p>Theme</p>
+            </a>
+            <a href="/profile" class="bar-button">
+                <img src="/img/icon/profile-r.png" alt="Profile" class="icon">
+                <p>Profile</p>
+            </a>
+            <div class="account">
+                <!-- Zone pour les boutons de connexion/déconnexion -->
+                <div id="auth-buttons" style="padding: 10px;">
+                    <!-- Les boutons seront ajoutés dynamiquement par JavaScript -->
+                </div>
+            </div>
+        </div>
   </div>
 
   <!-- Contenu principal -->
@@ -103,5 +117,6 @@
       errorDiv.style.display = 'none';
     }
   </script>
+  <script src="/js/theme_loader.js"></script>
 </body>
 </html>
