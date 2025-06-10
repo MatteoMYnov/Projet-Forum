@@ -50,6 +50,7 @@ func main() {
 	log.Printf("✅ Serveur démarré sur http://localhost%s", serverAddr)
 	log.Printf("📄 Pages disponibles:")
 	log.Printf("   - Home: http://localhost%s/home", serverAddr)
+	log.Printf("   - Theme: http://localhost%s/theme", serverAddr)
 	log.Printf("   - Login: http://localhost%s/login", serverAddr)
 	log.Printf("   - Register: http://localhost%s/register", serverAddr)
 	log.Printf("   - Profile: http://localhost%s/profile", serverAddr)

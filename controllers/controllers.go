@@ -33,6 +33,7 @@ func (c *UserControllers) UserRouter(r *http.ServeMux) {
 	r.HandleFunc("/register", c.RegisterPage)
 	r.HandleFunc("/login", c.LoginPage)
 	r.HandleFunc("/home", c.HomePage)
+	r.HandleFunc("/theme", c.ThemePage)
 	r.HandleFunc("/profile", middleware.RequireAuth(c.ProfilePage))
 	
 	// Routes pour les threads
@@ -75,6 +76,11 @@ func (c *UserControllers) LoginPage(w http.ResponseWriter, r *http.Request) {
 // HomePage affiche la page d'accueil
 func (c *UserControllers) HomePage(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./website/template/home.html")
+}
+
+// ThemePage
+func (c *UserControllers) ThemePage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./website/template/theme.html")
 }
 
 // ProfilePage affiche la page de profil (nécessite authentification)

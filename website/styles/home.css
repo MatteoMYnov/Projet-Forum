@@ -12,14 +12,6 @@ body {
     height: 100vh;
 }
 
-:root {
-    --main-color: #000000;
-    --main-color-hover: #181818;
-    --main-border-color: #2F3336;
-    --main-text-color: #DBDDDE;
-    --second-text-color: #71767B;
-}
-
 /* Banner */
 .banner {
     display: flex;
@@ -109,4 +101,12 @@ body {
 .bar-button p {
     font-size: 2.7vh;
     color: var(--main-text-color);
+}
+
+:root {
+    --main-color: #000000;
+    --main-color-hover: #181818;
+    --main-border-color: #2F3336;
+    --main-text-color: #DBDDDE;
+    --second-text-color: #71767B;
 }

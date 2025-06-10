@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thème / Y</title>
+    <link rel="stylesheet" href="/styles/home.css?v=1.0">
+    <link rel="stylesheet" href="/styles/theme.css?v=1.0">
+    <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+</head>
+<body>
+    <div class="banner">
+        <div class="bar">
+            <div class="logo-button">
+                <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo">
+            </div>
+            <a href="/home" class="bar-button">
+                <img src="/img/icon/home-r.png" alt="Home" class="icon">
+                <p>Home</p>
+            </a>
+            <a href="/theme" class="bar-button">
+                <img src="/img/icon/brush-r.png" alt="Theme" class="icon">
+                <p>Theme</p>
+            </a>
+            <a href="/profile" class="bar-button">
+                <img src="/img/icon/profile-r.png" alt="Profile" class="icon">
+                <p>Profile</p>
+            </a>
+            <div class="account">
+                <!-- Zone pour les boutons de connexion/déconnexion -->
+                <div id="auth-buttons" style="padding: 10px;">
+                    <!-- Les boutons seront ajoutés dynamiquement par JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main">
+            <div style="padding: 20px; color: var(--main-text-color);">
+                <h1>Personnaliser le Thème</h1>
+                <p>Changez les couleurs principales du site selon vos préférences.</p>
+
+                <div style="margin-top: 20px;">
+                    <label for="mainColor">Couleur principale :</label>
+                    <input type="color" id="mainColor" value="#000000">
+                    <br><br>
+
+                    <label for="hoverColor">Couleur au survol :</label>
+                    <input type="color" id="hoverColor" value="#181818">
+                    <br><br>
+
+                    <label for="borderColor">Couleur des bordures :</label>
+                    <input type="color" id="borderColor" value="#2F3336">
+                    <br><br>
+
+                    <label for="textColor">Texte principal :</label>
+                    <input type="color" id="textColor" value="#DBDDDE">
+                    <br><br>
+
+                    <label for="secondaryTextColor">Texte secondaire :</label>
+                    <input type="color" id="secondaryTextColor" value="#71767B">
+                    <br><br>
+
+                    <button onclick="applyTheme()" style="margin-top: 10px; padding: 10px 20px; border: none; background-color: #1da1f2; color: white; border-radius: 5px;">Appliquer</button>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h3>Presets :</h3>
+                    <button onclick="loadPreset('dark')" class="preset-button">Sombre</button>
+                    <button onclick="loadPreset('light')" class="preset-button">Clair</button>
+                    <button onclick="loadPreset('sunset')" class="preset-button">Coucher de soleil</button>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar"></div>
+    </div>
+
+    <script>
+        function applyTheme() {
+            const values = {
+                main: document.getElementById('mainColor').value,
+                hover: document.getElementById('hoverColor').value,
+                border: document.getElementById('borderColor').value,
+                text: document.getElementById('textColor').value,
+                secondary: document.getElementById('secondaryTextColor').value
+            };
+
+            // Appliquer dynamiquement au :root
+            document.documentElement.style.setProperty('--main-color', values.main);
+            document.documentElement.style.setProperty('--main-color-hover', values.hover);
+            document.documentElement.style.setProperty('--main-border-color', values.border);
+            document.documentElement.style.setProperty('--main-text-color', values.text);
+            document.documentElement.style.setProperty('--second-text-color', values.secondary);
+
+            // Sauvegarder dans localStorage
+            localStorage.setItem('themeSettings', JSON.stringify(values));
+        }
+
+        function loadPreset(name) {
+            const presets = {
+                dark: {
+                    main: '#000000',
+                    hover: '#181818',
+                    border: '#2F3336',
+                    text: '#DBDDDE',
+                    secondary: '#71767B'
+                },
+                light: {
+                    main: '#ffffff',
+                    hover: '#f0f0f0',
+                    border: '#cccccc',
+                    text: '#1c1c1c',
+                    secondary: '#555555'
+                },
+                sunset: {
+                    main: '#2c1a1d',
+                    hover: '#4b1e2b',
+                    border: '#7b2f3a',
+                    text: '#ffe3d8',
+                    secondary: '#ffb4a2'
+                }
+            };
+
+            const p = presets[name];
+            document.getElementById('mainColor').value = p.main;
+            document.getElementById('hoverColor').value = p.hover;
+            document.getElementById('borderColor').value = p.border;
+            document.getElementById('textColor').value = p.text;
+            document.getElementById('secondaryTextColor').value = p.secondary;
+
+            applyTheme(); // applique ET sauvegarde
+        }
+
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('themeSettings');
+            if (saved) {
+                const values = JSON.parse(saved);
+                document.getElementById('mainColor').value = values.main;
+                document.getElementById('hoverColor').value = values.hover;
+                document.getElementById('borderColor').value = values.border;
+                document.getElementById('textColor').value = values.text;
+                document.getElementById('secondaryTextColor').value = values.secondary;
+
+                // Appliquer directement au chargement
+                document.documentElement.style.setProperty('--main-color', values.main);
+                document.documentElement.style.setProperty('--main-color-hover', values.hover);
+                document.documentElement.style.setProperty('--main-border-color', values.border);
+                document.documentElement.style.setProperty('--main-text-color', values.text);
+                document.documentElement.style.setProperty('--second-text-color', values.secondary);
+            } else {
+                // Sinon, charger les valeurs actuelles du root
+                document.getElementById('mainColor').value = getComputedStyle(document.documentElement).getPropertyValue('--main-color').trim();
+                document.getElementById('hoverColor').value = getComputedStyle(document.documentElement).getPropertyValue('--main-color-hover').trim();
+                document.getElementById('borderColor').value = getComputedStyle(document.documentElement).getPropertyValue('--main-border-color').trim();
+                document.getElementById('textColor').value = getComputedStyle(document.documentElement).getPropertyValue('--main-text-color').trim();
+                document.getElementById('secondaryTextColor').value = getComputedStyle(document.documentElement).getPropertyValue('--second-text-color').trim();
+            }
+        });
+    </script>
+</body>
+</html>
