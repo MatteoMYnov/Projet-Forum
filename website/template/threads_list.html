@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/styles/thread.css?v=1.0">
+    <link rel="stylesheet" href="/styles/threads.css?v=1.0">
     <title>Threads / Y</title>
     <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
 </head>
@@ -24,10 +24,10 @@
                 <img src="../img/icon/thread-r.png" alt="Threads" class="icon">
                 <p>Threads</p>
             </a>
-            <div class="bar-button">
+            <a href="/theme" class="bar-button">
                 <img src="../img/icon/brush-r.png" alt="Theme" class="icon">
                 <p>Theme</p>
-            </div>
+            </a>
             <a href="/profile" class="bar-button">
                 <img src="../img/icon/profile-r.png" alt="Profile" class="icon">
                 <p>Profile</p>
@@ -89,6 +89,8 @@
                 <!-- Template pour thread (sera rempli dynamiquement) -->
                 <!-- 
                 <div class="thread-card" data-thread-id="1">
+                    <a href="/thread/1">
+                    </a>
                     <div class="thread-main">
                         <div class="thread-author">
                             <img src="../img/avatar/photo-profil.jpg" alt="Avatar" class="thread-avatar">
@@ -271,8 +273,40 @@
             });
         }
 
+        // Gestion des clics sur les cartes de threads
+        function setupThreadLinks() {
+            // Rendre toute la carte de thread cliquable
+            document.querySelectorAll('.thread-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Empêcher la navigation si on clique sur un lien ou bouton
+                    if (e.target.tagName === 'A' || e.target.closest('a') || 
+                        e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                        return;
+                    }
+                    
+                    const threadId = this.getAttribute('data-thread-id');
+                    if (threadId) {
+                        console.log('Navigation vers le thread:', threadId);
+                        window.location.href = `/thread/${threadId}`;
+                    }
+                });
+
+                // Ajouter un style de curseur pour indiquer que c'est cliquable
+                card.style.cursor = 'pointer';
+            });
+
+            // Garder le comportement des liens dans les titres
+            document.querySelectorAll('.thread-title a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Empêcher la propagation à la carte
+                    // Laisser le comportement par défaut du lien
+                });
+            });
+        }
+
         // Initialisation
         window.addEventListener('load', function() {
+            setupThreadLinks(); // Configurer les cartes de threads cliquables
             // setupSearch(); // Décommenter pour activer la recherche
             console.log('Page threads chargée');
         });

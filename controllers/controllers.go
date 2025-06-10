@@ -12,6 +12,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // UserRepository gère les opérations sur les utilisateurs
@@ -33,12 +34,14 @@ func (c *UserControllers) UserRouter(r *http.ServeMux) {
 	r.HandleFunc("/register", c.RegisterPage)
 	r.HandleFunc("/login", c.LoginPage)
 	r.HandleFunc("/home", c.HomePage)
-	r.HandleFunc("/theme", c.ThemePage)
+	r.HandleFunc("/theme", c.ThemePage)                  // Page de thème
 	r.HandleFunc("/profile", middleware.RequireAuth(c.ProfilePage))
 	
 	// Routes pour les threads
+	r.HandleFunc("/threads", c.ThreadsListPage)          // Liste des threads
+	r.HandleFunc("/threads_demo", c.ThreadsDemoPage)     // Page de démo
 	r.HandleFunc("/create-thread", middleware.RequireAuth(c.CreateThreadPage))
-	r.HandleFunc("/thread/", c.ThreadPage) // Pour afficher un thread spécifique
+	r.HandleFunc("/thread/", c.ThreadPage)               // Pour afficher un thread spécifique
 
 	// Handlers pour les actions
 	r.HandleFunc("/api/register", c.RegisterHandler)
@@ -78,9 +81,55 @@ func (c *UserControllers) HomePage(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "./website/template/home.html")
 }
 
-// ThemePage
+// ThemePage affiche la page de thème
 func (c *UserControllers) ThemePage(w http.ResponseWriter, r *http.Request) {
+	log.Printf("🎨 ThemePage - Affichage de la page de thème")
 	http.ServeFile(w, r, "./website/template/theme.html")
+}
+
+// ThreadsListPage affiche la liste de tous les threads
+func (c *UserControllers) ThreadsListPage(w http.ResponseWriter, r *http.Request) {
+	log.Printf("🧵 ThreadsListPage - Début de la fonction")
+
+	// Récupérer tous les threads depuis le service (page 1, 20 par page par défaut)
+	threads, err := c.threadService.GetAllThreads(1, 20)
+	if err != nil {
+		log.Printf("❌ Erreur récupération threads: %v", err)
+		http.Error(w, "Erreur serveur", http.StatusInternalServerError)
+		return
+	}
+
+	// Récupérer les catégories
+	categories, err := c.threadService.GetCategories()
+	if err != nil {
+		log.Printf("❌ Erreur récupération catégories: %v", err)
+		categories = []models.Category{} // Valeur par défaut
+	}
+
+	log.Printf("✅ ThreadsListPage - %d threads trouvés, %d catégories", len(threads), len(categories))
+
+	// Lire le template
+	templatePath := "./website/template/threads_list.html"
+	templateContent, err := os.ReadFile(templatePath)
+	if err != nil {
+		log.Printf("❌ Erreur lecture template: %v", err)
+		http.Error(w, "Erreur serveur", http.StatusInternalServerError)
+		return
+	}
+
+	// Traiter le template
+	htmlContent := string(templateContent)
+	processedHTML := processThreadsListTemplate(htmlContent, threads, categories)
+
+	// Envoyer la réponse
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write([]byte(processedHTML))
+}
+
+// ThreadsDemoPage affiche la page de démonstration
+func (c *UserControllers) ThreadsDemoPage(w http.ResponseWriter, r *http.Request) {
+	log.Printf("🎨 ThreadsDemoPage - Affichage de la page de démo")
+	http.ServeFile(w, r, "./website/template/threads_demo.html")
 }
 
 // ProfilePage affiche la page de profil (nécessite authentification)
@@ -378,6 +427,77 @@ func processProfileTemplate(htmlContent string, user *models.User) string {
 	return htmlContent
 }
 
+// processThreadDetailTemplate traite le template de détail d'un thread
+func processThreadDetailTemplate(htmlContent string, thread models.Thread) string {
+	log.Printf("🔄 Traitement template thread détail - Thread ID=%d", thread.ID)
+
+	// Récupérer le nom de l'auteur
+	authorName := "Utilisateur inconnu"
+	authorUsername := "unknown"
+	if thread.Author != nil {
+		authorName = thread.Author.Username
+		authorUsername = thread.Author.Username
+	}
+
+	// Récupérer le nom de la catégorie
+	categoryName := "Général"
+	if thread.Category != nil {
+		categoryName = thread.Category.Name
+	}
+
+	// Formater la date
+	timeAgo := formatTimeAgo(thread.CreatedAt)
+	formattedDate := thread.CreatedAt.Format("15:04 · 2 Jan 2006")
+
+	// Remplacer toutes les informations du thread
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREAD_ID%", fmt.Sprintf("%d", thread.ID))
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREAD_TITLE%", thread.Title)
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREAD_CONTENT%", thread.Content)
+	
+	// Informations de l'auteur
+	htmlContent = strings.ReplaceAll(htmlContent, "%AUTHOR_NAME%", authorName)
+	htmlContent = strings.ReplaceAll(htmlContent, "%AUTHOR_USERNAME%", authorUsername)
+	htmlContent = strings.ReplaceAll(htmlContent, "%AUTHOR_HANDLE%", "@"+authorUsername)
+	
+	// Dates et temps
+	htmlContent = strings.ReplaceAll(htmlContent, "%CREATED_AT%", formattedDate)
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREAD_TIME%", timeAgo)
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREAD_DATE%", formattedDate)
+	
+	// Statistiques
+	htmlContent = strings.ReplaceAll(htmlContent, "%VIEW_COUNT%", fmt.Sprintf("%d", thread.ViewCount))
+	htmlContent = strings.ReplaceAll(htmlContent, "%LIKE_COUNT%", fmt.Sprintf("%d", thread.LikeCount))
+	htmlContent = strings.ReplaceAll(htmlContent, "%DISLIKE_COUNT%", "0") // Pas encore implémenté
+	htmlContent = strings.ReplaceAll(htmlContent, "%MESSAGE_COUNT%", fmt.Sprintf("%d", thread.MessageCount))
+	
+	// Catégorie
+	htmlContent = strings.ReplaceAll(htmlContent, "%CATEGORY_NAME%", categoryName)
+	
+	// Tag de catégorie avec style
+	categoryTagHTML := fmt.Sprintf(`<span class="category-tag">📁 %s</span>`, categoryName)
+	htmlContent = strings.ReplaceAll(htmlContent, "%CATEGORY_TAG%", categoryTagHTML)
+	
+	// Hashtags
+	hashtagsHTML := ""
+	if len(thread.Hashtags) > 0 {
+		for _, tag := range thread.Hashtags {
+			hashtagsHTML += fmt.Sprintf(`<span class="hashtag">#%s</span>`, tag)
+		}
+	}
+	htmlContent = strings.ReplaceAll(htmlContent, "%HASHTAGS%", hashtagsHTML)
+	
+	// Messages de réponse (pour l'instant vide)
+	messagesHTML := `
+		<div style="text-align: center; padding: 40px; color: var(--second-text-color);">
+			<h3>Aucune réponse pour le moment</h3>
+			<p>Soyez le premier à répondre à ce thread !</p>
+		</div>`
+	htmlContent = strings.ReplaceAll(htmlContent, "%MESSAGES_LIST%", messagesHTML)
+	
+	log.Printf("✅ Template thread détail traité avec succès")
+	return htmlContent
+}
+
 // =====================================
 // CONTRÔLEURS POUR LES THREADS
 // =====================================
@@ -498,13 +618,24 @@ func (c *UserControllers) ThreadPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Pour l'instant, retourner une réponse JSON simple
-	// TODO: Créer un template HTML pour afficher le thread
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(models.APIResponse{
-		Success: true,
-		Data:    thread,
-	})
+	// Lire le template HTML
+	templatePath := "./website/template/thread_detail.html"
+	templateContent, err := os.ReadFile(templatePath)
+	if err != nil {
+		log.Printf("❌ Erreur lecture template: %v", err)
+		http.Error(w, "Erreur serveur", http.StatusInternalServerError)
+		return
+	}
+
+	// Traiter le template avec les données du thread
+	htmlContent := string(templateContent)
+	processedHTML := processThreadDetailTemplate(htmlContent, *thread)
+
+	log.Printf("✅ ThreadPage - Thread %d affiché avec succès", threadID)
+
+	// Envoyer la réponse
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write([]byte(processedHTML))
 }
 
 // ThreadAPI gère les requêtes API pour les threads
@@ -552,6 +683,196 @@ func (c *UserControllers) ThreadAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+}
+
+// =====================================
+// FONCTIONS HELPER POUR LES TEMPLATES
+// =====================================
+
+// processThreadsListTemplate traite le template de liste des threads
+func processThreadsListTemplate(htmlContent string, threads []models.Thread, categories []models.Category) string {
+	log.Printf("🔄 Traitement template threads - %d threads, %d catégories", len(threads), len(categories))
+
+	// Générer la liste des catégories
+	categoriesList := ""
+	for _, category := range categories {
+		categoriesList += fmt.Sprintf(`<button class="category-pill" data-category="%d">%s</button>`, 
+			category.ID, category.Name)
+	}
+
+	// Générer la liste des threads
+	threadsList := ""
+	if len(threads) == 0 {
+		threadsList = `
+		<div style="text-align: center; padding: 40px; color: #666;">
+			<h3>Aucun thread trouvé</h3>
+			<p>Soyez le premier à créer un thread !</p>
+			<a href="/create-thread" style="background-color: #17bf63; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Créer un thread</a>
+		</div>`
+	} else {
+		for _, thread := range threads {
+			// Calculer le temps relatif
+			timeAgo := formatTimeAgo(thread.CreatedAt)
+			
+			// Preview du contenu (max 150 chars)
+			preview := thread.Content
+			if len(preview) > 150 {
+				preview = preview[:150] + "..."
+			}
+
+			// Générer les hashtags
+			hashtags := ""
+			for _, tag := range thread.Hashtags {
+				hashtags += fmt.Sprintf(`<span class="hashtag">#%s</span>`, tag)
+			}
+
+			// Récupérer le nom de l'auteur
+			authorName := "Utilisateur inconnu"
+			if thread.Author != nil {
+				authorName = thread.Author.Username
+			}
+
+			// Récupérer le nom de la catégorie
+			categoryName := "Général"
+			if thread.Category != nil {
+				categoryName = thread.Category.Name
+			}
+
+			threadsList += fmt.Sprintf(`
+			<div class="thread-card" data-thread-id="%d">
+				<div class="thread-main">
+					<div class="thread-author">
+						<img src="../img/avatar/photo-profil.jpg" alt="Avatar" class="thread-avatar">
+						<div class="author-info">
+							<span class="author-name">%s</span>
+							<span class="author-handle">@%s</span>
+							<span class="thread-time">%s</span>
+						</div>
+					</div>
+					
+					<div class="thread-content">
+						<h3 class="thread-title">
+							<a href="/thread/%d">%s</a>
+						</h3>
+						<p class="thread-preview">%s</p>
+						
+						<div class="thread-tags">
+							<span class="category-tag">%s</span>
+							%s
+						</div>
+					</div>
+				</div>
+				
+				<div class="thread-stats">
+					<div class="stat-item">
+						<span class="icon">👁️</span>
+						<span class="count">%d</span>
+					</div>
+					<div class="stat-item">
+						<span class="icon">💬</span>
+						<span class="count">%d</span>
+					</div>
+					<div class="stat-item likes">
+						<span class="icon">👍</span>
+						<span class="count">%d</span>
+					</div>
+				</div>
+			</div>`,
+				thread.ID,
+				authorName,
+				authorName,
+				timeAgo,
+				thread.ID,
+				thread.Title,
+				preview,
+				categoryName,
+				hashtags,
+				thread.ViewCount,
+				thread.MessageCount,
+				thread.LikeCount,
+			)
+		}
+	}
+
+	// Statistiques (valeurs par défaut pour l'instant)
+	totalThreads := len(threads)
+	todayThreads := 0 // TODO: calculer les threads d'aujourd'hui
+	weekThreads := 0  // TODO: calculer les threads de la semaine
+
+	// Remplacer les placeholders
+	htmlContent = strings.ReplaceAll(htmlContent, "%CATEGORIES_LIST%", categoriesList)
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREADS_LIST%", threadsList)
+	htmlContent = strings.ReplaceAll(htmlContent, "%TOTAL_THREADS%", fmt.Sprintf("%d", totalThreads))
+	htmlContent = strings.ReplaceAll(htmlContent, "%TODAY_THREADS%", fmt.Sprintf("%d", todayThreads))
+	htmlContent = strings.ReplaceAll(htmlContent, "%WEEK_THREADS%", fmt.Sprintf("%d", weekThreads))
+	
+	// Trending threads (simplifié)
+	trendingThreads := ""
+	if len(threads) > 0 {
+		// Prendre les 3 premiers threads comme "trending"
+		for i, thread := range threads {
+			if i >= 3 { break }
+			trendingThreads += fmt.Sprintf(`
+			<div class="trending-item">
+				<span class="trending-title">%s</span>
+				<span class="trending-stats">%d 👍 • %d 💬</span>
+			</div>`,
+				thread.Title,
+				thread.LikeCount,
+				thread.MessageCount,
+			)
+		}
+	}
+	htmlContent = strings.ReplaceAll(htmlContent, "%TRENDING_THREADS%", trendingThreads)
+
+	// Catégories populaires
+	popularCategories := ""
+	categoryCount := make(map[string]int)
+	for _, thread := range threads {
+		categoryName := "Général"
+		if thread.Category != nil {
+			categoryName = thread.Category.Name
+		}
+		categoryCount[categoryName]++
+	}
+	
+	for categoryName, count := range categoryCount {
+		popularCategories += fmt.Sprintf(`
+		<div class="category-item">
+			<span class="category-icon">📂</span>
+			<span class="category-name">%s</span>
+			<span class="category-count">%d</span>
+		</div>`,
+			categoryName,
+			count,
+		)
+	}
+	htmlContent = strings.ReplaceAll(htmlContent, "%POPULAR_CATEGORIES%", popularCategories)
+
+	return htmlContent
+}
+
+// formatTimeAgo formate une date en temps relatif
+func formatTimeAgo(createdAt time.Time) string {
+	now := time.Now()
+	diff := now.Sub(createdAt)
+
+	if diff < time.Minute {
+		return "à l'instant"
+	} else if diff < time.Hour {
+		minutes := int(diff.Minutes())
+		return fmt.Sprintf("il y a %d min", minutes)
+	} else if diff < time.Hour*24 {
+		hours := int(diff.Hours())
+		return fmt.Sprintf("il y a %d h", hours)
+	} else {
+		days := int(diff.Hours() / 24)
+		if days == 1 {
+			return "il y a 1 jour"
+		} else {
+			return fmt.Sprintf("il y a %d jours", days)
+		}
+	}
 }
 
 

@@ -46,9 +46,10 @@
                 <div id="guest-welcome" style="margin-top: 20px; padding: 15px; background-color: var(--main-color-hover); border-radius: 10px;">
                     <h3>Pas encore membre ?</h3>
                     <p>Créez votre compte pour accéder à toutes les fonctionnalités du forum.</p>
-                    <div style="margin-top: 15px;">
-                        <a href="/register" style="background-color: #1da1f2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-right: 10px;">S'inscrire</a>
-                        <a href="/login" style="border: 1px solid #1da1f2; color: #1da1f2; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Se connecter</a>
+                    <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <a href="/register" style="background-color: var(--main-color); color: var(--main-text-color); padding: 10px 20px; text-decoration: none; border-radius: 5px; border: 1px solid var(--border-color);">S'inscrire</a>
+                        <a href="/login" style="background-color: var(--main-color); color: var(--main-text-color); padding: 10px 20px; text-decoration: none; border-radius: 5px; border: 1px solid var(--border-color);">Se connecter</a>
+                        <a href="/threads" style="background-color: var(--main-color); color: var(--main-text-color); padding: 10px 20px; text-decoration: none; border-radius: 5px; border: 1px solid var(--border-color);">🧵 Voir les threads</a>
                     </div>
                 </div>
             </div>
@@ -81,8 +82,8 @@
                         <h3>Bonjour ${user.username} ! 👋</h3>
                         <p>Bon retour sur le forum. Découvrez les dernières discussions et participez aux conversations.</p>
                         <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-                            <a href="/profile" style="background-color: #1da1f2; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block;">Voir mon profil</a>
-                            <a href="/create-thread" style="background-color: #17bf63; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block;">✏️ Créer un thread</a>
+                            <a href="/threads" style="background-color: var(--main-color); color: var(--main-text-color); padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block; border: 1px solid var(--border-color);">🧵 Voir les threads</a>
+                            <a href="/create-thread" style="background-color: var(--main-color); color: var(--main-text-color); padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block; border: 1px solid var(--border-color);">✏️ Créer un thread</a>
                         </div>
                     `;
                     
@@ -117,6 +118,5 @@
         // Charger le statut d'authentification au chargement de la page
         window.addEventListener('load', checkAuthStatus);
     </script>
-    <script src="/js/theme_loader.js"></script>
 </body>
 </html>
