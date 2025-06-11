@@ -18,6 +18,7 @@ type Thread struct {
 	ViewCount     int         `json:"view_count" db:"view_count"`
 	LikeCount     int         `json:"like_count" db:"like_count"`
 	DislikeCount  int         `json:"dislike_count" db:"dislike_count"`
+	LoveCount     int         `json:"love_count" db:"love_count"`
 	MessageCount  int         `json:"message_count" db:"message_count"`
 	LastActivity  time.Time   `json:"last_activity" db:"last_activity"`
 	

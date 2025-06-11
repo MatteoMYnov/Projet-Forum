@@ -1,0 +1,35 @@
+/* ====================================== */
+/* VARIABLES CSS GLOBALES - VALEURS PAR DÉFAUT */
+/* ====================================== */
+
+/* Ces valeurs par défaut sont appliquées au chargement de chaque page */
+/* Elles peuvent être écrasées dynamiquement par le système de thème */
+
+:root {
+    /* Variables principales */
+    --main-color: #000000;
+    --main-color-hover: #181818;
+    --main-text-color: #DBDDDE;
+    --second-text-color: #71767B;
+    
+    /* Variables de bordure (compatibilité) */
+    --main-border-color: #2F3336;
+    --border-color: #2F3336;
+    
+    /* Variables spécifiques à thread.css */
+    --primary-bg: #000000;
+    --secondary-bg: #181818;
+    --card-bg: #181818;
+    --hover-bg: #181818;
+    --main-text: #DBDDDE;
+    --secondary-text: #71767B;
+    --muted-text: #71767B;
+    
+    /* Variables fixes qui ne changent jamais */
+    --accent-blue: #1da1f2;
+    --accent-green: #17bf63;
+    --accent-red: #f4212e;
+    --accent-orange: #ffb347;
+    --border-radius: 8px;
+    --transition: all 0.2s ease;
+} 

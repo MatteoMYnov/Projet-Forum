@@ -145,4 +145,48 @@ func (s *ThreadService) ProcessHashtagsFromRequest(hashtagsInput string) []strin
 
 	// Traiter la chaîne d'hashtags
 	return repositories.ProcessHashtags(hashtagsInput)
+}
+
+// GetThreadsWithPagination récupère les threads avec métadonnées de pagination
+func (s *ThreadService) GetThreadsWithPagination(page, limit int) ([]models.Thread, *models.Meta, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 20 // Limite par défaut
+	}
+
+	// Récupérer le total
+	totalCount, err := s.threadRepo.GetTotalCount()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Calculer le nombre total de pages
+	totalPages := (totalCount + limit - 1) / limit
+	if totalPages < 1 {
+		totalPages = 1
+	}
+
+	// Vérifier que la page demandée n'est pas au-delà du total
+	if page > totalPages {
+		page = totalPages
+	}
+
+	// Récupérer les threads
+	offset := (page - 1) * limit
+	threads, err := s.threadRepo.GetAll(limit, offset)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Créer les métadonnées
+	meta := &models.Meta{
+		Page:       page,
+		PerPage:    limit,
+		TotalPages: totalPages,
+		TotalCount: totalCount,
+	}
+
+	return threads, meta, nil
 } 

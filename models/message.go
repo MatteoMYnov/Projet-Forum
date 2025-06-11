@@ -15,6 +15,7 @@ type Message struct {
 	UpdatedAt       time.Time `json:"updated_at" db:"updated_at"`
 	LikeCount       int       `json:"like_count" db:"like_count"`
 	DislikeCount    int       `json:"dislike_count" db:"dislike_count"`
+	LoveCount       int       `json:"love_count" db:"love_count"`
 	IsEdited        bool      `json:"is_edited" db:"is_edited"`
 
 	// Relations

@@ -66,7 +66,7 @@ func (r *ThreadRepository) GetByID(threadID int) (*models.Thread, error) {
 	query := `
 		SELECT t.id_thread, t.title, t.content, t.author_id, t.category_id, t.status,
 		       t.created_at, t.updated_at, t.is_pinned, t.view_count, t.like_count,
-		       t.dislike_count, t.message_count, t.last_activity,
+		       t.dislike_count, t.love_count, t.message_count, t.last_activity,
 		       u.username, u.email
 		FROM threads t
 		JOIN users u ON t.author_id = u.id_user
@@ -89,6 +89,7 @@ func (r *ThreadRepository) GetByID(threadID int) (*models.Thread, error) {
 		&thread.ViewCount,
 		&thread.LikeCount,
 		&thread.DislikeCount,
+		&thread.LoveCount,
 		&thread.MessageCount,
 		&thread.LastActivity,
 		&author.Username,
@@ -114,7 +115,7 @@ func (r *ThreadRepository) GetAll(limit, offset int) ([]models.Thread, error) {
 	query := `
 		SELECT t.id_thread, t.title, t.content, t.author_id, t.category_id, t.status,
 		       t.created_at, t.updated_at, t.is_pinned, t.view_count, t.like_count,
-		       t.dislike_count, t.message_count, t.last_activity,
+		       t.dislike_count, t.love_count, t.message_count, t.last_activity,
 		       u.username, u.email
 		FROM threads t
 		JOIN users u ON t.author_id = u.id_user
@@ -146,6 +147,7 @@ func (r *ThreadRepository) GetAll(limit, offset int) ([]models.Thread, error) {
 			&thread.ViewCount,
 			&thread.LikeCount,
 			&thread.DislikeCount,
+			&thread.LoveCount,
 			&thread.MessageCount,
 			&thread.LastActivity,
 			&author.Username,
@@ -171,7 +173,7 @@ func (r *ThreadRepository) GetByUserID(userID int, limit, offset int) ([]models.
 	query := `
 		SELECT t.id_thread, t.title, t.content, t.author_id, t.category_id, t.status,
 		       t.created_at, t.updated_at, t.is_pinned, t.view_count, t.like_count,
-		       t.dislike_count, t.message_count, t.last_activity,
+		       t.dislike_count, t.love_count, t.message_count, t.last_activity,
 		       u.username, u.email
 		FROM threads t
 		JOIN users u ON t.author_id = u.id_user
@@ -204,6 +206,7 @@ func (r *ThreadRepository) GetByUserID(userID int, limit, offset int) ([]models.
 			&thread.ViewCount,
 			&thread.LikeCount,
 			&thread.DislikeCount,
+			&thread.LoveCount,
 			&thread.MessageCount,
 			&thread.LastActivity,
 			&author.Username,
@@ -230,6 +233,25 @@ func (r *ThreadRepository) UpdateViewCount(threadID int) error {
 	_, err := r.db.Exec(query, threadID)
 	if err != nil {
 		return fmt.Errorf("erreur mise à jour vue: %v", err)
+	}
+	return nil
+}
+
+// UpdateMessageCount met à jour le nombre de messages d'un thread
+func (r *ThreadRepository) UpdateMessageCount(threadID int) error {
+	query := `
+		UPDATE threads t 
+		SET message_count = (
+			SELECT COUNT(*) 
+			FROM messages m 
+			WHERE m.thread_id = t.id_thread
+		), 
+		last_activity = NOW()
+		WHERE t.id_thread = ?
+	`
+	_, err := r.db.Exec(query, threadID)
+	if err != nil {
+		return fmt.Errorf("erreur mise à jour nombre messages: %v", err)
 	}
 	return nil
 }
@@ -298,4 +320,17 @@ func ProcessHashtags(content string) []string {
 	}
 	
 	return hashtags
+}
+
+// GetTotalCount récupère le nombre total de threads actifs
+func (r *ThreadRepository) GetTotalCount() (int, error) {
+	query := `SELECT COUNT(*) FROM threads WHERE status = 'active'`
+	
+	var count int
+	err := r.db.QueryRow(query).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("erreur compte threads: %v", err)
+	}
+	
+	return count, nil
 } 

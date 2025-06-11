@@ -3,14 +3,7 @@
 /* ====================================== */
 
 :root {
-    --primary-bg: #0a0a0a;
-    --secondary-bg: #121212;
-    --card-bg: #1a1a1a;
-    --hover-bg: #222222;
-    --border-color: #333333;
-    --main-text: #ffffff;
-    --secondary-text: #b3b3b3;
-    --muted-text: #666666;
+    /* Variables fixes qui ne changent pas avec le thème */
     --accent-blue: #1da1f2;
     --accent-green: #17bf63;
     --accent-red: #f4212e;
@@ -421,6 +414,28 @@ body {
 .page-dots {
     color: var(--muted-text);
     padding: 0 5px;
+}
+
+/* États de pagination */
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--border-color);
+}
+
+.page-btn:disabled:hover {
+    background-color: var(--border-color);
+    border-color: var(--border-color);
+}
+
+.pagination-loader {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
 }
 
 /* ====================================== */

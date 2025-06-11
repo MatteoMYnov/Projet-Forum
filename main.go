@@ -36,7 +36,7 @@ func main() {
 	// 📂 Serveur de fichiers statiques
 
 	// 🌐 Routes principales (pages HTML)
-	setupPageRoutes()
+	setupPageRoutes(userController)
 
 	/* // 🔗 Routes API (authentification et données)
 	setupAPIRoutes()
@@ -70,7 +70,7 @@ func setupStaticFiles(r *http.ServeMux) {
 }
 
 // setupPageRoutes configure les routes des pages HTML
-func setupPageRoutes() {
+func setupPageRoutes(userController *controllers.UserControllers) {
 	// Redirection racine
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" {
@@ -80,7 +80,23 @@ func setupPageRoutes() {
 		http.NotFound(w, r)
 	})
 
+	// Pages principales
+	http.HandleFunc("/home", userController.HomePage)
+	http.HandleFunc("/login", userController.LoginPage)
+	http.HandleFunc("/register", userController.RegisterPage)
+	http.HandleFunc("/profile", userController.ProfilePage)
+	http.HandleFunc("/theme", userController.ThemePage)
+	http.HandleFunc("/threads", userController.ThreadsListPage)
+	http.HandleFunc("/threads-demo", userController.ThreadsDemoPage)
+	http.HandleFunc("/create-thread", userController.CreateThreadPage)
+	http.HandleFunc("/thread/", userController.ThreadPage)
+
 	log.Println("🌐 Routes des pages configurées")
+}
+
+// requireAuth est un middleware pour protéger les routes (temporairement désactivé)
+func requireAuth(handler http.HandlerFunc) http.HandlerFunc {
+	return handler // Pour l'instant, on laisse passer tout le monde
 }
 
 /* // setupAPIRoutes configure les routes API

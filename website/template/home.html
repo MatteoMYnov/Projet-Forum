@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/variables.css?v=1.0">
     <link rel="stylesheet" href="/styles/home.css?v=1.0">
     <title>Home / Y</title>
     <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
@@ -26,10 +27,6 @@
                 <p>Profile</p>
             </a>
             <div class="account">
-                <!-- Zone pour les boutons de connexion/déconnexion -->
-                <div id="auth-buttons" style="padding: 10px;">
-                    <!-- Les boutons seront ajoutés dynamiquement par JavaScript -->
-                </div>
             </div>
         </div>
     </div>
@@ -58,11 +55,10 @@
     </div>
 
     <script>
-        // Vérifier si l'utilisateur est connecté
-        async function checkAuthStatus() {
+        // Logique spécifique à la page d'accueil
+        async function setupHomePageContent() {
             try {
                 const response = await fetch('/api/profile');
-                const authButtons = document.getElementById('auth-buttons');
                 const userWelcome = document.getElementById('user-welcome');
                 const guestWelcome = document.getElementById('guest-welcome');
                 
@@ -70,14 +66,7 @@
                     const data = await response.json();
                     const user = data.data;
                     
-                    // Utilisateur connecté
-                    authButtons.innerHTML = `
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <span style="color: var(--main-text-color); font-size: 0.9rem;">@${user.username}</span>
-                            <a href="/api/logout" style="color: var(--second-text-color); font-size: 0.8rem; text-decoration: none;">Déconnexion</a>
-                        </div>
-                    `;
-                    
+                    // Utilisateur connecté - contenu personnalisé
                     userWelcome.innerHTML = `
                         <h3>Bonjour ${user.username} ! 👋</h3>
                         <p>Bon retour sur le forum. Découvrez les dernières discussions et participez aux conversations.</p>
@@ -91,32 +80,26 @@
                     guestWelcome.style.display = 'none';
                     
                 } else {
-                    // Utilisateur non connecté
-                    authButtons.innerHTML = `
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <a href="/login" style="color: var(--main-text-color); font-size: 0.9rem; text-decoration: none;">Connexion</a>
-                            <a href="/register" style="color: var(--second-text-color); font-size: 0.8rem; text-decoration: none;">Inscription</a>
-                        </div>
-                    `;
-                    
+                    // Utilisateur non connecté - contenu pour invité
                     userWelcome.style.display = 'none';
                     guestWelcome.style.display = 'block';
                 }
             } catch (error) {
                 console.log('Utilisateur non connecté');
-                // Afficher les boutons pour invité
-                const authButtons = document.getElementById('auth-buttons');
-                authButtons.innerHTML = `
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <a href="/login" style="color: var(--main-text-color); font-size: 0.9rem; text-decoration: none;">Connexion</a>
-                        <a href="/register" style="color: var(--second-text-color); font-size: 0.8rem; text-decoration: none;">Inscription</a>
-                    </div>
-                `;
+                // Afficher le contenu pour invité
+                const userWelcome = document.getElementById('user-welcome');
+                const guestWelcome = document.getElementById('guest-welcome');
+                userWelcome.style.display = 'none';
+                guestWelcome.style.display = 'block';
             }
         }
         
-        // Charger le statut d'authentification au chargement de la page
-        window.addEventListener('load', checkAuthStatus);
+        // Charger le contenu spécifique à la page d'accueil
+        window.addEventListener('load', setupHomePageContent);
     </script>
+    
+    <!-- Scripts pour thème et authentification -->
+    <script src="../js/theme_loader.js"></script>
+    <script src="../js/auth-handler.js"></script>
 </body>
 </html>

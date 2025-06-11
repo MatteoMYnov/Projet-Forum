@@ -21,7 +21,7 @@
                 <p>Home</p>
             </a>
             <a href="/threads" class="bar-button active">
-                <img src="../img/icon/thread-r.png" alt="Threads" class="icon">
+                <img src="../img/icon/icon_threads.svg" alt="Threads" class="icon">
                 <p>Threads</p>
             </a>
             <a href="/theme" class="bar-button">
@@ -54,31 +54,9 @@
             <div class="threads-filters">
                 <div class="filter-section">
                     <button class="filter-btn active" data-filter="all">Tous</button>
-                    <button class="filter-btn" data-filter="popular">Populaires</button>
-                    <button class="filter-btn" data-filter="recent">Récents</button>
-                    <button class="filter-btn" data-filter="trending">Tendances</button>
-                </div>
-                
-                <div class="sort-section">
-                    <select class="sort-select" id="sortBy">
-                        <option value="recent">Plus récents</option>
-                        <option value="popular">Plus populaires</option>
-                        <option value="views">Plus vus</option>
-                        <option value="replies">Plus de réponses</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Catégories rapides -->
-            <div class="categories-bar">
-                <div class="category-pills">
-                    <button class="category-pill active" data-category="all">Toutes</button>
-                    %CATEGORIES_LIST%
-                    <!-- Exemple de catégories (sera remplacé dynamiquement) -->
-                    <!-- 
-                    <button class="category-pill" data-category="1">🎮 Gaming</button>
-                    <button class="category-pill" data-category="2">💻 Tech</button>
-                    -->
+                    <button class="filter-btn" data-filter="recent">Plus récents</button>
+                    <button class="filter-btn" data-filter="views">Plus vus</button>
+                    <button class="filter-btn" data-filter="comments">Plus de commentaires</button>
                 </div>
             </div>
 
@@ -134,17 +112,7 @@
             </div>
 
             <!-- Pagination -->
-            <div class="pagination">
-                <button class="page-btn" id="prevPage">← Précédent</button>
-                <div class="page-numbers">
-                    <button class="page-num active">1</button>
-                    <button class="page-num">2</button>
-                    <button class="page-num">3</button>
-                    <span class="page-dots">...</span>
-                    <button class="page-num">10</button>
-                </div>
-                <button class="page-btn" id="nextPage">Suivant →</button>
-            </div>
+            %PAGINATION%
         </div>
 
         <!-- Sidebar droite -->
@@ -197,119 +165,14 @@
         </div>
     </div>
 
-    <script>
-        // Gestion des filtres
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Retirer active de tous les boutons
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                // Ajouter active au bouton cliqué
-                this.classList.add('active');
-                
-                const filter = this.dataset.filter;
-                filterThreads(filter);
-            });
-        });
-
-        // Gestion des catégories
-        document.querySelectorAll('.category-pill').forEach(pill => {
-            pill.addEventListener('click', function() {
-                document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
-                this.classList.add('active');
-                
-                const category = this.dataset.category;
-                filterByCategory(category);
-            });
-        });
-
-        // Gestion du tri
-        document.getElementById('sortBy').addEventListener('change', function() {
-            const sortBy = this.value;
-            sortThreads(sortBy);
-        });
-
-        // Fonctions de filtrage et tri
-        function filterThreads(filter) {
-            console.log('Filtrage par:', filter);
-            // TODO: Implémenter le filtrage via API
-        }
-
-        function filterByCategory(category) {
-            console.log('Filtrage par catégorie:', category);
-            // TODO: Implémenter le filtrage par catégorie
-        }
-
-        function sortThreads(sortBy) {
-            console.log('Tri par:', sortBy);
-            // TODO: Implémenter le tri via API
-        }
-
-        // Recherche en temps réel (optionnelle)
-        function setupSearch() {
-            const searchInput = document.createElement('input');
-            searchInput.type = 'text';
-            searchInput.placeholder = 'Rechercher des threads...';
-            searchInput.className = 'search-input';
-            
-            document.querySelector('.threads-filters').appendChild(searchInput);
-            
-            searchInput.addEventListener('input', function() {
-                const query = this.value.toLowerCase();
-                searchThreads(query);
-            });
-        }
-
-        function searchThreads(query) {
-            const threads = document.querySelectorAll('.thread-card');
-            threads.forEach(thread => {
-                const title = thread.querySelector('.thread-title').textContent.toLowerCase();
-                const preview = thread.querySelector('.thread-preview').textContent.toLowerCase();
-                
-                if (title.includes(query) || preview.includes(query)) {
-                    thread.style.display = 'block';
-                } else {
-                    thread.style.display = 'none';
-                }
-            });
-        }
-
-        // Gestion des clics sur les cartes de threads
-        function setupThreadLinks() {
-            // Rendre toute la carte de thread cliquable
-            document.querySelectorAll('.thread-card').forEach(card => {
-                card.addEventListener('click', function(e) {
-                    // Empêcher la navigation si on clique sur un lien ou bouton
-                    if (e.target.tagName === 'A' || e.target.closest('a') || 
-                        e.target.tagName === 'BUTTON' || e.target.closest('button')) {
-                        return;
-                    }
-                    
-                    const threadId = this.getAttribute('data-thread-id');
-                    if (threadId) {
-                        console.log('Navigation vers le thread:', threadId);
-                        window.location.href = `/thread/${threadId}`;
-                    }
-                });
-
-                // Ajouter un style de curseur pour indiquer que c'est cliquable
-                card.style.cursor = 'pointer';
-            });
-
-            // Garder le comportement des liens dans les titres
-            document.querySelectorAll('.thread-title a').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.stopPropagation(); // Empêcher la propagation à la carte
-                    // Laisser le comportement par défaut du lien
-                });
-            });
-        }
-
-        // Initialisation
-        window.addEventListener('load', function() {
-            setupThreadLinks(); // Configurer les cartes de threads cliquables
-            // setupSearch(); // Décommenter pour activer la recherche
-            console.log('Page threads chargée');
-        });
-    </script>
+    <!-- Script de filtrage simple -->
+    <script src="../js/threads-simple-filter.js"></script>
+    
+    <!-- Script pour pagination -->
+    <script src="../js/pagination.js"></script>
+    
+    <!-- Scripts pour thème et authentification -->
+    <script src="../js/theme_loader.js"></script>
+    <script src="../js/auth-handler.js"></script>
 </body>
 </html> 

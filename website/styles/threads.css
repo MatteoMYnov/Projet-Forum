@@ -2,14 +2,10 @@
 /* IMPORTS ET VARIABLES CSS */
 /* ====================================== */
 
-/* Variables CSS de base (comme home.css) */
+/* Variables CSS de base - définies par le système de thème global */
+/* Les couleurs principales sont gérées dynamiquement par theme_loader.js */
 :root {
-    --main-color: #000000;
-    --main-color-hover: #181818;
-    --main-border-color: #2F3336;
-    --main-text-color: #DBDDDE;
-    --second-text-color: #71767B;
-    --border-color: #2F3336;
+    /* Variables fixes qui ne changent pas avec le thème */
     --accent-blue: #1da1f2;
     --accent-green: #17bf63;
     --accent-red: #f4212e;
@@ -459,6 +455,28 @@ body {
 .page-dots {
     color: var(--second-text-color);
     padding: 8px 4px;
+}
+
+/* États de pagination */
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--border-color);
+}
+
+.page-btn:disabled:hover {
+    background-color: var(--border-color);
+    border-color: var(--border-color);
+}
+
+.pagination-loader {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
 }
 
 /* ====================================== */

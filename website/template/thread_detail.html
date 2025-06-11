@@ -21,7 +21,7 @@
                 <p>Home</p>
             </a>
             <a href="/threads" class="bar-button">
-                <img src="../img/icon/thread-r.png" alt="Threads" class="icon">
+                <img src="../img/icon/icon_threads.svg" alt="Threads" class="icon">
                 <p>Threads</p>
             </a>
             <a href="/theme" class="bar-button">
@@ -51,7 +51,7 @@
             </div>
 
             <!-- Thread principal -->
-            <div class="thread-detail">
+            <div class="thread-detail" data-thread-id="%THREAD_ID%">
                 <!-- En-tête du thread -->
                 <div class="thread-header">
                     <div class="thread-meta">
@@ -86,13 +86,17 @@
                 <!-- Actions du thread -->
                 <div class="thread-stats">
                     <div class="thread-reactions">
-                        <button class="reaction-btn like-btn" data-action="like">
+                        <button class="reaction-btn like-btn" data-action="like" title="J'aime">
                             <span class="icon">👍</span>
                             <span class="count">%LIKE_COUNT%</span>
                         </button>
-                        <button class="reaction-btn dislike-btn" data-action="dislike">
+                        <button class="reaction-btn dislike-btn" data-action="dislike" title="Je n'aime pas">
                             <span class="icon">👎</span>
                             <span class="count">%DISLIKE_COUNT%</span>
+                        </button>
+                        <button class="reaction-btn love-btn" data-action="love" title="J'adore">
+                            <span class="icon">❤️</span>
+                            <span class="count">0</span>
                         </button>
                         <div class="reply-count">
                             <span class="icon">💬</span>
@@ -168,6 +172,9 @@
         </div>
     </div>
 
+    <!-- Script de gestion des réactions -->
+    <script src="../js/reactions.js"></script>
+    
     <script>
         // Compteur de caractères pour la réponse
         const textarea = document.querySelector('.reply-form textarea');
@@ -186,16 +193,12 @@
             }
         });
 
-        // Gestion des réactions
-        document.querySelectorAll('.reaction-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const action = this.dataset.action;
-                const threadId = '%THREAD_ID%';
-                
-                // TODO: Implémenter l'API pour les réactions
-                console.log(`Action: ${action} sur thread ${threadId}`);
-            });
-        });
+        // Gestion des réactions - maintenant gérée par reactions.js
+        // Le script reactions.js se charge automatiquement de cette fonctionnalité
     </script>
+    
+    <!-- Scripts pour thème et authentification -->
+    <script src="../js/theme_loader.js"></script>
+    <script src="../js/auth-handler.js"></script>
 </body>
 </html> 
