@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/variables.css">
+    <link rel="stylesheet" href="/styles/threads.css?v=1.0">
+    <title>Administration des Threads / Y</title>
+    <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+        
+        .admin-header h1 {
+            color: #fff;
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        
+        .admin-header p {
+            color: #888;
+            margin: 0;
+        }
+        
+        .threads-admin-list {
+            background: #1a1a1a;
+            border-radius: 15px;
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+        
+        .thread-admin-item {
+            padding: 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .thread-admin-item:last-child {
+            border-bottom: none;
+        }
+        
+        .thread-info {
+            flex: 1;
+        }
+        
+        .thread-title {
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .thread-meta {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .thread-content-preview {
+            color: #ccc;
+            font-size: 14px;
+            margin-bottom: 10px;
+            max-width: 500px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .thread-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .threads-admin-list {
+            background: #1a1a1a;
+            border-radius: 15px;
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+        
+        .thread-status-display {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        
+        .status-open {
+            background-color: rgba(29, 155, 240, 0.2);
+            color: #1d9bf0;
+        }
+        
+        .status-closed {
+            background-color: rgba(255, 179, 71, 0.2);
+            color: #ffb347;
+        }
+        
+        .status-archived {
+            background-color: rgba(116, 116, 116, 0.2);
+            color: #747474;
+        }
+        
+        .thread-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .admin-btn {
+            padding: 8px 16px;
+            border: 1px solid #555;
+            border-radius: 6px;
+            background: #333;
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 5px;
+        }
+        
+        .admin-btn:hover {
+            background: #444;
+            border-color: #777;
+        }
+        
+        .btn-view {
+            background: #1d9bf0;
+            border-color: #1d9bf0;
+        }
+        
+        .btn-view:hover {
+            background: #1a8cd8;
+        }
+        
+        .btn-close {
+            background: #ffb347;
+            border-color: #ffb347;
+            color: #000;
+        }
+        
+        .btn-close:hover {
+            background: #ffa726;
+        }
+        
+        .btn-archive {
+            background: #747474;
+            border-color: #747474;
+        }
+        
+        .btn-archive:hover {
+            background: #616161;
+        }
+        
+        .btn-reopen {
+            background: #4caf50;
+            border-color: #4caf50;
+        }
+        
+        .btn-reopen:hover {
+            background: #45a049;
+        }
+        
+        .btn-delete {
+            background: #f44336;
+            border-color: #f44336;
+        }
+        
+        .btn-delete:hover {
+            background: #da190b;
+        }
+        
+        .filters {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 6px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn.active {
+            background: #1d9bf0;
+            border-color: #1d9bf0;
+        }
+        
+        .search-box {
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #1d9bf0;
+        }
+        
+        .no-threads {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        
+        /* Styles pour la navigation séparée */
+        .nav-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        
+        .nav-section-top {
+            margin-bottom: 0;
+        }
+        
+        .nav-section-bottom {
+            margin-top: 0;
+        }
+        
+        .nav-separator {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            margin: 20px 10px;
+            position: relative;
+        }
+        
+        .nav-separator::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: -2px;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 50%;
+        }
+        
+        /* Styles pour le bouton de déconnexion */
+        .logout-btn {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: #2c2c2c;
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .logout-btn:hover {
+            background-color: #404040;
+        }
+        
+        .logout-icon {
+            font-size: 16px;
+            color: #ff9500;
+        }
+        
+        .logout-btn p {
+            font-size: 14px;
+            color: #ffffff;
+            margin: 0;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+    <!-- ===================== -->
+    <!-- COLONNE DE GAUCHE (BANNIÈRE + BAR) -->
+    <!-- ===================== -->
+    <div class="banner">
+        <div class="bar">
+            <div class="logo-button">
+                <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo">
+            </div>
+            <!-- Section navigation principale (haut) -->
+            <div class="nav-section nav-section-top">
+                <a href="/home" class="bar-button">
+                    <img src="/img/icon/home-r.png" alt="Home" class="icon">
+                    <p>Home</p>
+                </a>
+                <a href="/theme" class="bar-button">
+                    <img src="/img/icon/brush-r.png" alt="Theme" class="icon">
+                    <p>Theme</p>
+                </a>
+                <a href="/profile" class="bar-button">
+                    <img src="/img/icon/profile-r.png" alt="Profile" class="icon">
+                    <p>Profile</p>
+                </a>
+            </div>
+            
+            <!-- Séparateur -->
+            <div class="nav-separator"></div>
+            
+            <!-- Section threads (bas) -->
+            <div class="nav-section nav-section-bottom">
+                <a href="/threads" class="bar-button">
+                    <img src="/img/icon/icon_threads.svg" alt="Threads" class="icon">
+                    <p>Threads</p>
+                </a>
+                <a href="/my-threads" class="bar-button">
+                    <img src="/img/icon/icon_threads.svg" alt="Mes Threads" class="icon">
+                    <p>Mes Threads</p>
+                </a>
+            </div>
+            <div class="account">
+                <div class="account-info">
+                    <button onclick="logout()" class="logout-btn">
+                        <span class="logout-icon">🚪</span>
+                        <p>Déconnexion</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== -->
+    <!-- CONTENU PRINCIPAL -->
+    <!-- ===================== -->
+    <div class="container">
+        <div class="admin-container">
+            <!-- En-tête d'administration -->
+            <div class="admin-header">
+                <h1>🛠️ Administration des Threads</h1>
+                <p>Gérez l'état et la visibilité de tous les threads du forum</p>
+            </div>
+
+            <!-- Recherche et filtres -->
+            <div class="search-box">
+                <input type="text" class="search-input" id="search-threads" 
+                       placeholder="Rechercher un thread par titre ou auteur...">
+            </div>
+
+            <div class="filters">
+                <button class="filter-btn active" data-status="all">Tous</button>
+                <button class="filter-btn" data-status="open">Ouverts</button>
+                <button class="filter-btn" data-status="closed">Fermés</button>
+                <button class="filter-btn" data-status="archived">Archivés</button>
+            </div>
+
+            <!-- Liste des threads -->
+            <div class="threads-admin-list" id="threads-list">
+                <div class="loading">
+                    <p>Chargement des threads...</p>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div id="admin-pagination" style="margin-top: 20px;">
+                <!-- Pagination sera injectée par JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        class ThreadAdmin {
+            constructor() {
+                this.currentPage = 1;
+                this.currentFilter = 'all';
+                this.searchQuery = '';
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.loadThreads();
+            }
+
+            bindEvents() {
+                // Filtres
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelector('.filter-btn.active').classList.remove('active');
+                        e.target.classList.add('active');
+                        this.currentFilter = e.target.dataset.status;
+                        this.currentPage = 1;
+                        this.loadThreads();
+                    });
+                });
+
+                // Recherche
+                const searchInput = document.getElementById('search-threads');
+                let searchTimeout;
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        this.searchQuery = e.target.value;
+                        this.currentPage = 1;
+                        this.loadThreads();
+                    }, 500);
+                });
+
+                // Actions sur les threads
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('admin-action')) {
+                        this.handleThreadAction(e.target);
+                    }
+                });
+            }
+
+            async loadThreads() {
+                const listContainer = document.getElementById('threads-list');
+                listContainer.innerHTML = '<div class="loading"><p>Chargement...</p></div>';
+
+                try {
+                    const params = new URLSearchParams({
+                        page: this.currentPage,
+                        limit: 10,
+                        status: this.currentFilter,
+                        search: this.searchQuery
+                    });
+
+                    const response = await fetch(`/api/admin/threads?${params}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.renderThreads(data.data.threads, data.data.meta);
+                    } else {
+                        listContainer.innerHTML = '<div class="no-threads"><p>Erreur de chargement</p></div>';
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    listContainer.innerHTML = '<div class="no-threads"><p>Erreur de connexion</p></div>';
+                }
+            }
+
+            renderThreads(threads, meta) {
+                const listContainer = document.getElementById('threads-list');
+                
+                if (threads.length === 0) {
+                    listContainer.innerHTML = '<div class="no-threads"><p>Aucun thread trouvé</p></div>';
+                    return;
+                }
+
+                const threadsHTML = threads.map(thread => {
+                    const statusClass = `status-${thread.status}`;
+                    const statusLabel = this.getStatusLabel(thread.status);
+                    const preview = thread.content.length > 100 ? 
+                        thread.content.substring(0, 100) + '...' : thread.content;
+
+                    return `
+                    <div class="thread-admin-item" data-thread-id="${thread.id}">
+                        <div class="thread-info">
+                            <div class="thread-title">${thread.title}</div>
+                            <div class="thread-meta">
+                                Par @${thread.author?.username || 'Inconnu'} • 
+                                ${this.formatDate(thread.created_at)} • 
+                                ${thread.view_count} vues • 
+                                ${thread.message_count} réponses
+                            </div>
+                            <div class="thread-content-preview">${preview}</div>
+                            <div class="thread-stats">
+                                <span>👍 ${thread.like_count}</span>
+                                <span>👎 ${thread.dislike_count}</span>
+                                <span>❤️ ${thread.love_count}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="thread-actions">
+                            <span class="thread-status-display ${statusClass}">
+                                ${statusLabel}
+                            </span>
+                            
+                            <a href="/thread/${thread.id}" class="admin-btn btn-view" target="_blank">
+                                👁️ Voir
+                            </a>
+                            
+                            ${this.getActionButtons(thread)}
+                        </div>
+                    </div>`;
+                }).join('');
+
+                listContainer.innerHTML = threadsHTML;
+                this.renderPagination(meta);
+            }
+
+            getStatusLabel(status) {
+                switch(status) {
+                    case 'open': return 'Ouvert';
+                    case 'closed': return 'Fermé';
+                    case 'archived': return 'Archivé';
+                    default: return status;
+                }
+            }
+
+            getActionButtons(thread) {
+                let buttons = '';
+                
+                if (thread.status === 'open') {
+                    buttons += `
+                    <button class="admin-btn btn-close admin-action" 
+                            data-action="close" data-thread-id="${thread.id}">
+                        🔒 Fermer
+                    </button>
+                    <button class="admin-btn btn-archive admin-action" 
+                            data-action="archive" data-thread-id="${thread.id}">
+                        📦 Archiver
+                    </button>`;
+                } else {
+                    buttons += `
+                    <button class="admin-btn btn-reopen admin-action" 
+                            data-action="reopen" data-thread-id="${thread.id}">
+                        🔓 Réouvrir
+                    </button>`;
+                }
+
+                buttons += `
+                <button class="admin-btn btn-delete admin-action" 
+                        data-action="delete" data-thread-id="${thread.id}">
+                    🗑️ Supprimer
+                </button>`;
+
+                return buttons;
+            }
+
+            async handleThreadAction(button) {
+                const action = button.dataset.action;
+                const threadId = button.dataset.threadId;
+                
+                if (!confirm(`Êtes-vous sûr de vouloir ${action} ce thread ?`)) {
+                    return;
+                }
+
+                button.disabled = true;
+                const originalText = button.textContent;
+                button.textContent = 'En cours...';
+
+                try {
+                    let endpoint = '';
+                    switch(action) {
+                        case 'close':
+                            endpoint = `/api/threads/close/${threadId}`;
+                            break;
+                        case 'archive':
+                            endpoint = `/api/threads/archive/${threadId}`;
+                            break;
+                        case 'reopen':
+                            endpoint = `/api/threads/reopen/${threadId}`;
+                            break;
+                        case 'delete':
+                            endpoint = `/api/threads/delete/${threadId}`;
+                            break;
+                    }
+
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        this.loadThreads(); // Recharger la liste
+                        alert(`Thread ${action} avec succès`);
+                    } else {
+                        const error = await response.json();
+                        alert('Erreur: ' + (error.message || 'Action échouée'));
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('Erreur de communication');
+                } finally {
+                    button.disabled = false;
+                    button.textContent = originalText;
+                }
+            }
+
+            renderPagination(meta) {
+                // Implémentation simple de pagination
+                const paginationContainer = document.getElementById('admin-pagination');
+                
+                if (meta.total_pages <= 1) {
+                    paginationContainer.innerHTML = '';
+                    return;
+                }
+
+                let paginationHTML = '<div style="text-align: center; margin-top: 20px;">';
+                
+                // Bouton précédent
+                if (meta.page > 1) {
+                    paginationHTML += `<button class="admin-btn" onclick="threadAdmin.goToPage(${meta.page - 1})">← Précédent</button> `;
+                }
+                
+                // Numéros de page
+                for (let i = Math.max(1, meta.page - 2); i <= Math.min(meta.total_pages, meta.page + 2); i++) {
+                    const active = i === meta.page ? 'btn-view' : '';
+                    paginationHTML += `<button class="admin-btn ${active}" onclick="threadAdmin.goToPage(${i})">${i}</button> `;
+                }
+                
+                // Bouton suivant
+                if (meta.page < meta.total_pages) {
+                    paginationHTML += `<button class="admin-btn" onclick="threadAdmin.goToPage(${meta.page + 1})">Suivant →</button>`;
+                }
+                
+                paginationHTML += '</div>';
+                paginationContainer.innerHTML = paginationHTML;
+            }
+
+            goToPage(page) {
+                this.currentPage = page;
+                this.loadThreads();
+            }
+
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        }
+
+        // Initialiser l'admin
+        const threadAdmin = new ThreadAdmin();
+    </script>
+    
+    <!-- Scripts pour thème et authentification -->
+    <script src="../js/theme_loader.js"></script>
+    <script src="../js/auth-handler.js"></script>
+</body>
+</html> 

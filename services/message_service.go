@@ -118,4 +118,56 @@ func (s *MessageService) validateMessageRequest(request models.MessageCreateRequ
 	}
 
 	return nil
+}
+
+// DeleteMessageByThreadOwner permet au créateur d'un thread de supprimer n'importe quel message de son thread
+func (s *MessageService) DeleteMessageByThreadOwner(messageID, threadID, threadOwnerID int) error {
+	// Vérifier que le message existe et appartient au thread
+	message, err := s.messageRepo.GetByID(messageID)
+	if err != nil {
+		return fmt.Errorf("message non trouvé: %w", err)
+	}
+
+	if message.ThreadID != threadID {
+		return fmt.Errorf("le message n'appartient pas à ce thread")
+	}
+
+	// Supprimer le message
+	err = s.messageRepo.Delete(messageID)
+	if err != nil {
+		return fmt.Errorf("erreur lors de la suppression: %w", err)
+	}
+
+	// Mettre à jour le nombre de messages du thread
+	err = s.threadRepo.UpdateMessageCount(threadID)
+	if err != nil {
+		log.Printf("⚠️ Erreur mise à jour nombre messages thread %d: %v", threadID, err)
+	}
+
+	log.Printf("✅ Message %d supprimé par le créateur du thread %d", messageID, threadID)
+	return nil
+}
+
+// DeleteMultipleMessagesByThreadOwner supprime plusieurs messages en lot pour le créateur d'un thread
+func (s *MessageService) DeleteMultipleMessagesByThreadOwner(messageIDs []int, threadID, threadOwnerID int) error {
+	if len(messageIDs) == 0 {
+		return fmt.Errorf("aucun message à supprimer")
+	}
+
+	deletedCount := 0
+	for _, messageID := range messageIDs {
+		err := s.DeleteMessageByThreadOwner(messageID, threadID, threadOwnerID)
+		if err != nil {
+			log.Printf("⚠️ Erreur suppression message %d: %v", messageID, err)
+			continue
+		}
+		deletedCount++
+	}
+
+	if deletedCount == 0 {
+		return fmt.Errorf("aucun message n'a pu être supprimé")
+	}
+
+	log.Printf("✅ %d/%d messages supprimés par le créateur du thread %d", deletedCount, len(messageIDs), threadID)
+	return nil
 } 

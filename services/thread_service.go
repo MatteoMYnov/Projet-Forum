@@ -189,4 +189,197 @@ func (s *ThreadService) GetThreadsWithPagination(page, limit int) ([]models.Thre
 	}
 
 	return threads, meta, nil
+}
+
+// ChangeThreadStatus change l'état d'un thread (open, closed, archived)
+func (s *ThreadService) ChangeThreadStatus(threadID int, newStatus string, userID int, isAdmin bool) error {
+	// Valider le statut
+	validStatuses := map[string]bool{
+		"open":     true,
+		"closed":   true,
+		"archived": true,
+	}
+	
+	if !validStatuses[newStatus] {
+		return fmt.Errorf("statut invalide: %s. Statuts valides: open, closed, archived", newStatus)
+	}
+
+	// Récupérer le thread pour vérifier l'auteur
+	thread, err := s.threadRepo.GetByID(threadID)
+	if err != nil {
+		return err
+	}
+
+	// Vérifier les permissions (seul l'auteur ou un admin peut modifier l'état)
+	if thread.AuthorID != userID && !isAdmin {
+		return fmt.Errorf("vous n'avez pas l'autorisation de modifier l'état de ce thread")
+	}
+
+	// Mettre à jour le statut
+	err = s.threadRepo.UpdateStatus(threadID, newStatus)
+	if err != nil {
+		return fmt.Errorf("erreur lors de la mise à jour du statut: %v", err)
+	}
+
+	log.Printf("✅ Statut du thread %d changé vers '%s' par utilisateur %d", threadID, newStatus, userID)
+	return nil
+}
+
+// CloseThread ferme un thread (reste visible mais plus de nouveaux messages)
+func (s *ThreadService) CloseThread(threadID, userID int, isAdmin bool) error {
+	return s.ChangeThreadStatus(threadID, "closed", userID, isAdmin)
+}
+
+// ArchiveThread archive un thread (plus visible dans les listes)
+func (s *ThreadService) ArchiveThread(threadID, userID int, isAdmin bool) error {
+	return s.ChangeThreadStatus(threadID, "archived", userID, isAdmin)
+}
+
+// ReopenThread réouvre un thread fermé ou archivé
+func (s *ThreadService) ReopenThread(threadID, userID int, isAdmin bool) error {
+	return s.ChangeThreadStatus(threadID, "open", userID, isAdmin)
+}
+
+// GetVisibleThreadsWithPagination récupère les threads visibles (non archivés) avec pagination
+func (s *ThreadService) GetVisibleThreadsWithPagination(page, limit int) ([]models.Thread, *models.Meta, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 20 // Limite par défaut
+	}
+
+	// Récupérer le total des threads visibles (non archivés)
+	totalCount, err := s.threadRepo.GetVisibleThreadsCount()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Calculer le nombre total de pages
+	totalPages := (totalCount + limit - 1) / limit
+	if totalPages < 1 {
+		totalPages = 1
+	}
+
+	// Vérifier que la page demandée n'est pas au-delà du total
+	if page > totalPages {
+		page = totalPages
+	}
+
+	// Récupérer les threads visibles
+	offset := (page - 1) * limit
+	threads, err := s.threadRepo.GetVisibleThreads(limit, offset)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Créer les métadonnées
+	meta := &models.Meta{
+		Page:       page,
+		PerPage:    limit,
+		TotalPages: totalPages,
+		TotalCount: totalCount,
+	}
+
+	return threads, meta, nil
+}
+
+// CanPostMessage vérifie si un utilisateur peut poster un message dans un thread
+func (s *ThreadService) CanPostMessage(threadID int) (bool, error) {
+	thread, err := s.threadRepo.GetByID(threadID)
+	if err != nil {
+		return false, err
+	}
+
+	// Un message peut être posté seulement si le thread est ouvert
+	return thread.Status == "open", nil
+}
+
+// GetThreadsByStatus récupère les threads filtrés par statut avec pagination
+func (s *ThreadService) GetThreadsByStatus(status string, page, limit int) ([]models.Thread, *models.Meta, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 20
+	}
+
+	// Valider le statut
+	validStatuses := map[string]bool{
+		"open":     true,
+		"closed":   true,
+		"archived": true,
+	}
+	
+	if !validStatuses[status] {
+		return nil, nil, fmt.Errorf("statut invalide: %s", status)
+	}
+
+	// Récupérer le total pour ce statut
+	totalCount, err := s.threadRepo.GetCountByStatus(status)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Calculer le nombre total de pages
+	totalPages := (totalCount + limit - 1) / limit
+	if totalPages < 1 {
+		totalPages = 1
+	}
+
+	// Vérifier que la page demandée n'est pas au-delà du total
+	if page > totalPages {
+		page = totalPages
+	}
+
+	// Récupérer les threads
+	offset := (page - 1) * limit
+	threads, err := s.threadRepo.GetByStatus(status, limit, offset)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Créer les métadonnées
+	meta := &models.Meta{
+		Page:       page,
+		PerPage:    limit,
+		TotalPages: totalPages,
+		TotalCount: totalCount,
+	}
+
+	return threads, meta, nil
+}
+
+// UpdateThreadTitle met à jour le titre d'un thread (pour le créateur uniquement)
+func (s *ThreadService) UpdateThreadTitle(threadID int, newTitle string, userID int) error {
+	// Validation du titre
+	newTitle = strings.TrimSpace(newTitle)
+	if newTitle == "" {
+		return fmt.Errorf("le titre ne peut pas être vide")
+	}
+	if len(newTitle) < 3 {
+		return fmt.Errorf("le titre doit contenir au moins 3 caractères")
+	}
+	if len(newTitle) > 200 {
+		return fmt.Errorf("le titre ne peut pas dépasser 200 caractères")
+	}
+
+	// Vérifier que le thread existe et que l'utilisateur en est le créateur
+	thread, err := s.threadRepo.GetByID(threadID)
+	if err != nil {
+		return fmt.Errorf("thread non trouvé: %w", err)
+	}
+
+	if thread.AuthorID != userID {
+		return fmt.Errorf("seul le créateur peut modifier le titre du thread")
+	}
+
+	// Mettre à jour le titre
+	err = s.threadRepo.UpdateTitle(threadID, newTitle)
+	if err != nil {
+		return fmt.Errorf("erreur lors de la mise à jour: %w", err)
+	}
+
+	log.Printf("✅ Titre du thread %d mis à jour par l'utilisateur %d", threadID, userID)
+	return nil
 } 

@@ -7,6 +7,75 @@
     <link rel="stylesheet" href="/styles/home.css?v=1.0">
     <title>Home / Y</title>
     <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+    <style>
+        /* Styles pour le bouton de déconnexion */
+        .logout-btn {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: #2c2c2c;
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .logout-btn:hover {
+            background-color: #404040;
+        }
+        
+        .logout-icon {
+            font-size: 16px;
+            color: #ff9500;
+        }
+        
+        .logout-btn p {
+            font-size: 14px;
+            color: #ffffff;
+            margin: 0;
+            font-weight: normal;
+        }
+        
+        /* Styles pour la navigation séparée */
+        .nav-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        
+        .nav-section-top {
+            margin-bottom: 0;
+        }
+        
+        .nav-section-bottom {
+            margin-top: 0;
+        }
+        
+        .nav-separator {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            margin: 20px 10px;
+            position: relative;
+        }
+        
+        .nav-separator::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: -2px;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 50%;
+        }
+    </style>
 </head>
 <body>
     <div class="banner">
@@ -14,19 +83,44 @@
             <div class="logo-button">
                 <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo">
             </div>
-            <a href="/home" class="bar-button">
-                <img src="/img/icon/home-r.png" alt="Home" class="icon">
-                <p>Home</p>
-            </a>
-            <a href="/theme" class="bar-button">
-                <img src="/img/icon/brush-r.png" alt="Theme" class="icon">
-                <p>Theme</p>
-            </a>
-            <a href="/profile" class="bar-button">
-                <img src="/img/icon/profile-r.png" alt="Profile" class="icon">
-                <p>Profile</p>
-            </a>
+            
+            <!-- Section navigation principale (haut) -->
+            <div class="nav-section nav-section-top">
+                <a href="/home" class="bar-button">
+                    <img src="/img/icon/home-r.png" alt="Home" class="icon">
+                    <p>Home</p>
+                </a>
+                <a href="/theme" class="bar-button">
+                    <img src="/img/icon/brush-r.png" alt="Theme" class="icon">
+                    <p>Theme</p>
+                </a>
+                <a href="/profile" class="bar-button">
+                    <img src="/img/icon/profile-r.png" alt="Profile" class="icon">
+                    <p>Profile</p>
+                </a>
+            </div>
+            
+            <!-- Séparateur -->
+            <div class="nav-separator"></div>
+            
+            <!-- Section threads (bas) -->
+            <div class="nav-section nav-section-bottom">
+                <a href="/threads" class="bar-button">
+                    <img src="/img/icon/icon_threads.svg" alt="Threads" class="icon">
+                    <p>Threads</p>
+                </a>
+                <a href="/my-threads" class="bar-button">
+                    <img src="/img/icon/icon_threads.svg" alt="Mes Threads" class="icon">
+                    <p>Mes Threads</p>
+                </a>
+            </div>
             <div class="account">
+                <div class="account-info">
+                    <button onclick="logout()" class="logout-btn">
+                        <span class="logout-icon">🚪</span>
+                        <p>Déconnexion</p>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -99,7 +193,7 @@
     </script>
     
     <!-- Scripts pour thème et authentification -->
-    <script src="../js/theme_loader.js"></script>
-    <script src="../js/auth-handler.js"></script>
+    <script src="/js/theme_loader.js"></script>
+    <script src="/js/auth-handler.js"></script>
 </body>
 </html>

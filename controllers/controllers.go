@@ -48,6 +48,7 @@ func (c *UserControllers) UserRouter(r *http.ServeMux) {
 	
 	// Routes pour les threads
 	r.HandleFunc("/threads", c.ThreadsListPage)          // Liste des threads
+	r.HandleFunc("/my-threads", middleware.RequireAuth(c.MyThreadsPage)) // Mes threads personnels
 	r.HandleFunc("/threads_demo", c.ThreadsDemoPage)     // Page de démo
 	r.HandleFunc("/create-thread", middleware.RequireAuth(c.CreateThreadPage))
 	r.HandleFunc("/thread/", c.ThreadPage)               // Pour afficher un thread spécifique
@@ -61,6 +62,19 @@ func (c *UserControllers) UserRouter(r *http.ServeMux) {
 	// API pour les threads
 	r.HandleFunc("/api/threads", middleware.RequireAuth(c.CreateThreadHandler))
 	r.HandleFunc("/api/threads/", c.ThreadAPI) // Pour récupérer les données d'un thread
+	
+	// API pour la gestion des états des threads
+	r.HandleFunc("/api/threads/close/", middleware.RequireAuth(c.CloseThreadHandler))
+	r.HandleFunc("/api/threads/archive/", middleware.RequireAuth(c.ArchiveThreadHandler))
+	r.HandleFunc("/api/threads/reopen/", middleware.RequireAuth(c.ReopenThreadHandler))
+	
+	// Pages d'administration
+	r.HandleFunc("/admin/threads", middleware.RequireAuth(c.AdminThreadsPage))
+	r.HandleFunc("/api/admin/threads", middleware.RequireAuth(c.AdminThreadsAPI))
+	
+	// Administration spécifique d'un thread (pour le créateur)
+	r.HandleFunc("/admin/thread/", middleware.RequireAuth(c.AdminThreadDetailPage))
+	r.HandleFunc("/api/admin/thread/", middleware.RequireAuth(c.AdminThreadDetailAPI))
 	
 	// API pour les messages
 	r.HandleFunc("/api/messages", middleware.RequireAuth(c.MessageHandler))
@@ -124,8 +138,8 @@ func (c *UserControllers) ThreadsListPage(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	// Récupérer les threads avec pagination
-	threads, meta, err := c.threadService.GetThreadsWithPagination(page, limit)
+	// Récupérer les threads visibles avec pagination
+	threads, meta, err := c.threadService.GetVisibleThreadsWithPagination(page, limit)
 	if err != nil {
 		log.Printf("❌ Erreur récupération threads: %v", err)
 		http.Error(w, "Erreur serveur", http.StatusInternalServerError)
@@ -164,6 +178,75 @@ func (c *UserControllers) ThreadsListPage(w http.ResponseWriter, r *http.Request
 func (c *UserControllers) ThreadsDemoPage(w http.ResponseWriter, r *http.Request) {
 	log.Printf("🎨 ThreadsDemoPage - Affichage de la page de démo")
 	http.ServeFile(w, r, "./website/template/threads_demo.html")
+}
+
+// MyThreadsPage affiche les threads de l'utilisateur connecté
+func (c *UserControllers) MyThreadsPage(w http.ResponseWriter, r *http.Request) {
+	log.Printf("👤 MyThreadsPage - Début de la fonction")
+
+	// Récupérer l'utilisateur connecté
+	sessionInfo := middleware.GetUserFromContext(r)
+	if sessionInfo == nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	// Récupérer les paramètres de pagination
+	page := 1
+	limit := 20
+	
+	if pageParam := r.URL.Query().Get("page"); pageParam != "" {
+		if p, err := strconv.Atoi(pageParam); err == nil && p > 0 {
+			page = p
+		}
+	}
+	
+	if limitParam := r.URL.Query().Get("limit"); limitParam != "" {
+		if l, err := strconv.Atoi(limitParam); err == nil && l > 0 && l <= 100 {
+			limit = l
+		}
+	}
+
+	// Récupérer les threads de l'utilisateur
+	threads, err := c.threadService.GetUserThreads(sessionInfo.UserID, page, limit)
+	if err != nil {
+		log.Printf("❌ Erreur récupération threads utilisateur: %v", err)
+		http.Error(w, "Erreur serveur", http.StatusInternalServerError)
+		return
+	}
+
+	// Récupérer les catégories
+	categories, err := c.threadService.GetCategories()
+	if err != nil {
+		log.Printf("❌ Erreur récupération catégories: %v", err)
+		categories = []models.Category{} // Valeur par défaut
+	}
+
+	log.Printf("✅ MyThreadsPage - %d threads trouvés pour l'utilisateur %d", len(threads), sessionInfo.UserID)
+
+	// Lire le template
+	templatePath := "./website/template/my_threads.html"
+	templateContent, err := os.ReadFile(templatePath)
+	if err != nil {
+		log.Printf("❌ Erreur lecture template: %v", err)
+		http.Error(w, "Erreur serveur", http.StatusInternalServerError)
+		return
+	}
+
+	// Traiter le template avec une meta simplifiée
+	meta := &models.Meta{
+		Page:       page,
+		PerPage:    limit,
+		TotalPages: 1, // Simplifiée pour l'instant
+		TotalCount: len(threads),
+	}
+
+	htmlContent := string(templateContent)
+	processedHTML := processMyThreadsTemplate(htmlContent, threads, categories, meta, sessionInfo.Username)
+
+	// Envoyer la réponse
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write([]byte(processedHTML))
 }
 
 // ProfilePage affiche la page de profil (nécessite authentification)
@@ -520,6 +603,7 @@ func processThreadDetailTemplate(htmlContent string, thread models.Thread) strin
 		authorName = thread.Author.Username
 		authorUsername = thread.Author.Username
 		if thread.Author.ProfilePicture != nil && *thread.Author.ProfilePicture != "" {
+			// Utiliser le chemin tel qu'il est stocké dans la base de données
 			authorAvatar = *thread.Author.ProfilePicture
 		}
 	}
@@ -534,9 +618,29 @@ func processThreadDetailTemplate(htmlContent string, thread models.Thread) strin
 	timeAgo := formatTimeAgo(thread.CreatedAt)
 	formattedDate := thread.CreatedAt.Format("15:04 · 2 Jan 2006")
 
+	// Gérer l'état du thread
+	statusLabel := "Ouvert"
+	statusClass := "status-open"
+	canReply := true
+	
+	switch thread.Status {
+	case "closed":
+		statusLabel = "Fermé"
+		statusClass = "status-closed"
+		canReply = false
+	case "archived":
+		statusLabel = "Archivé"
+		statusClass = "status-archived"
+		canReply = false
+	}
+
 	// Remplacer l'avatar de l'auteur dans le template
 	htmlContent = strings.Replace(htmlContent, `src="../img/avatar/photo-profil.jpg"`, 
 		fmt.Sprintf(`src="%s"`, authorAvatar), 1)
+	
+	// Aussi remplacer les autres occurences possibles d'avatar
+	htmlContent = strings.ReplaceAll(htmlContent, `src="../img/avatars/default-avatar.png"`, 
+		fmt.Sprintf(`src="%s"`, authorAvatar))
 
 	// Remplacer toutes les informations du thread
 	htmlContent = strings.ReplaceAll(htmlContent, "%THREAD_ID%", fmt.Sprintf("%d", thread.ID))
@@ -547,6 +651,7 @@ func processThreadDetailTemplate(htmlContent string, thread models.Thread) strin
 	htmlContent = strings.ReplaceAll(htmlContent, "%AUTHOR_NAME%", authorName)
 	htmlContent = strings.ReplaceAll(htmlContent, "%AUTHOR_USERNAME%", authorUsername)
 	htmlContent = strings.ReplaceAll(htmlContent, "%AUTHOR_HANDLE%", "@"+authorUsername)
+	htmlContent = strings.ReplaceAll(htmlContent, "%AUTHOR_ID%", fmt.Sprintf("%d", thread.AuthorID))
 	
 	// Dates et temps
 	htmlContent = strings.ReplaceAll(htmlContent, "%CREATED_AT%", formattedDate)
@@ -558,6 +663,17 @@ func processThreadDetailTemplate(htmlContent string, thread models.Thread) strin
 	htmlContent = strings.ReplaceAll(htmlContent, "%LIKE_COUNT%", fmt.Sprintf("%d", thread.LikeCount))
 	htmlContent = strings.ReplaceAll(htmlContent, "%DISLIKE_COUNT%", "0") // Pas encore implémenté
 	htmlContent = strings.ReplaceAll(htmlContent, "%MESSAGE_COUNT%", fmt.Sprintf("%d", thread.MessageCount))
+	
+	// État du thread
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREAD_STATUS%", statusLabel)
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREAD_STATUS_CLASS%", statusClass)
+	
+	// Possibilité de répondre
+	canReplyStr := "true"
+	if !canReply {
+		canReplyStr = "false"
+	}
+	htmlContent = strings.ReplaceAll(htmlContent, "%CAN_REPLY%", canReplyStr)
 	
 	// Catégorie
 	htmlContent = strings.ReplaceAll(htmlContent, "%CATEGORY_NAME%", categoryName)
@@ -581,6 +697,7 @@ func processThreadDetailTemplate(htmlContent string, thread models.Thread) strin
 		for _, message := range thread.Messages {
 			authorAvatar := "/img/avatars/default-avatar.png"
 			if message.Author != nil && message.Author.ProfilePicture != nil && *message.Author.ProfilePicture != "" {
+				// Utiliser le chemin tel qu'il est stocké dans la base de données
 				authorAvatar = *message.Author.ProfilePicture
 			}
 			
@@ -876,6 +993,7 @@ func processThreadsListTemplateWithPagination(htmlContent string, threads []mode
 			if thread.Author != nil {
 				authorName = thread.Author.Username
 				if thread.Author.ProfilePicture != nil && *thread.Author.ProfilePicture != "" {
+					// Utiliser le chemin tel qu'il est stocké dans la base de données
 					authorAvatar = *thread.Author.ProfilePicture
 				}
 			}
@@ -884,6 +1002,22 @@ func processThreadsListTemplateWithPagination(htmlContent string, threads []mode
 			categoryName := "Général"
 			if thread.Category != nil {
 				categoryName = thread.Category.Name
+			}
+
+			// Gérer l'état du thread
+			statusLabel := "Ouvert"
+			statusClass := "status-open"
+			statusIcon := "🔓"
+			
+			switch thread.Status {
+			case "closed":
+				statusLabel = "Fermé"
+				statusClass = "status-closed"
+				statusIcon = "🔒"
+			case "archived":
+				statusLabel = "Archivé"
+				statusClass = "status-archived"
+				statusIcon = "📦"
 			}
 
 			threadsList += fmt.Sprintf(`
@@ -895,6 +1029,7 @@ func processThreadsListTemplateWithPagination(htmlContent string, threads []mode
 							<span class="author-name">%s</span>
 							<span class="author-handle">@%s</span>
 							<span class="thread-time">%s</span>
+							<span class="thread-status-mini %s">%s %s</span>
 						</div>
 					</div>
 					
@@ -939,6 +1074,9 @@ func processThreadsListTemplateWithPagination(htmlContent string, threads []mode
 				authorName,
 				authorName,
 				timeAgo,
+				statusClass,
+				statusIcon,
+				statusLabel,
 				thread.ID,
 				thread.Title,
 				preview,
@@ -1309,6 +1447,20 @@ func (c *UserControllers) MessageHandler(w http.ResponseWriter, r *http.Request)
 		Content:  content,
 	}
 
+	// Vérifier si le thread autorise les nouveaux messages
+	canPost, err := c.threadService.CanPostMessage(threadID)
+	if err != nil {
+		log.Printf("❌ Erreur vérification thread: %v", err)
+		WriteErrorResponse(w, "Thread non trouvé", http.StatusNotFound)
+		return
+	}
+
+	if !canPost {
+		log.Printf("⚠️ Tentative d'écriture dans un thread fermé/archivé: %d", threadID)
+		WriteErrorResponse(w, "Ce thread est fermé aux nouveaux messages", http.StatusForbidden)
+		return
+	}
+
 	log.Printf("📝 Création message - ThreadID: %d, AuthorID: %d", threadID, sessionInfo.UserID)
 
 	// Créer le message
@@ -1362,4 +1514,942 @@ func (c *UserControllers) MessageAPI(w http.ResponseWriter, r *http.Request) {
 		Success: true,
 		Data:    messages,
 	}, http.StatusOK)
+}
+
+// =====================================
+// HANDLERS POUR LA GESTION DES ÉTATS DES THREADS
+// =====================================
+
+// CloseThreadHandler gère la fermeture d'un thread
+func (c *UserControllers) CloseThreadHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		WriteErrorResponse(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		return
+	}
+
+	log.Printf("🔄 CloseThreadHandler - Nouvelle demande de fermeture de thread")
+
+	// Récupérer l'utilisateur depuis le contexte
+	sessionInfo := middleware.GetUserFromContext(r)
+	if sessionInfo == nil {
+		WriteErrorResponse(w, "Non authentifié", http.StatusUnauthorized)
+		return
+	}
+
+	// Récupérer l'ID du thread depuis l'URL
+	path := strings.TrimPrefix(r.URL.Path, "/api/threads/close/")
+	if path == "" {
+		WriteErrorResponse(w, "ID de thread requis", http.StatusBadRequest)
+		return
+	}
+
+	threadID, err := strconv.Atoi(path)
+	if err != nil {
+		WriteErrorResponse(w, "ID de thread invalide", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("📝 Fermeture thread - ThreadID: %d, UserID: %d", threadID, sessionInfo.UserID)
+
+	// Appeler le service pour fermer le thread
+	err = c.threadService.CloseThread(threadID, sessionInfo.UserID, false) // TODO: gérer le statut admin
+	if err != nil {
+		log.Printf("❌ Erreur fermeture thread: %v", err)
+		WriteErrorResponse(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("✅ Thread %d fermé avec succès", threadID)
+
+	WriteJSONResponse(w, models.APIResponse{
+		Success: true,
+		Message: "Thread fermé avec succès",
+	}, http.StatusOK)
+}
+
+// ArchiveThreadHandler gère l'archivage d'un thread
+func (c *UserControllers) ArchiveThreadHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		WriteErrorResponse(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		return
+	}
+
+	log.Printf("🔄 ArchiveThreadHandler - Nouvelle demande d'archivage de thread")
+
+	// Récupérer l'utilisateur depuis le contexte
+	sessionInfo := middleware.GetUserFromContext(r)
+	if sessionInfo == nil {
+		WriteErrorResponse(w, "Non authentifié", http.StatusUnauthorized)
+		return
+	}
+
+	// Récupérer l'ID du thread depuis l'URL
+	path := strings.TrimPrefix(r.URL.Path, "/api/threads/archive/")
+	if path == "" {
+		WriteErrorResponse(w, "ID de thread requis", http.StatusBadRequest)
+		return
+	}
+
+	threadID, err := strconv.Atoi(path)
+	if err != nil {
+		WriteErrorResponse(w, "ID de thread invalide", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("📝 Archivage thread - ThreadID: %d, UserID: %d", threadID, sessionInfo.UserID)
+
+	// Appeler le service pour archiver le thread
+	err = c.threadService.ArchiveThread(threadID, sessionInfo.UserID, false) // TODO: gérer le statut admin
+	if err != nil {
+		log.Printf("❌ Erreur archivage thread: %v", err)
+		WriteErrorResponse(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("✅ Thread %d archivé avec succès", threadID)
+
+	WriteJSONResponse(w, models.APIResponse{
+		Success: true,
+		Message: "Thread archivé avec succès",
+	}, http.StatusOK)
+}
+
+// ReopenThreadHandler gère la réouverture d'un thread
+func (c *UserControllers) ReopenThreadHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		WriteErrorResponse(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		return
+	}
+
+	log.Printf("🔄 ReopenThreadHandler - Nouvelle demande de réouverture de thread")
+
+	// Récupérer l'utilisateur depuis le contexte
+	sessionInfo := middleware.GetUserFromContext(r)
+	if sessionInfo == nil {
+		WriteErrorResponse(w, "Non authentifié", http.StatusUnauthorized)
+		return
+	}
+
+	// Récupérer l'ID du thread depuis l'URL
+	path := strings.TrimPrefix(r.URL.Path, "/api/threads/reopen/")
+	if path == "" {
+		WriteErrorResponse(w, "ID de thread requis", http.StatusBadRequest)
+		return
+	}
+
+	threadID, err := strconv.Atoi(path)
+	if err != nil {
+		WriteErrorResponse(w, "ID de thread invalide", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("📝 Réouverture thread - ThreadID: %d, UserID: %d", threadID, sessionInfo.UserID)
+
+	// Appeler le service pour réouvrir le thread
+	err = c.threadService.ReopenThread(threadID, sessionInfo.UserID, false) // TODO: gérer le statut admin
+	if err != nil {
+		log.Printf("❌ Erreur réouverture thread: %v", err)
+		WriteErrorResponse(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("✅ Thread %d réouvert avec succès", threadID)
+
+	WriteJSONResponse(w, models.APIResponse{
+		Success: true,
+		Message: "Thread réouvert avec succès",
+	}, http.StatusOK)
+}
+
+// =====================================
+// PAGES ET API D'ADMINISTRATION
+// =====================================
+
+// AdminThreadsPage affiche la page d'administration des threads (threads de l'utilisateur uniquement)
+func (c *UserControllers) AdminThreadsPage(w http.ResponseWriter, r *http.Request) {
+	log.Printf("🛠️ AdminThreadsPage - Affichage page administration")
+
+	// Récupérer l'utilisateur connecté
+	sessionInfo := middleware.GetUserFromContext(r)
+	if sessionInfo == nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	// Récupérer les paramètres de pagination
+	page := 1
+	limit := 20
+	
+	if pageParam := r.URL.Query().Get("page"); pageParam != "" {
+		if p, err := strconv.Atoi(pageParam); err == nil && p > 0 {
+			page = p
+		}
+	}
+
+	// Récupérer UNIQUEMENT les threads de l'utilisateur connecté
+	threads, err := c.threadService.GetUserThreads(sessionInfo.UserID, page, limit)
+	if err != nil {
+		log.Printf("❌ Erreur récupération threads admin: %v", err)
+		http.Error(w, "Erreur serveur", http.StatusInternalServerError)
+		return
+	}
+
+	// Créer une meta simplifiée pour les threads utilisateur
+	meta := &models.Meta{
+		Page:       page,
+		PerPage:    limit,
+		TotalPages: 1, // Simplifié pour l'instant
+		TotalCount: len(threads),
+	}
+
+	// Lire le template HTML
+	templatePath := "./website/template/admin_threads.html"
+	templateContent, err := os.ReadFile(templatePath)
+	if err != nil {
+		log.Printf("❌ Erreur lecture template admin: %v", err)
+		http.Error(w, "Erreur serveur", http.StatusInternalServerError)
+		return
+	}
+
+	// Traiter le template
+	htmlContent := string(templateContent)
+	processedHTML := processAdminThreadsTemplate(htmlContent, threads, meta)
+
+	log.Printf("✅ AdminThreadsPage - Page préparée avec %d threads", len(threads))
+
+	// Envoyer la réponse
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write([]byte(processedHTML))
+}
+
+// AdminThreadsAPI gère les requêtes API pour l'administration des threads (threads de l'utilisateur uniquement)
+func (c *UserControllers) AdminThreadsAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		WriteErrorResponse(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Récupérer l'utilisateur connecté
+	sessionInfo := middleware.GetUserFromContext(r)
+	if sessionInfo == nil {
+		WriteErrorResponse(w, "Non authentifié", http.StatusUnauthorized)
+		return
+	}
+
+	log.Printf("📊 AdminThreadsAPI - Récupération threads pour admin (utilisateur %d)", sessionInfo.UserID)
+
+	// Récupérer les paramètres
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	status := r.URL.Query().Get("status")
+	search := r.URL.Query().Get("search")
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 50 {
+		limit = 10
+	}
+
+	// Récupérer UNIQUEMENT les threads de l'utilisateur connecté
+	threads, err := c.threadService.GetUserThreads(sessionInfo.UserID, page, limit)
+	if err != nil {
+		log.Printf("❌ Erreur récupération threads admin API: %v", err)
+		WriteErrorResponse(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Filtrer par statut si fourni
+	if status != "" && status != "all" {
+		filteredThreads := []models.Thread{}
+		for _, thread := range threads {
+			if thread.Status == status {
+				filteredThreads = append(filteredThreads, thread)
+			}
+		}
+		threads = filteredThreads
+	}
+
+	// Créer une meta simplifiée
+	meta := &models.Meta{
+		Page:       page,
+		PerPage:    limit,
+		TotalPages: 1,
+		TotalCount: len(threads),
+	}
+
+	// Filtrer par recherche si fournie
+	if search != "" {
+		threads = filterThreadsBySearch(threads, search)
+	}
+
+	log.Printf("✅ AdminThreadsAPI - %d threads trouvés", len(threads))
+
+	WriteJSONResponse(w, models.APIResponse{
+		Success: true,
+		Data: map[string]interface{}{
+			"threads": threads,
+			"meta":    meta,
+		},
+	}, http.StatusOK)
+}
+
+// =====================================
+// FONCTIONS HELPER POUR L'ADMINISTRATION
+// =====================================
+
+// processAdminThreadsTemplate traite le template d'administration
+func processAdminThreadsTemplate(htmlContent string, threads []models.Thread, meta *models.Meta) string {
+	log.Printf("🔄 Traitement template admin - %d threads", len(threads))
+
+	// Générer la liste des threads pour l'admin
+	threadsHTML := ""
+	if len(threads) == 0 {
+		threadsHTML = `
+		<div style="text-align: center; padding: 40px; color: #666;">
+			<h3>Aucun thread trouvé</h3>
+			<p>Aucun thread à administrer pour le moment.</p>
+		</div>`
+	} else {
+		for _, thread := range threads {
+			// Récupérer le nom de l'auteur
+			authorName := "Utilisateur inconnu"
+			if thread.Author != nil {
+				authorName = thread.Author.Username
+			}
+
+			// Gérer l'état du thread
+			statusLabel := "Ouvert"
+			statusClass := "status-open"
+			
+			switch thread.Status {
+			case "closed":
+				statusLabel = "Fermé"
+				statusClass = "status-closed"
+			case "archived":
+				statusLabel = "Archivé"
+				statusClass = "status-archived"
+			}
+
+			// Preview du contenu
+			preview := thread.Content
+			if len(preview) > 100 {
+				preview = preview[:100] + "..."
+			}
+
+			// Formater la date
+			formattedDate := thread.CreatedAt.Format("02/01/2006 15:04")
+
+			// Boutons d'action selon l'état
+			actionButtons := ""
+			if thread.Status == "open" {
+				actionButtons = fmt.Sprintf(`
+				<button class="admin-btn btn-close" onclick="changeThreadStatus(%d, 'fermer')">
+					🔒 Fermer
+				</button>
+				<button class="admin-btn btn-archive" onclick="changeThreadStatus(%d, 'archiver')">
+					📦 Archiver
+				</button>`, thread.ID, thread.ID)
+			} else {
+				actionButtons = fmt.Sprintf(`
+				<button class="admin-btn btn-reopen" onclick="changeThreadStatus(%d, 'réouvrir')">
+					🔓 Réouvrir
+				</button>`, thread.ID)
+			}
+
+			threadsHTML += fmt.Sprintf(`
+			<div class="thread-admin-item">
+				<div class="thread-info">
+					<div class="thread-title">%s</div>
+					<div class="thread-meta">
+						Par @%s • %s • %d vues • %d réponses
+					</div>
+					<div class="thread-content-preview">%s</div>
+					<div class="thread-stats">
+						<span>👍 %d</span>
+						<span>👎 %d</span>
+						<span>❤️ %d</span>
+					</div>
+				</div>
+				
+				<div class="thread-actions">
+					<span class="thread-status-display %s">
+						%s
+					</span>
+					
+					<a href="/thread/%d" class="admin-btn" target="_blank">
+						👁️ Voir
+					</a>
+					
+					%s
+				</div>
+			</div>`,
+				thread.Title,
+				authorName,
+				formattedDate,
+				thread.ViewCount,
+				thread.MessageCount,
+				preview,
+				thread.LikeCount,
+				thread.DislikeCount,
+				thread.LoveCount,
+				statusClass,
+				statusLabel,
+				thread.ID,
+				actionButtons,
+			)
+		}
+	}
+
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREADS_ADMIN_LIST%", threadsHTML)
+
+	log.Printf("✅ Template admin traité avec succès")
+	return htmlContent
+}
+
+// filterThreadsBySearch filtre les threads par recherche
+func filterThreadsBySearch(threads []models.Thread, search string) []models.Thread {
+	if search == "" {
+		return threads
+	}
+
+	search = strings.ToLower(search)
+	var filtered []models.Thread
+
+	for _, thread := range threads {
+		titleMatch := strings.Contains(strings.ToLower(thread.Title), search)
+		contentMatch := strings.Contains(strings.ToLower(thread.Content), search)
+		authorMatch := false
+		
+		if thread.Author != nil {
+			authorMatch = strings.Contains(strings.ToLower(thread.Author.Username), search)
+		}
+
+		if titleMatch || contentMatch || authorMatch {
+			filtered = append(filtered, thread)
+		}
+	}
+
+	return filtered
+}
+
+// =====================================
+// ADMINISTRATION SPÉCIFIQUE D'UN THREAD
+// =====================================
+
+// AdminThreadDetailPage affiche la page d'administration spécifique d'un thread
+func (c *UserControllers) AdminThreadDetailPage(w http.ResponseWriter, r *http.Request) {
+	// Extraire l'ID du thread depuis l'URL
+	path := strings.TrimPrefix(r.URL.Path, "/admin/thread/")
+	if path == "" {
+		http.Error(w, "ID de thread requis", http.StatusBadRequest)
+		return
+	}
+	
+	threadID, err := strconv.Atoi(path)
+	if err != nil {
+		http.Error(w, "ID de thread invalide", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("🛠️ AdminThreadDetailPage - Thread ID=%d", threadID)
+
+	// Récupérer l'utilisateur connecté
+	sessionInfo := middleware.GetUserFromContext(r)
+	if sessionInfo == nil {
+		http.Error(w, "Non authentifié", http.StatusUnauthorized)
+		return
+	}
+
+	// Récupérer le thread
+	thread, err := c.threadService.GetThread(threadID)
+	if err != nil {
+		log.Printf("❌ Erreur récupération thread admin: %v", err)
+		http.Error(w, "Thread non trouvé", http.StatusNotFound)
+		return
+	}
+
+	// Vérifier que l'utilisateur est le créateur du thread
+	if thread.AuthorID != sessionInfo.UserID {
+		log.Printf("⚠️ Tentative d'accès admin non autorisée - User %d pour thread %d (auteur %d)", 
+			sessionInfo.UserID, threadID, thread.AuthorID)
+		http.Error(w, "Accès refusé - Vous n'êtes pas le créateur de ce thread", http.StatusForbidden)
+		return
+	}
+
+	// Récupérer les messages du thread
+	messages, err := c.messageService.GetMessagesByThread(threadID)
+	if err != nil {
+		log.Printf("⚠️ Erreur récupération messages admin: %v", err)
+		messages = []models.Message{} // Continuer avec une liste vide
+	}
+
+	// Lire le template HTML
+	templatePath := "./website/template/admin_thread_detail.html"
+	templateContent, err := os.ReadFile(templatePath)
+	if err != nil {
+		log.Printf("❌ Erreur lecture template admin thread: %v", err)
+		http.Error(w, "Erreur serveur", http.StatusInternalServerError)
+		return
+	}
+
+	// Traiter le template
+	htmlContent := string(templateContent)
+	processedHTML := processAdminThreadDetailTemplate(htmlContent, *thread, messages)
+
+	log.Printf("✅ AdminThreadDetailPage - Page préparée pour thread %d avec %d messages", threadID, len(messages))
+
+	// Envoyer la réponse
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write([]byte(processedHTML))
+}
+
+// AdminThreadDetailAPI gère les requêtes API pour l'administration spécifique d'un thread
+func (c *UserControllers) AdminThreadDetailAPI(w http.ResponseWriter, r *http.Request) {
+	// Extraire l'URL pour déterminer l'action
+	path := strings.TrimPrefix(r.URL.Path, "/api/admin/thread/")
+	parts := strings.Split(path, "/")
+
+	if len(parts) < 1 || parts[0] == "" {
+		WriteErrorResponse(w, "ID de thread requis", http.StatusBadRequest)
+		return
+	}
+
+	threadID, err := strconv.Atoi(parts[0])
+	if err != nil {
+		WriteErrorResponse(w, "ID de thread invalide", http.StatusBadRequest)
+		return
+	}
+
+	// Récupérer l'utilisateur connecté
+	sessionInfo := middleware.GetUserFromContext(r)
+	if sessionInfo == nil {
+		WriteErrorResponse(w, "Non authentifié", http.StatusUnauthorized)
+		return
+	}
+
+	// Vérifier que l'utilisateur est le créateur du thread
+	thread, err := c.threadService.GetThread(threadID)
+	if err != nil {
+		WriteErrorResponse(w, "Thread non trouvé", http.StatusNotFound)
+		return
+	}
+
+	if thread.AuthorID != sessionInfo.UserID {
+		log.Printf("⚠️ Tentative d'accès admin non autorisée - User %d pour thread %d", 
+			sessionInfo.UserID, threadID)
+		WriteErrorResponse(w, "Accès refusé - Vous n'êtes pas le créateur de ce thread", http.StatusForbidden)
+		return
+	}
+
+	// Router selon l'action
+	switch {
+	case len(parts) >= 2 && parts[1] == "title":
+		c.handleTitleUpdate(w, r, threadID, sessionInfo)
+	case len(parts) >= 3 && parts[1] == "messages" && parts[2] == "delete-multiple":
+		c.handleMultipleMessageDelete(w, r, threadID, sessionInfo)
+	case len(parts) >= 4 && parts[1] == "messages" && parts[2] == "delete":
+		messageID, err := strconv.Atoi(parts[3])
+		if err != nil {
+			WriteErrorResponse(w, "ID de message invalide", http.StatusBadRequest)
+			return
+		}
+		c.handleSingleMessageDelete(w, r, threadID, messageID, sessionInfo)
+	default:
+		WriteErrorResponse(w, "Endpoint invalide", http.StatusBadRequest)
+	}
+}
+
+// handleSingleMessageDelete gère la suppression d'un seul message
+func (c *UserControllers) handleSingleMessageDelete(w http.ResponseWriter, r *http.Request, threadID int, messageID int, sessionInfo *models.SessionInfo) {
+	if r.Method != http.MethodDelete {
+		WriteErrorResponse(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		return
+	}
+
+	log.Printf("🗑️ AdminThreadDetailAPI - Suppression message %d du thread %d", messageID, threadID)
+
+	// Supprimer le message
+	err := c.messageService.DeleteMessageByThreadOwner(messageID, threadID, sessionInfo.UserID)
+	if err != nil {
+		log.Printf("❌ Erreur suppression message: %v", err)
+		WriteErrorResponse(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("✅ Message %d supprimé par le créateur du thread %d", messageID, threadID)
+
+	WriteJSONResponse(w, models.APIResponse{
+		Success: true,
+		Message: "Message supprimé avec succès",
+	}, http.StatusOK)
+}
+
+// handleMultipleMessageDelete gère la suppression multiple de messages
+func (c *UserControllers) handleMultipleMessageDelete(w http.ResponseWriter, r *http.Request, threadID int, sessionInfo *models.SessionInfo) {
+	if r.Method != http.MethodPost {
+		WriteErrorResponse(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var request struct {
+		MessageIDs []int `json:"message_ids"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		WriteErrorResponse(w, "Données JSON invalides", http.StatusBadRequest)
+		return
+	}
+
+	if len(request.MessageIDs) == 0 {
+		WriteErrorResponse(w, "Aucun message sélectionné", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("🗑️ AdminThreadDetailAPI - Suppression multiple %d messages du thread %d", len(request.MessageIDs), threadID)
+
+	// Supprimer les messages
+	err = c.messageService.DeleteMultipleMessagesByThreadOwner(request.MessageIDs, threadID, sessionInfo.UserID)
+	if err != nil {
+		log.Printf("❌ Erreur suppression multiple: %v", err)
+		WriteErrorResponse(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("✅ %d messages supprimés par le créateur du thread %d", len(request.MessageIDs), threadID)
+
+	WriteJSONResponse(w, models.APIResponse{
+		Success: true,
+		Message: fmt.Sprintf("%d message(s) supprimé(s) avec succès", len(request.MessageIDs)),
+	}, http.StatusOK)
+}
+
+// handleTitleUpdate gère la mise à jour du titre
+func (c *UserControllers) handleTitleUpdate(w http.ResponseWriter, r *http.Request, threadID int, sessionInfo *models.SessionInfo) {
+	if r.Method != http.MethodPut {
+		WriteErrorResponse(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var request struct {
+		Title string `json:"title"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		WriteErrorResponse(w, "Données JSON invalides", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("✏️ AdminThreadDetailAPI - Mise à jour titre thread %d", threadID)
+
+	// Mettre à jour le titre
+	err = c.threadService.UpdateThreadTitle(threadID, request.Title, sessionInfo.UserID)
+	if err != nil {
+		log.Printf("❌ Erreur mise à jour titre: %v", err)
+		WriteErrorResponse(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("✅ Titre du thread %d mis à jour par l'utilisateur %d", threadID, sessionInfo.UserID)
+
+	WriteJSONResponse(w, models.APIResponse{
+		Success: true,
+		Message: "Titre mis à jour avec succès",
+		Data:    map[string]string{"new_title": request.Title},
+	}, http.StatusOK)
+}
+
+// =====================================
+// FONCTIONS HELPER POUR ADMIN THREAD DETAIL
+// =====================================
+
+// processAdminThreadDetailTemplate traite le template d'administration spécifique d'un thread
+func processAdminThreadDetailTemplate(htmlContent string, thread models.Thread, messages []models.Message) string {
+	log.Printf("🔄 Traitement template admin thread détail - Thread ID=%d", thread.ID)
+
+	// Récupérer le nom de l'auteur (utilisé pour l'affichage)
+	_ = "Utilisateur inconnu" // authorName utilisé potentiellement plus tard
+	if thread.Author != nil {
+		_ = thread.Author.Username
+	}
+
+	// Gérer l'état du thread
+	statusLabel := "Ouvert"
+	statusClass := "status-open"
+	
+	switch thread.Status {
+	case "closed":
+		statusLabel = "Fermé"
+		statusClass = "status-closed"
+	case "archived":
+		statusLabel = "Archivé"
+		statusClass = "status-archived"
+	}
+
+	// Formater la date
+	formattedDate := thread.CreatedAt.Format("02/01/2006 à 15:04")
+
+	// Boutons d'action selon l'état
+	threadActions := ""
+	if thread.Status == "open" {
+		threadActions = fmt.Sprintf(`
+		<button class="admin-btn btn-close" onclick="changeThreadStatus(%d, 'fermer')">
+			🔒 Fermer le thread
+		</button>
+		<button class="admin-btn btn-archive" onclick="changeThreadStatus(%d, 'archiver')">
+			📦 Archiver le thread
+		</button>`, thread.ID, thread.ID)
+	} else {
+		threadActions = fmt.Sprintf(`
+		<button class="admin-btn btn-reopen" onclick="changeThreadStatus(%d, 'réouvrir')">
+			🔓 Réouvrir le thread
+		</button>`, thread.ID)
+	}
+
+	// Générer la liste des messages pour l'administration
+	messagesHTML := ""
+	if len(messages) == 0 {
+		messagesHTML = `
+		<div class="no-messages">
+			<h3>Aucune réponse</h3>
+			<p>Ce thread n'a pas encore de réponses à gérer.</p>
+		</div>`
+	} else {
+		for _, message := range messages {
+			// Récupérer les infos de l'auteur du message
+			messageAuthorName := "Utilisateur inconnu"
+			messageAuthorAvatar := "/img/avatars/default-avatar.png"
+			if message.Author != nil {
+				messageAuthorName = message.Author.Username
+				if message.Author.ProfilePicture != nil && *message.Author.ProfilePicture != "" {
+					// Utiliser le chemin tel qu'il est stocké dans la base de données
+					messageAuthorAvatar = *message.Author.ProfilePicture
+				}
+			}
+
+			// Formater la date du message
+			messageTime := formatTimeAgo(message.CreatedAt)
+			messageDate := message.CreatedAt.Format("02/01/2006 à 15:04")
+
+			messagesHTML += fmt.Sprintf(`
+			<div class="message-admin-item" data-message-id="%d">
+				<div class="message-admin-header">
+					<div class="message-author-info">
+						<input type="checkbox" class="message-checkbox" data-message-id="%d" onchange="toggleMessageSelection(%d, this)">
+						<img src="%s" alt="Avatar" class="message-avatar">
+						<div class="message-author-details">
+							<span class="message-author-name">@%s</span>
+							<span class="message-time">%s • %s</span>
+						</div>
+					</div>
+					<div class="message-admin-actions">
+						<button class="admin-btn btn-delete" onclick="deleteMessage(%d, '%s')">
+							🗑️ Supprimer
+						</button>
+					</div>
+				</div>
+				
+				<div class="message-content">%s</div>
+				
+				<div class="message-stats">
+					<span>👍 %d likes</span>
+					<span>👎 %d dislikes</span>
+					<span>❤️ %d loves</span>
+				</div>
+			</div>`,
+				message.ID,
+				message.ID,
+				message.ID,
+				messageAuthorAvatar,
+				messageAuthorName,
+				messageTime,
+				messageDate,
+				message.ID,
+				messageAuthorName,
+				message.Content,
+				message.LikeCount,
+				message.DislikeCount,
+				message.LoveCount,
+			)
+		}
+	}
+
+	// Remplacer les placeholders
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREAD_ID%", fmt.Sprintf("%d", thread.ID))
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREAD_TITLE%", thread.Title)
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREAD_STATUS%", statusLabel)
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREAD_STATUS_CLASS%", statusClass)
+	htmlContent = strings.ReplaceAll(htmlContent, "%CREATED_AT%", formattedDate)
+	htmlContent = strings.ReplaceAll(htmlContent, "%VIEW_COUNT%", fmt.Sprintf("%d", thread.ViewCount))
+	htmlContent = strings.ReplaceAll(htmlContent, "%MESSAGE_COUNT%", fmt.Sprintf("%d", thread.MessageCount))
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREAD_ADMIN_ACTIONS%", threadActions)
+	htmlContent = strings.ReplaceAll(htmlContent, "%MESSAGES_ADMIN_LIST%", messagesHTML)
+
+	log.Printf("✅ Template admin thread détail traité avec succès")
+	return htmlContent
+}
+
+// =====================================
+// FONCTIONS HELPER POUR MES THREADS
+// =====================================
+
+// processMyThreadsTemplate traite le template des threads personnels de l'utilisateur
+func processMyThreadsTemplate(htmlContent string, threads []models.Thread, categories []models.Category, meta *models.Meta, username string) string {
+	log.Printf("🔄 Traitement template mes threads - %d threads pour %s", len(threads), username)
+
+	// Générer la liste des catégories pour le filtre
+	categoriesHTML := `<option value="">Toutes les catégories</option>`
+	for _, category := range categories {
+		categoriesHTML += fmt.Sprintf(`<option value="%d">%s</option>`, category.ID, category.Name)
+	}
+
+	// Générer la liste des threads avec des actions d'administration
+	threadsHTML := ""
+	if len(threads) == 0 {
+		threadsHTML = `
+		<div class="no-threads">
+			<div class="empty-state">
+				<h3>📝 Aucun thread créé</h3>
+				<p>Vous n'avez pas encore créé de threads. Commencez à partager vos idées !</p>
+				<a href="/create-thread" class="create-thread-btn">✨ Créer mon premier thread</a>
+			</div>
+		</div>`
+	} else {
+		for _, thread := range threads {
+			// Variables d'auteur (non utilisées dans ce template mais disponibles pour extensions futures)
+			_ = "Utilisateur inconnu" // authorName
+			_ = "unknown"            // authorUsername  
+			_ = "/img/avatars/default-avatar.png" // authorAvatar
+			
+			if thread.Author != nil {
+				_ = thread.Author.Username
+				_ = thread.Author.Username
+				if thread.Author.ProfilePicture != nil && *thread.Author.ProfilePicture != "" {
+					// Utiliser le chemin tel qu'il est stocké dans la base de données
+					_ = *thread.Author.ProfilePicture
+				}
+			}
+
+			// Formater les dates
+			timeAgo := formatTimeAgo(thread.CreatedAt)
+			formattedDate := thread.CreatedAt.Format("02/01/2006")
+
+			// Récupérer le nom de la catégorie
+			categoryName := "Général"
+			for _, category := range categories {
+				if category.ID == *thread.CategoryID {
+					categoryName = category.Name
+					break
+				}
+			}
+
+			// Gérer l'état du thread avec des couleurs
+			statusLabel := "Ouvert"
+			statusClass := "status-open"
+			statusIcon := "🟢"
+			
+			switch thread.Status {
+			case "closed":
+				statusLabel = "Fermé"
+				statusClass = "status-closed"
+				statusIcon = "🟡"
+			case "archived":
+				statusLabel = "Archivé"
+				statusClass = "status-archived"
+				statusIcon = "⚫"
+			}
+
+			// Générer les hashtags
+			hashtagsHTML := ""
+			if len(thread.Hashtags) > 0 {
+				for _, tag := range thread.Hashtags {
+					hashtagsHTML += fmt.Sprintf(`<span class="hashtag">#%s</span>`, tag)
+				}
+			}
+
+			threadsHTML += fmt.Sprintf(`
+			<div class="my-thread-card">
+				<div class="thread-header">
+					<div class="thread-info">
+						<h3 class="thread-title">
+							<a href="/thread/%d">%s</a>
+						</h3>
+						<div class="thread-meta">
+							<span class="thread-status %s">%s %s</span>
+							<span class="thread-category">📁 %s</span>
+							<span class="thread-date">📅 %s (%s)</span>
+						</div>
+					</div>
+					<div class="thread-actions">
+						<a href="/admin/thread/%d" class="action-btn admin-btn">🛠️ Gérer</a>
+						<a href="/thread/%d?ref=my-threads" class="action-btn view-btn">👁️ Voir</a>
+					</div>
+				</div>
+				
+				<div class="thread-content">
+					<p>%s</p>
+					%s
+				</div>
+				
+				<div class="thread-stats">
+					<div class="stats-left">
+						<span class="stat">👁️ %d vues</span>
+						<span class="stat">💬 %d réponses</span>
+						<span class="stat">👍 %d likes</span>
+					</div>
+					<div class="stats-right">
+						<span class="last-activity">Dernière activité: %s</span>
+					</div>
+				</div>
+			</div>`,
+				thread.ID,
+				thread.Title,
+				statusClass,
+				statusIcon,
+				statusLabel,
+				categoryName,
+				formattedDate,
+				timeAgo,
+				thread.ID,
+				thread.ID,
+				thread.Content,
+				hashtagsHTML,
+				thread.ViewCount,
+				thread.MessageCount,
+				thread.LikeCount,
+				formatTimeAgo(thread.LastActivity),
+			)
+		}
+	}
+
+	// Remplacer les placeholders
+	htmlContent = strings.ReplaceAll(htmlContent, "%USERNAME%", username)
+	htmlContent = strings.ReplaceAll(htmlContent, "%THREADS_COUNT%", fmt.Sprintf("%d", len(threads)))
+	htmlContent = strings.ReplaceAll(htmlContent, "%CATEGORIES_OPTIONS%", categoriesHTML)
+	htmlContent = strings.ReplaceAll(htmlContent, "%MY_THREADS_LIST%", threadsHTML)
+
+	// Statistiques par statut
+	openCount := 0
+	closedCount := 0
+	archivedCount := 0
+	
+	for _, thread := range threads {
+		switch thread.Status {
+		case "open":
+			openCount++
+		case "closed":
+			closedCount++
+		case "archived":
+			archivedCount++
+		}
+	}
+
+	htmlContent = strings.ReplaceAll(htmlContent, "%OPEN_COUNT%", fmt.Sprintf("%d", openCount))
+	htmlContent = strings.ReplaceAll(htmlContent, "%CLOSED_COUNT%", fmt.Sprintf("%d", closedCount))
+	htmlContent = strings.ReplaceAll(htmlContent, "%ARCHIVED_COUNT%", fmt.Sprintf("%d", archivedCount))
+
+	log.Printf("✅ Template mes threads traité avec succès")
+	return htmlContent
 }

@@ -3,9 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/variables.css">
     <link rel="stylesheet" href="/styles/threads.css?v=1.0">
     <title>%THREAD_TITLE% / Y</title>
     <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+    <style>
+        /* Styles pour l'état des threads */
+        .thread-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .status-open {
+            background-color: rgba(29, 155, 240, 0.2);
+            color: #1d9bf0;
+        }
+        
+        .status-closed {
+            background-color: rgba(255, 179, 71, 0.2);
+            color: #ffb347;
+        }
+        
+        .status-archived {
+            background-color: rgba(116, 116, 116, 0.2);
+            color: #747474;
+        }
+        
+        /* Boutons de gestion */
+        .thread-management {
+            display: flex;
+            gap: 8px;
+            margin-left: 15px;
+        }
+        
+        .manage-btn {
+            padding: 6px 12px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .manage-btn:hover {
+            background: #444;
+            border-color: #777;
+        }
+        
+        .close-thread:hover {
+            background: rgba(255, 179, 71, 0.2);
+            border-color: #ffb347;
+        }
+        
+        .archive-thread:hover {
+            background: rgba(116, 116, 116, 0.2);
+            border-color: #747474;
+        }
+        
+        .reopen-thread:hover {
+            background: rgba(29, 155, 240, 0.2);
+            border-color: #1d9bf0;
+        }
+        
+        .admin-thread-btn {
+            background: #17bf63 !important;
+            border-color: #17bf63 !important;
+            color: #000 !important;
+            text-decoration: none;
+        }
+        
+        .admin-thread-btn:hover {
+            background: #15a058 !important;
+            border-color: #15a058 !important;
+        }
+        
+        /* Zone de réponse désactivée */
+        .reply-section-disabled {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .reply-disabled-message p {
+            color: #888;
+            margin: 0;
+        }
+        
+        .reply-disabled-message #status-label {
+            font-weight: bold;
+            text-transform: lowercase;
+        }
+        
+        /* Styles pour la navigation séparée */
+        .nav-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        
+        .nav-section-top {
+            margin-bottom: 0;
+        }
+        
+        .nav-section-bottom {
+            margin-top: 0;
+        }
+        
+        .nav-separator {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            margin: 20px 10px;
+            position: relative;
+        }
+        
+        .nav-separator::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: -2px;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 50%;
+        }
+        
+        /* Styles pour le bouton de déconnexion */
+        .logout-btn {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: #2c2c2c;
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .logout-btn:hover {
+            background-color: #404040;
+        }
+        
+        .logout-icon {
+            font-size: 16px;
+            color: #ff9500;
+        }
+        
+        .logout-btn p {
+            font-size: 14px;
+            color: #ffffff;
+            margin: 0;
+            font-weight: normal;
+        }
+    </style>
 </head>
 <body>
     <!-- ===================== -->
@@ -14,25 +178,46 @@
     <div class="banner">
         <div class="bar">
             <div class="logo-button">
-                <img src="../img/logo/inverted.png" alt="Logo" class="icon-logo">
+                <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo">
             </div>
-            <a href="/home" class="bar-button">
-                <img src="../img/icon/home-r.png" alt="Home" class="icon">
-                <p>Home</p>
-            </a>
-            <a href="/threads" class="bar-button">
-                <img src="../img/icon/icon_threads.svg" alt="Threads" class="icon">
-                <p>Threads</p>
-            </a>
-            <a href="/theme" class="bar-button">
-                <img src="../img/icon/brush-r.png" alt="Theme" class="icon">
-                <p>Theme</p>
-            </a>
-            <a href="/profile" class="bar-button">
-                <img src="../img/icon/profile-r.png" alt="Profile" class="icon">
-                <p>Profile</p>
-            </a>
+            
+            <!-- Section navigation principale (haut) -->
+            <div class="nav-section nav-section-top">
+                <a href="/home" class="bar-button">
+                    <img src="/img/icon/home-r.png" alt="Home" class="icon">
+                    <p>Home</p>
+                </a>
+                <a href="/theme" class="bar-button">
+                    <img src="/img/icon/brush-r.png" alt="Theme" class="icon">
+                    <p>Theme</p>
+                </a>
+                <a href="/profile" class="bar-button">
+                    <img src="/img/icon/profile-r.png" alt="Profile" class="icon">
+                    <p>Profile</p>
+                </a>
+            </div>
+            
+            <!-- Séparateur -->
+            <div class="nav-separator"></div>
+            
+            <!-- Section threads (bas) -->
+            <div class="nav-section nav-section-bottom">
+                <a href="/threads" class="bar-button">
+                    <img src="/img/icon/icon_threads.svg" alt="Threads" class="icon">
+                    <p>Threads</p>
+                </a>
+                <a href="/my-threads" class="bar-button">
+                    <img src="/img/icon/icon_threads.svg" alt="Mes Threads" class="icon">
+                    <p>Mes Threads</p>
+                </a>
+            </div>
             <div class="account">
+                <div class="account-info">
+                    <button onclick="logout()" class="logout-btn">
+                        <span class="logout-icon">🚪</span>
+                        <p>Déconnexion</p>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -44,9 +229,16 @@
         <div class="main">
             <!-- Bouton de retour -->
             <div class="thread-nav">
-                <a href="/threads" class="back-button">← Retour aux threads</a>
+                <a href="/threads" class="back-button" id="back-button">← Retour aux threads</a>
                 <div class="thread-actions">
                     <a href="/create-thread" class="create-btn">✏️ Nouveau thread</a>
+                    <!-- Boutons de gestion d'état (visibles seulement pour l'auteur) -->
+                    <div class="thread-management" style="display: none;" data-author-id="%AUTHOR_ID%">
+                        <a href="/admin/thread/%THREAD_ID%" class="manage-btn admin-thread-btn">🛠️ Gérer ce thread</a>
+                        <button class="manage-btn close-thread" data-thread-id="%THREAD_ID%">🔒 Fermer</button>
+                        <button class="manage-btn archive-thread" data-thread-id="%THREAD_ID%">📦 Archiver</button>
+                        <button class="manage-btn reopen-thread" data-thread-id="%THREAD_ID%" style="display: none;">🔓 Réouvrir</button>
+                    </div>
                 </div>
             </div>
 
@@ -65,6 +257,7 @@
                         <div class="thread-time">
                             <span class="created-at">%CREATED_AT%</span>
                             <span class="thread-views">👁️ %VIEW_COUNT% vues</span>
+                            <span class="thread-status %THREAD_STATUS_CLASS%">📌 %THREAD_STATUS%</span>
                         </div>
                     </div>
                 </div>
@@ -106,8 +299,8 @@
                 </div>
             </div>
 
-            <!-- Zone de réponse -->
-            <div class="reply-section">
+            <!-- Zone de réponse (conditionnelle selon l'état) -->
+            <div class="reply-section" id="reply-section" data-thread-status="%THREAD_STATUS_CLASS%">
                 <h3>Répondre au thread</h3>
                 <form class="reply-form" action="/api/messages" method="POST">
                     <input type="hidden" name="thread_id" value="%THREAD_ID%">
@@ -117,6 +310,13 @@
                         <button type="submit" class="reply-btn">Répondre</button>
                     </div>
                 </form>
+            </div>
+            
+            <!-- Message si thread fermé/archivé -->
+            <div class="reply-section-disabled" id="reply-disabled" style="display: none;">
+                <div class="reply-disabled-message">
+                    <p>Ce thread est <span id="status-label">%THREAD_STATUS%</span> et n'accepte plus de nouveaux messages.</p>
+                </div>
             </div>
 
             <!-- Messages/Réponses -->
@@ -168,12 +368,16 @@
                     <span class="label">Vues:</span>
                     <span class="value">%VIEW_COUNT%</span>
                 </div>
+                <div class="info-item">
+                    <span class="label">État:</span>
+                    <span class="value %THREAD_STATUS_CLASS%">%THREAD_STATUS%</span>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Script de gestion des réactions -->
-    <script src="../js/reactions.js"></script>
+    <script src="/js/reactions.js"></script>
     
     <script>
         // Compteur de caractères pour la réponse
@@ -195,10 +399,127 @@
 
         // Gestion des réactions - maintenant gérée par reactions.js
         // Le script reactions.js se charge automatiquement de cette fonctionnalité
+        
+        // Gestion de l'affichage conditionnel selon l'état du thread
+        function initThreadStateManagement() {
+            const threadStatus = document.querySelector('#reply-section').dataset.threadStatus;
+            const replySection = document.getElementById('reply-section');
+            const replyDisabled = document.getElementById('reply-disabled');
+            const threadManagement = document.querySelector('.thread-management');
+            
+            // Masquer/afficher la zone de réponse selon l'état
+            if (threadStatus === 'status-closed' || threadStatus === 'status-archived') {
+                replySection.style.display = 'none';
+                replyDisabled.style.display = 'block';
+            }
+            
+            // Gérer l'affichage des boutons de gestion selon l'état
+            const closeBtn = document.querySelector('.close-thread');
+            const archiveBtn = document.querySelector('.archive-thread');
+            const reopenBtn = document.querySelector('.reopen-thread');
+            
+            if (threadStatus === 'status-closed') {
+                closeBtn.style.display = 'none';
+                reopenBtn.style.display = 'inline-block';
+            } else if (threadStatus === 'status-archived') {
+                closeBtn.style.display = 'none';
+                archiveBtn.style.display = 'none';
+                reopenBtn.style.display = 'inline-block';
+            }
+            
+            // Vérifier si l'utilisateur connecté est l'auteur du thread
+            const currentUserStorageKey = 'current_user_id';
+            const currentUserId = localStorage.getItem(currentUserStorageKey);
+            const threadAuthorId = threadManagement?.dataset.authorId;
+            
+            if (currentUserId && threadAuthorId && currentUserId === threadAuthorId) {
+                threadManagement.style.display = 'flex';
+            }
+        }
+        
+        // Gestion des actions de changement d'état
+        function initThreadActions() {
+            document.addEventListener('click', async function(e) {
+                const threadId = e.target.dataset.threadId;
+                if (!threadId) return;
+                
+                let action = '';
+                let endpoint = '';
+                let message = '';
+                
+                if (e.target.classList.contains('close-thread')) {
+                    action = 'fermer';
+                    endpoint = `/api/threads/close/${threadId}`;
+                    message = 'Thread fermé avec succès';
+                } else if (e.target.classList.contains('archive-thread')) {
+                    action = 'archiver';
+                    endpoint = `/api/threads/archive/${threadId}`;
+                    message = 'Thread archivé avec succès';
+                } else if (e.target.classList.contains('reopen-thread')) {
+                    action = 'réouvrir';
+                    endpoint = `/api/threads/reopen/${threadId}`;
+                    message = 'Thread réouvert avec succès';
+                } else {
+                    return;
+                }
+                
+                if (!confirm(`Êtes-vous sûr de vouloir ${action} ce thread ?`)) {
+                    return;
+                }
+                
+                try {
+                    e.target.disabled = true;
+                    e.target.textContent = 'En cours...';
+                    
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        alert(message);
+                        window.location.reload(); // Recharger pour mettre à jour l'affichage
+                    } else {
+                        const error = await response.json();
+                        alert('Erreur: ' + (error.message || 'Une erreur est survenue'));
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('Erreur de communication avec le serveur');
+                } finally {
+                    e.target.disabled = false;
+                    // Le texte sera restauré au rechargement de la page
+                }
+            });
+        }
+        
+        // Gérer le bouton de retour selon la provenance
+        function setupBackButton() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ref = urlParams.get('ref');
+            const backButton = document.getElementById('back-button');
+            
+            if (ref === 'my-threads') {
+                backButton.href = '/my-threads';
+                backButton.textContent = '← Retour à mes threads';
+            } else {
+                backButton.href = '/threads';
+                backButton.textContent = '← Retour aux threads';
+            }
+        }
+        
+        // Initialiser les fonctionnalités
+        document.addEventListener('DOMContentLoaded', function() {
+            setupBackButton();
+            initThreadStateManagement();
+            initThreadActions();
+        });
     </script>
     
     <!-- Scripts pour thème et authentification -->
-    <script src="../js/theme_loader.js"></script>
-    <script src="../js/auth-handler.js"></script>
+    <script src="/js/theme_loader.js"></script>
+    <script src="/js/auth-handler.js"></script>
 </body>
 </html> 

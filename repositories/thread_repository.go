@@ -67,7 +67,7 @@ func (r *ThreadRepository) GetByID(threadID int) (*models.Thread, error) {
 		SELECT t.id_thread, t.title, t.content, t.author_id, t.category_id, t.status,
 		       t.created_at, t.updated_at, t.is_pinned, t.view_count, t.like_count,
 		       t.dislike_count, t.love_count, t.message_count, t.last_activity,
-		       u.username, u.email
+		       u.username, u.email, u.profile_picture
 		FROM threads t
 		JOIN users u ON t.author_id = u.id_user
 		WHERE t.id_thread = ?
@@ -94,6 +94,7 @@ func (r *ThreadRepository) GetByID(threadID int) (*models.Thread, error) {
 		&thread.LastActivity,
 		&author.Username,
 		&author.Email,
+		&author.ProfilePicture,
 	)
 
 	if err != nil {
@@ -116,7 +117,7 @@ func (r *ThreadRepository) GetAll(limit, offset int) ([]models.Thread, error) {
 		SELECT t.id_thread, t.title, t.content, t.author_id, t.category_id, t.status,
 		       t.created_at, t.updated_at, t.is_pinned, t.view_count, t.like_count,
 		       t.dislike_count, t.love_count, t.message_count, t.last_activity,
-		       u.username, u.email
+		       u.username, u.email, u.profile_picture
 		FROM threads t
 		JOIN users u ON t.author_id = u.id_user
 		ORDER BY t.is_pinned DESC, t.last_activity DESC
@@ -152,6 +153,7 @@ func (r *ThreadRepository) GetAll(limit, offset int) ([]models.Thread, error) {
 			&thread.LastActivity,
 			&author.Username,
 			&author.Email,
+			&author.ProfilePicture,
 		)
 
 		if err != nil {
@@ -174,7 +176,7 @@ func (r *ThreadRepository) GetByUserID(userID int, limit, offset int) ([]models.
 		SELECT t.id_thread, t.title, t.content, t.author_id, t.category_id, t.status,
 		       t.created_at, t.updated_at, t.is_pinned, t.view_count, t.like_count,
 		       t.dislike_count, t.love_count, t.message_count, t.last_activity,
-		       u.username, u.email
+		       u.username, u.email, u.profile_picture
 		FROM threads t
 		JOIN users u ON t.author_id = u.id_user
 		WHERE t.author_id = ?
@@ -211,6 +213,7 @@ func (r *ThreadRepository) GetByUserID(userID int, limit, offset int) ([]models.
 			&thread.LastActivity,
 			&author.Username,
 			&author.Email,
+			&author.ProfilePicture,
 		)
 
 		if err != nil {
@@ -322,9 +325,9 @@ func ProcessHashtags(content string) []string {
 	return hashtags
 }
 
-// GetTotalCount récupère le nombre total de threads actifs
+// GetTotalCount récupère le nombre total de threads (tous statuts)
 func (r *ThreadRepository) GetTotalCount() (int, error) {
-	query := `SELECT COUNT(*) FROM threads WHERE status = 'active'`
+	query := `SELECT COUNT(*) FROM threads WHERE status != 'deleted'`
 	
 	var count int
 	err := r.db.QueryRow(query).Scan(&count)
@@ -333,4 +336,192 @@ func (r *ThreadRepository) GetTotalCount() (int, error) {
 	}
 	
 	return count, nil
+}
+
+// UpdateStatus met à jour le statut d'un thread
+func (r *ThreadRepository) UpdateStatus(threadID int, status string) error {
+	query := `UPDATE threads SET status = ?, updated_at = NOW() WHERE id_thread = ?`
+	
+	result, err := r.db.Exec(query, status, threadID)
+	if err != nil {
+		return fmt.Errorf("erreur mise à jour statut: %v", err)
+	}
+	
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("erreur vérification mise à jour: %v", err)
+	}
+	
+	if rowsAffected == 0 {
+		return fmt.Errorf("thread non trouvé")
+	}
+	
+	return nil
+}
+
+// GetVisibleThreadsCount récupère le nombre de threads visibles (non archivés)
+func (r *ThreadRepository) GetVisibleThreadsCount() (int, error) {
+	query := `SELECT COUNT(*) FROM threads WHERE status IN ('open', 'closed')`
+	
+	var count int
+	err := r.db.QueryRow(query).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("erreur compte threads visibles: %v", err)
+	}
+	
+	return count, nil
+}
+
+// GetVisibleThreads récupère les threads visibles (non archivés) avec pagination
+func (r *ThreadRepository) GetVisibleThreads(limit, offset int) ([]models.Thread, error) {
+	query := `
+		SELECT t.id_thread, t.title, t.content, t.author_id, t.category_id, t.status,
+		       t.created_at, t.updated_at, t.is_pinned, t.view_count, t.like_count,
+		       t.dislike_count, t.love_count, t.message_count, t.last_activity,
+		       u.username, u.email, u.profile_picture
+		FROM threads t
+		JOIN users u ON t.author_id = u.id_user
+		WHERE t.status IN ('open', 'closed')
+		ORDER BY t.is_pinned DESC, t.last_activity DESC
+		LIMIT ? OFFSET ?
+	`
+
+	rows, err := r.db.Query(query, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("erreur récupération threads visibles: %v", err)
+	}
+	defer rows.Close()
+
+	var threads []models.Thread
+	for rows.Next() {
+		var thread models.Thread
+		var author models.User
+
+		err := rows.Scan(
+			&thread.ID,
+			&thread.Title,
+			&thread.Content,
+			&thread.AuthorID,
+			&thread.CategoryID,
+			&thread.Status,
+			&thread.CreatedAt,
+			&thread.UpdatedAt,
+			&thread.IsPinned,
+			&thread.ViewCount,
+			&thread.LikeCount,
+			&thread.DislikeCount,
+			&thread.LoveCount,
+			&thread.MessageCount,
+			&thread.LastActivity,
+			&author.Username,
+			&author.Email,
+			&author.ProfilePicture,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("erreur scan thread: %v", err)
+		}
+
+		// Attacher l'auteur
+		author.ID = thread.AuthorID
+		thread.Author = &author
+
+		threads = append(threads, thread)
+	}
+
+	return threads, nil
+}
+
+// GetCountByStatus récupère le nombre de threads pour un statut donné
+func (r *ThreadRepository) GetCountByStatus(status string) (int, error) {
+	query := `SELECT COUNT(*) FROM threads WHERE status = ?`
+	
+	var count int
+	err := r.db.QueryRow(query, status).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("erreur compte threads par statut: %v", err)
+	}
+	
+	return count, nil
+}
+
+// GetByStatus récupère les threads filtrés par statut avec pagination
+func (r *ThreadRepository) GetByStatus(status string, limit, offset int) ([]models.Thread, error) {
+	query := `
+		SELECT t.id_thread, t.title, t.content, t.author_id, t.category_id, t.status,
+		       t.created_at, t.updated_at, t.is_pinned, t.view_count, t.like_count,
+		       t.dislike_count, t.love_count, t.message_count, t.last_activity,
+		       u.username, u.email, u.profile_picture
+		FROM threads t
+		JOIN users u ON t.author_id = u.id_user
+		WHERE t.status = ?
+		ORDER BY t.is_pinned DESC, t.last_activity DESC
+		LIMIT ? OFFSET ?
+	`
+
+	rows, err := r.db.Query(query, status, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("erreur récupération threads par statut: %v", err)
+	}
+	defer rows.Close()
+
+	var threads []models.Thread
+	for rows.Next() {
+		var thread models.Thread
+		var author models.User
+
+		err := rows.Scan(
+			&thread.ID,
+			&thread.Title,
+			&thread.Content,
+			&thread.AuthorID,
+			&thread.CategoryID,
+			&thread.Status,
+			&thread.CreatedAt,
+			&thread.UpdatedAt,
+			&thread.IsPinned,
+			&thread.ViewCount,
+			&thread.LikeCount,
+			&thread.DislikeCount,
+			&thread.LoveCount,
+			&thread.MessageCount,
+			&thread.LastActivity,
+			&author.Username,
+			&author.Email,
+			&author.ProfilePicture,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("erreur scan thread: %v", err)
+		}
+
+		// Attacher l'auteur
+		author.ID = thread.AuthorID
+		thread.Author = &author
+
+		threads = append(threads, thread)
+	}
+
+	return threads, nil
+}
+
+// UpdateTitle met à jour le titre d'un thread
+func (r *ThreadRepository) UpdateTitle(threadID int, newTitle string) error {
+	query := `UPDATE threads SET title = ?, updated_at = NOW() WHERE id_thread = ?`
+	
+	result, err := r.db.Exec(query, newTitle, threadID)
+	if err != nil {
+		return fmt.Errorf("erreur lors de la mise à jour du titre: %w", err)
+	}
+	
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("erreur vérification mise à jour: %v", err)
+	}
+	
+	if rowsAffected == 0 {
+		return fmt.Errorf("thread non trouvé")
+	}
+	
+	return nil
 } 

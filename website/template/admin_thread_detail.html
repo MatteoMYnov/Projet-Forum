@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/variables.css">
+    <link rel="stylesheet" href="/styles/threads.css?v=1.0">
+    <title>Administration du Thread - %THREAD_TITLE% / Y</title>
+    <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+    <style>
+        .admin-thread-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+        
+        .admin-header h1 {
+            color: #fff;
+            margin: 0 0 15px 0;
+            font-size: 24px;
+        }
+        
+        .thread-admin-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-card {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #444;
+        }
+        
+        .info-label {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .thread-actions-admin {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .admin-btn {
+            padding: 10px 20px;
+            border: 1px solid #555;
+            border-radius: 8px;
+            background: #333;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .admin-btn:hover {
+            background: #444;
+            border-color: #777;
+        }
+        
+        .btn-close {
+            background: #ffb347;
+            border-color: #ffb347;
+            color: #000;
+        }
+        
+        .btn-archive {
+            background: #747474;
+            border-color: #747474;
+        }
+        
+        .btn-reopen {
+            background: #4caf50;
+            border-color: #4caf50;
+        }
+        
+        .messages-admin-section {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid #333;
+        }
+        
+        .messages-admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .messages-admin-header h2 {
+            color: #fff;
+            margin: 0;
+            font-size: 20px;
+        }
+        
+        .message-admin-item {
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .message-admin-item.selected {
+            border-color: #1d9bf0;
+            background: rgba(29, 155, 240, 0.1);
+        }
+        
+        .message-admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .message-author-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .message-author-details {
+            color: #fff;
+        }
+        
+        .message-author-name {
+            font-weight: bold;
+            display: block;
+        }
+        
+        .message-time {
+            color: #888;
+            font-size: 12px;
+        }
+        
+        .message-content {
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .message-admin-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .message-checkbox {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        .message-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .bulk-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-delete {
+            background: #f44336;
+            border-color: #f44336;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .btn-delete:hover {
+            background: #da190b;
+        }
+        
+        .message-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-open {
+            background-color: rgba(29, 155, 240, 0.2);
+            color: #1d9bf0;
+        }
+        
+        .status-closed {
+            background-color: rgba(255, 179, 71, 0.2);
+            color: #ffb347;
+        }
+        
+        .status-archived {
+            background-color: rgba(116, 116, 116, 0.2);
+            color: #747474;
+        }
+        
+        .no-messages {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .back-nav {
+            margin-bottom: 20px;
+        }
+        
+        .back-link {
+            color: #1d9bf0;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .delete-confirmation {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .delete-modal {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #333;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .delete-modal h3 {
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        
+        .delete-modal p {
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        /* Styles pour l'édition de titre */
+        .title-edit-form {
+            display: none;
+            margin-top: 10px;
+        }
+        
+        .title-edit-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background: #333;
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .title-edit-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Styles pour la navigation séparée */
+        .nav-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        
+        .nav-section-top {
+            margin-bottom: 0;
+        }
+        
+        .nav-section-bottom {
+            margin-top: 0;
+        }
+        
+        .nav-separator {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            margin: 20px 10px;
+            position: relative;
+        }
+        
+        .nav-separator::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: -2px;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 50%;
+        }
+        
+        /* Styles pour le bouton de déconnexion */
+        .logout-btn {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: #2c2c2c;
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .logout-btn:hover {
+            background-color: #404040;
+        }
+        
+        .logout-icon {
+            font-size: 16px;
+            color: #ff9500;
+        }
+        
+        .logout-btn p {
+            font-size: 14px;
+            color: #ffffff;
+            margin: 0;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+    <!-- ===================== -->
+    <!-- COLONNE DE GAUCHE (BANNIÈRE + BAR) -->
+    <!-- ===================== -->
+    <div class="banner">
+        <div class="bar">
+            <div class="logo-button">
+                <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo">
+            </div>
+            
+            <!-- Section navigation principale (haut) -->
+            <div class="nav-section nav-section-top">
+                <a href="/home" class="bar-button">
+                    <img src="/img/icon/home-r.png" alt="Home" class="icon">
+                    <p>Home</p>
+                </a>
+                <a href="/theme" class="bar-button">
+                    <img src="/img/icon/brush-r.png" alt="Theme" class="icon">
+                    <p>Theme</p>
+                </a>
+                <a href="/profile" class="bar-button">
+                    <img src="/img/icon/profile-r.png" alt="Profile" class="icon">
+                    <p>Profile</p>
+                </a>
+            </div>
+            
+            <!-- Séparateur -->
+            <div class="nav-separator"></div>
+            
+            <!-- Section threads (bas) -->
+            <div class="nav-section nav-section-bottom">
+                <a href="/threads" class="bar-button">
+                    <img src="/img/icon/icon_threads.svg" alt="Threads" class="icon">
+                    <p>Threads</p>
+                </a>
+                <a href="/my-threads" class="bar-button">
+                    <img src="/img/icon/icon_threads.svg" alt="Mes Threads" class="icon">
+                    <p>Mes Threads</p>
+                </a>
+            </div>
+            <div class="account">
+                <div class="account-info">
+                    <button onclick="logout()" class="logout-btn">
+                        <span class="logout-icon">🚪</span>
+                        <p>Déconnexion</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== -->
+    <!-- CONTENU PRINCIPAL -->
+    <!-- ===================== -->
+    <div class="container">
+        <div class="admin-thread-container">
+            <!-- Navigation retour -->
+            <div class="back-nav">
+                <a href="/thread/%THREAD_ID%" class="back-link">← Retour au thread</a>
+            </div>
+
+            <!-- En-tête d'administration du thread -->
+            <div class="admin-header">
+                <h1>🛠️ Administration du Thread</h1>
+                
+                <div class="thread-admin-info">
+                    <div class="info-card">
+                        <div class="info-label">Titre</div>
+                        <div class="info-value" id="thread-title-display">%THREAD_TITLE%</div>
+                        <button class="admin-btn" onclick="editTitle()" id="edit-title-btn">✏️ Modifier le titre</button>
+                        
+                        <!-- Formulaire d'édition de titre -->
+                        <div class="title-edit-form" id="title-edit-form">
+                            <input type="text" class="title-edit-input" id="title-edit-input" value="%THREAD_TITLE%" maxlength="200">
+                            <div class="title-edit-actions">
+                                <button class="admin-btn" onclick="saveTitle()">💾 Sauvegarder</button>
+                                <button class="admin-btn" onclick="cancelTitleEdit()">❌ Annuler</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-label">Statut</div>
+                        <div class="info-value">
+                            <span class="status-badge %THREAD_STATUS_CLASS%">%THREAD_STATUS%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-label">Créé le</div>
+                        <div class="info-value">%CREATED_AT%</div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-label">Statistiques</div>
+                        <div class="info-value">%VIEW_COUNT% vues • %MESSAGE_COUNT% réponses</div>
+                    </div>
+                </div>
+
+                <!-- Actions sur le thread -->
+                <div class="thread-actions-admin">
+                    <a href="/thread/%THREAD_ID%" class="admin-btn" target="_blank">
+                        👁️ Voir le thread
+                    </a>
+                    %THREAD_ADMIN_ACTIONS%
+                </div>
+            </div>
+
+            <!-- Section des messages -->
+            <div class="messages-admin-section">
+                <div class="messages-admin-header">
+                    <h2>💬 Gestion des Réponses</h2>
+                    <div class="message-controls">
+                        <div style="color: #888; font-size: 14px;">
+                            En tant que créateur, vous pouvez supprimer toutes les réponses
+                        </div>
+                        <div class="bulk-actions">
+                            <button class="admin-btn" onclick="selectAllMessages()" id="select-all-btn">☑️ Tout sélectionner</button>
+                            <button class="admin-btn btn-delete" onclick="deleteSelectedMessages()" id="delete-selected-btn" style="display: none;">🗑️ Supprimer sélectionnés</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="messages-list">
+                    %MESSAGES_ADMIN_LIST%
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation de suppression -->
+    <div class="delete-confirmation" id="delete-modal">
+        <div class="delete-modal">
+            <h3>Confirmer la suppression</h3>
+            <p id="delete-message">Êtes-vous sûr de vouloir supprimer cette réponse ? Cette action est irréversible.</p>
+            <div class="modal-actions">
+                <button class="admin-btn" onclick="cancelDelete()">Annuler</button>
+                <button class="admin-btn btn-delete" onclick="confirmDelete()" id="confirm-delete-btn">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        let messageToDelete = null;
+        let selectedMessages = new Set();
+        let isEditingTitle = false;
+
+        // Fonction pour changer le statut du thread
+        async function changeThreadStatus(threadId, action) {
+            if (!confirm(`Êtes-vous sûr de vouloir ${action} ce thread ?`)) {
+                return;
+            }
+
+            try {
+                let endpoint = '';
+                switch(action) {
+                    case 'fermer':
+                        endpoint = `/api/threads/close/${threadId}`;
+                        break;
+                    case 'archiver':
+                        endpoint = `/api/threads/archive/${threadId}`;
+                        break;
+                    case 'réouvrir':
+                        endpoint = `/api/threads/reopen/${threadId}`;
+                        break;
+                }
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert(`Thread ${action} avec succès`);
+                    window.location.reload();
+                } else {
+                    const error = await response.json();
+                    alert('Erreur: ' + (error.message || 'Action échouée'));
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de communication');
+            }
+        }
+
+        // Fonction pour demander la suppression d'un message
+        function deleteMessage(messageId, authorName) {
+            messageToDelete = messageId;
+            document.getElementById('delete-message').textContent = 
+                `Êtes-vous sûr de vouloir supprimer la réponse de @${authorName} ? Cette action est irréversible.`;
+            document.getElementById('delete-modal').style.display = 'flex';
+        }
+
+        // Annuler la suppression
+        function cancelDelete() {
+            messageToDelete = null;
+            document.getElementById('delete-modal').style.display = 'none';
+        }
+
+        // Confirmer la suppression
+        async function confirmDelete() {
+            if (!messageToDelete) return;
+
+            const confirmBtn = document.getElementById('confirm-delete-btn');
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Suppression...';
+
+            try {
+                const threadId = window.location.pathname.split('/').pop();
+                const response = await fetch(`/api/admin/thread/${threadId}/messages/delete/${messageToDelete}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    // Supprimer l'élément du DOM
+                    const messageElement = document.querySelector(`[data-message-id="${messageToDelete}"]`);
+                    if (messageElement) {
+                        messageElement.remove();
+                    }
+                    
+                    cancelDelete();
+                    
+                    // Recharger pour mettre à jour les compteurs
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    const error = await response.json();
+                    alert('Erreur: ' + (error.message || 'Impossible de supprimer le message'));
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de communication');
+            } finally {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Supprimer';
+            }
+        }
+
+        // Fermer le modal en cliquant à l'extérieur
+        document.getElementById('delete-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cancelDelete();
+            }
+        });
+
+        // ==========================================
+        // FONCTIONS POUR LA GESTION DES TITRES
+        // ==========================================
+
+        function editTitle() {
+            if (isEditingTitle) return;
+            
+            isEditingTitle = true;
+            document.getElementById('thread-title-display').style.display = 'none';
+            document.getElementById('edit-title-btn').style.display = 'none';
+            document.getElementById('title-edit-form').style.display = 'block';
+            document.getElementById('title-edit-input').focus();
+        }
+
+        function cancelTitleEdit() {
+            isEditingTitle = false;
+            document.getElementById('thread-title-display').style.display = 'block';
+            document.getElementById('edit-title-btn').style.display = 'inline-block';
+            document.getElementById('title-edit-form').style.display = 'none';
+            
+            // Restaurer la valeur originale
+            const originalTitle = document.getElementById('thread-title-display').textContent;
+            document.getElementById('title-edit-input').value = originalTitle;
+        }
+
+        async function saveTitle() {
+            const newTitle = document.getElementById('title-edit-input').value.trim();
+            
+            if (newTitle === '') {
+                alert('Le titre ne peut pas être vide');
+                return;
+            }
+            
+            if (newTitle.length < 3) {
+                alert('Le titre doit contenir au moins 3 caractères');
+                return;
+            }
+            
+            try {
+                const threadId = window.location.pathname.split('/').pop();
+                const response = await fetch(`/api/admin/thread/${threadId}/title`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: newTitle
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // Mettre à jour l'affichage
+                    document.getElementById('thread-title-display').textContent = newTitle;
+                    document.title = `Administration du Thread - ${newTitle} / Y`;
+                    
+                    cancelTitleEdit();
+                    alert('Titre mis à jour avec succès !');
+                } else {
+                    const error = await response.json();
+                    alert('Erreur: ' + (error.message || 'Impossible de mettre à jour le titre'));
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de communication');
+            }
+        }
+
+        // ==========================================
+        // FONCTIONS POUR LA SÉLECTION MULTIPLE
+        // ==========================================
+
+        function toggleMessageSelection(messageId, checkbox) {
+            if (checkbox.checked) {
+                selectedMessages.add(messageId);
+            } else {
+                selectedMessages.delete(messageId);
+            }
+            
+            updateSelectionUI();
+        }
+
+        function selectAllMessages() {
+            const checkboxes = document.querySelectorAll('.message-checkbox');
+            const selectAllBtn = document.getElementById('select-all-btn');
+            
+            if (selectedMessages.size === checkboxes.length) {
+                // Tout désélectionner
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                    const messageId = parseInt(checkbox.dataset.messageId);
+                    selectedMessages.delete(messageId);
+                });
+                selectAllBtn.textContent = '☑️ Tout sélectionner';
+            } else {
+                // Tout sélectionner
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                    const messageId = parseInt(checkbox.dataset.messageId);
+                    selectedMessages.add(messageId);
+                });
+                selectAllBtn.textContent = '☐ Tout désélectionner';
+            }
+            
+            updateSelectionUI();
+        }
+
+        function updateSelectionUI() {
+            const deleteBtn = document.getElementById('delete-selected-btn');
+            const selectAllBtn = document.getElementById('select-all-btn');
+            const checkboxes = document.querySelectorAll('.message-checkbox');
+            
+            if (selectedMessages.size > 0) {
+                deleteBtn.style.display = 'inline-block';
+                deleteBtn.textContent = `🗑️ Supprimer (${selectedMessages.size})`;
+            } else {
+                deleteBtn.style.display = 'none';
+            }
+            
+            // Mettre à jour le bouton "tout sélectionner"
+            if (selectedMessages.size === checkboxes.length && checkboxes.length > 0) {
+                selectAllBtn.textContent = '☐ Tout désélectionner';
+            } else {
+                selectAllBtn.textContent = '☑️ Tout sélectionner';
+            }
+            
+            // Mettre à jour l'apparence des messages sélectionnés
+            document.querySelectorAll('.message-admin-item').forEach(item => {
+                const messageId = parseInt(item.dataset.messageId);
+                if (selectedMessages.has(messageId)) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        async function deleteSelectedMessages() {
+            if (selectedMessages.size === 0) return;
+            
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedMessages.size} message(s) ? Cette action est irréversible.`)) {
+                return;
+            }
+            
+            try {
+                const threadId = window.location.pathname.split('/').pop();
+                const response = await fetch(`/api/admin/thread/${threadId}/messages/delete-multiple`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message_ids: Array.from(selectedMessages)
+                    })
+                });
+
+                if (response.ok) {
+                    // Supprimer les éléments du DOM
+                    selectedMessages.forEach(messageId => {
+                        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+                        if (messageElement) {
+                            messageElement.remove();
+                        }
+                    });
+                    
+                    selectedMessages.clear();
+                    updateSelectionUI();
+                    
+                    alert('Messages supprimés avec succès !');
+                    
+                    // Recharger pour mettre à jour les compteurs
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    const error = await response.json();
+                    alert('Erreur: ' + (error.message || 'Impossible de supprimer les messages'));
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de communication');
+            }
+        }
+    </script>
+    
+    <!-- Scripts pour thème et authentification -->
+    <script src="../js/theme_loader.js"></script>
+    <script src="../js/auth-handler.js"></script>
+</body>
+</html> 

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/variables.css">
+    <link rel="stylesheet" href="/styles/threads.css?v=1.0">
+    <title>Mes Threads - %USERNAME% / Y</title>
+    <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+    <style>
+        .my-threads-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+
+        .page-header h1 {
+            color: #fff;
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+
+        .page-subtitle {
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #444;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            display: block;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .stat-card.open .stat-number {
+            color: #1d9bf0;
+        }
+
+        .stat-card.closed .stat-number {
+            color: #ffb347;
+        }
+
+        .stat-card.archived .stat-number {
+            color: #747474;
+        }
+
+        .controls-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background: #2a2a2a;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .create-thread-btn {
+            background: #1d9bf0;
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .create-thread-btn:hover {
+            background: #1a8cd8;
+            transform: translateY(-2px);
+        }
+
+        .my-thread-card {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+            transition: all 0.2s;
+        }
+
+        .my-thread-card:hover {
+            border-color: #555;
+            transform: translateY(-2px);
+        }
+
+        .thread-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .thread-info {
+            flex: 1;
+        }
+
+        .thread-title {
+            margin: 0 0 10px 0;
+        }
+
+        .thread-title a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .thread-title a:hover {
+            color: #1d9bf0;
+        }
+
+        .thread-meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .thread-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-open {
+            background-color: rgba(29, 155, 240, 0.2);
+            color: #1d9bf0;
+        }
+
+        .status-closed {
+            background-color: rgba(255, 179, 71, 0.2);
+            color: #ffb347;
+        }
+
+        .status-archived {
+            background-color: rgba(116, 116, 116, 0.2);
+            color: #747474;
+        }
+
+        .thread-category, .thread-date {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .thread-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .admin-btn {
+            background: #17bf63;
+            color: #000;
+        }
+
+        .admin-btn:hover {
+            background: #15a058;
+        }
+
+        .view-btn {
+            background: #444;
+            color: #fff;
+        }
+
+        .view-btn:hover {
+            background: #555;
+        }
+
+        .thread-content {
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .thread-content p {
+            margin: 0 0 10px 0;
+        }
+
+        .hashtag {
+            display: inline-block;
+            background: rgba(29, 155, 240, 0.1);
+            color: #1d9bf0;
+            padding: 2px 8px;
+            margin: 2px;
+            border-radius: 12px;
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        .thread-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+            flex-wrap: wrap;
+        }
+
+        .stats-left {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .stats-right {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .no-threads {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 40px;
+            border: 1px solid #333;
+        }
+
+        .empty-state h3 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .empty-state p {
+            color: #888;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .my-threads-container {
+                padding: 15px;
+            }
+
+            .controls-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filters {
+                justify-content: center;
+            }
+
+            .thread-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .thread-actions {
+                align-self: flex-start;
+            }
+
+            .thread-meta {
+                justify-content: flex-start;
+            }
+
+            .thread-stats {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+        }
+        
+        /* Styles pour la navigation séparée */
+        .nav-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        
+        .nav-section-top {
+            margin-bottom: 0;
+        }
+        
+        .nav-section-bottom {
+            margin-top: 0;
+        }
+        
+        .nav-separator {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            margin: 20px 10px;
+            position: relative;
+        }
+        
+        .nav-separator::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: -2px;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 50%;
+        }
+        
+        /* Styles pour le bouton de déconnexion */
+        .logout-btn {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: #2c2c2c;
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .logout-btn:hover {
+            background-color: #404040;
+        }
+        
+        .logout-icon {
+            font-size: 16px;
+            color: #ff9500;
+        }
+        
+        .logout-btn p {
+            font-size: 14px;
+            color: #ffffff;
+            margin: 0;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+    <!-- ===================== -->
+    <!-- COLONNE DE GAUCHE (BANNIÈRE + BAR) -->
+    <!-- ===================== -->
+    <div class="banner">
+        <div class="bar">
+            <div class="logo-button">
+                <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo">
+            </div>
+            
+            <!-- Section navigation principale (haut) -->
+            <div class="nav-section nav-section-top">
+                <a href="/home" class="bar-button">
+                    <img src="/img/icon/home-r.png" alt="Home" class="icon">
+                    <p>Home</p>
+                </a>
+                <a href="/theme" class="bar-button">
+                    <img src="/img/icon/brush-r.png" alt="Theme" class="icon">
+                    <p>Theme</p>
+                </a>
+                <a href="/profile" class="bar-button">
+                    <img src="/img/icon/profile-r.png" alt="Profile" class="icon">
+                    <p>Profile</p>
+                </a>
+            </div>
+            
+            <!-- Séparateur -->
+            <div class="nav-separator"></div>
+            
+            <!-- Section threads (bas) -->
+            <div class="nav-section nav-section-bottom">
+                <a href="/threads" class="bar-button">
+                    <img src="/img/icon/icon_threads.svg" alt="Threads" class="icon">
+                    <p>Threads</p>
+                </a>
+                <a href="/my-threads" class="bar-button active">
+                    <img src="/img/icon/icon_threads.svg" alt="Mes Threads" class="icon">
+                    <p>Mes Threads</p>
+                </a>
+            </div>
+            <div class="account">
+                <div class="account-info">
+                    <button onclick="logout()" class="logout-btn">
+                        <span class="logout-icon">🚪</span>
+                        <p>Déconnexion</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== -->
+    <!-- CONTENU PRINCIPAL -->
+    <!-- ===================== -->
+    <div class="container">
+        <div class="my-threads-container">
+            <!-- En-tête de la page -->
+            <div class="page-header">
+                <h1>📝 Mes Threads</h1>
+                <p class="page-subtitle">Gérez tous vos threads créés</p>
+                
+                <!-- Statistiques utilisateur -->
+                <div class="user-stats">
+                    <div class="stat-card">
+                        <span class="stat-number">%THREADS_COUNT%</span>
+                        <span class="stat-label">Total threads</span>
+                    </div>
+                    <div class="stat-card open">
+                        <span class="stat-number">%OPEN_COUNT%</span>
+                        <span class="stat-label">Ouverts</span>
+                    </div>
+                    <div class="stat-card closed">
+                        <span class="stat-number">%CLOSED_COUNT%</span>
+                        <span class="stat-label">Fermés</span>
+                    </div>
+                    <div class="stat-card archived">
+                        <span class="stat-number">%ARCHIVED_COUNT%</span>
+                        <span class="stat-label">Archivés</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contrôles et filtres -->
+            <div class="controls-section">
+                <div class="filters">
+                    <select class="filter-select" id="status-filter">
+                        <option value="">Tous les statuts</option>
+                        <option value="open">🟢 Ouverts</option>
+                        <option value="closed">🟡 Fermés</option>
+                        <option value="archived">⚫ Archivés</option>
+                    </select>
+                    
+                    <select class="filter-select" id="category-filter">
+                        %CATEGORIES_OPTIONS%
+                    </select>
+                </div>
+                
+                <a href="/create-thread" class="create-thread-btn">
+                    ✨ Nouveau Thread
+                </a>
+            </div>
+
+            <!-- Liste des threads -->
+            <div class="threads-list" id="threads-list">
+                %MY_THREADS_LIST%
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Filtrage des threads
+        function filterThreads() {
+            const statusFilter = document.getElementById('status-filter').value;
+            const categoryFilter = document.getElementById('category-filter').value;
+            const threadCards = document.querySelectorAll('.my-thread-card');
+
+            threadCards.forEach(card => {
+                let showCard = true;
+
+                // Filtre par statut
+                if (statusFilter) {
+                    const statusElement = card.querySelector('.thread-status');
+                    if (!statusElement.classList.contains(`status-${statusFilter}`)) {
+                        showCard = false;
+                    }
+                }
+
+                // Filtre par catégorie (logique simplifiée pour l'exemple)
+                if (categoryFilter) {
+                    // Cette logique pourrait être améliorée en stockant l'ID de catégorie dans un attribut data
+                    // Pour l'instant, on filtre par le texte visible
+                }
+
+                card.style.display = showCard ? 'block' : 'none';
+            });
+        }
+
+        // Ajouter les event listeners
+        document.getElementById('status-filter').addEventListener('change', filterThreads);
+        document.getElementById('category-filter').addEventListener('change', filterThreads);
+
+        // Message de confirmation pour les actions sensibles
+        document.querySelectorAll('.admin-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                // On laisse l'utilisateur aller sur la page d'admin sans confirmation
+                // La confirmation se fera sur les actions spécifiques
+            });
+        });
+    </script>
+    
+    <!-- Scripts pour thème et authentification -->
+    <script src="/js/theme_loader.js"></script>
+    <script src="/js/auth-handler.js"></script>
+</body>
+</html> 

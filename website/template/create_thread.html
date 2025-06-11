@@ -112,6 +112,40 @@
             font-size: 14px;
             color: #666;
         }
+        
+        /* Styles pour le bouton de déconnexion */
+        .logout-btn {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: #2c2c2c;
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .logout-btn:hover {
+            background-color: #404040;
+        }
+        
+        .logout-icon {
+            font-size: 16px;
+            color: #ff9500;
+        }
+        
+        .logout-btn p {
+            font-size: 14px;
+            color: #ffffff;
+            margin: 0;
+            font-weight: normal;
+        }
     </style>
 </head>
 <body>
@@ -121,25 +155,31 @@
     <div class="banner">
         <div class="bar">
             <div class="logo-button">
-                <img src="../img/logo/inverted.png" alt="Logo" class="icon-logo">
+                <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo">
             </div>
             <a href="/home" class="bar-button">
-                <img src="../img/icon/home-r.png" alt="Home" class="icon">
+                <img src="/img/icon/home-r.png" alt="Home" class="icon">
                 <p>Home</p>
             </a>
             <a href="/threads" class="bar-button">
-                <img src="../img/icon/icon_threads.svg" alt="Threads" class="icon">
+                <img src="/img/icon/icon_threads.svg" alt="Threads" class="icon">
                 <p>Threads</p>
             </a>
             <a href="/theme" class="bar-button">
-                <img src="../img/icon/brush-r.png" alt="Theme" class="icon">
+                <img src="/img/icon/brush-r.png" alt="Theme" class="icon">
                 <p>Theme</p>
             </a>
             <a href="/profile" class="bar-button">
-                <img src="../img/icon/profile-r.png" alt="Profile" class="icon">
+                <img src="/img/icon/profile-r.png" alt="Profile" class="icon">
                 <p>Profile</p>
             </a>
             <div class="account">
+                <div class="account-info">
+                    <button onclick="logout()" class="logout-btn">
+                        <span class="logout-icon">🚪</span>
+                        <p>Déconnexion</p>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -230,7 +270,7 @@
     </script>
     
     <!-- Scripts pour thème et authentification -->
-    <script src="../js/theme_loader.js"></script>
-    <script src="../js/auth-handler.js"></script>
+    <script src="/js/theme_loader.js"></script>
+    <script src="/js/auth-handler.js"></script>
 </body>
 </html> 
