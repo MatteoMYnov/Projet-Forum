@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="/styles/threads.css?v=1.0">
     <title>Mes Threads - %USERNAME% / Y</title>
     <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+    
+    <!-- Chargement du thème avant le rendu pour éviter le FOUC -->
+    <script src="/js/theme_loader.js"></script>
     <style>
         .my-threads-container {
             max-width: 1200px;
@@ -15,21 +18,21 @@
         }
 
         .page-header {
-            background: #1a1a1a;
+            background: var(--primary-bg);
             border-radius: 15px;
             padding: 30px;
             margin-bottom: 30px;
-            border: 1px solid #333;
+            border: 1px solid var(--border-color);
         }
 
         .page-header h1 {
-            color: #fff;
+            color: var(--main-text);
             margin: 0 0 10px 0;
             font-size: 28px;
         }
 
         .page-subtitle {
-            color: #888;
+            color: var(--secondary-text);
             margin-bottom: 20px;
         }
 
@@ -41,22 +44,22 @@
         }
 
         .stat-card {
-            background: #2a2a2a;
+            background: var(--secondary-bg);
             padding: 15px;
             border-radius: 10px;
             text-align: center;
-            border: 1px solid #444;
+            border: 1px solid var(--border-color);
         }
 
         .stat-number {
             font-size: 24px;
             font-weight: bold;
-            color: #fff;
+            color: var(--main-text);
             display: block;
         }
 
         .stat-label {
-            color: #888;
+            color: var(--secondary-text);
             font-size: 12px;
             text-transform: uppercase;
         }
@@ -91,10 +94,10 @@
 
         .filter-select {
             padding: 8px 12px;
-            border: 1px solid #444;
+            border: 1px solid var(--border-color);
             border-radius: 6px;
-            background: #2a2a2a;
-            color: #fff;
+            background: var(--secondary-bg);
+            color: var(--main-text);
             font-size: 14px;
         }
 
@@ -114,16 +117,16 @@
         }
 
         .my-thread-card {
-            background: #1a1a1a;
+            background: var(--primary-bg);
             border-radius: 15px;
             padding: 25px;
             margin-bottom: 20px;
-            border: 1px solid #333;
+            border: 1px solid var(--border-color);
             transition: all 0.2s;
         }
 
         .my-thread-card:hover {
-            border-color: #555;
+            border-color: var(--hover-bg);
             transform: translateY(-2px);
         }
 
@@ -143,14 +146,14 @@
         }
 
         .thread-title a {
-            color: #fff;
+            color: var(--main-text);
             text-decoration: none;
             font-size: 20px;
             font-weight: bold;
         }
 
         .thread-title a:hover {
-            color: #1d9bf0;
+            color: var(--accent-blue);
         }
 
         .thread-meta {
@@ -183,7 +186,7 @@
         }
 
         .thread-category, .thread-date {
-            color: #888;
+            color: var(--secondary-text);
             font-size: 12px;
         }
 
@@ -202,8 +205,8 @@
         }
 
         .admin-btn {
-            background: #17bf63;
-            color: #000;
+            background: var(--accent-green);
+            color: var(--primary-bg);
         }
 
         .admin-btn:hover {
@@ -211,16 +214,16 @@
         }
 
         .view-btn {
-            background: #444;
-            color: #fff;
+            background: var(--secondary-bg);
+            color: var(--main-text);
         }
 
         .view-btn:hover {
-            background: #555;
+            background: var(--hover-bg);
         }
 
         .thread-content {
-            color: #ccc;
+            color: var(--main-text);
             line-height: 1.6;
             margin-bottom: 15px;
         }
@@ -232,7 +235,7 @@
         .hashtag {
             display: inline-block;
             background: rgba(29, 155, 240, 0.1);
-            color: #1d9bf0;
+            color: var(--accent-blue);
             padding: 2px 8px;
             margin: 2px;
             border-radius: 12px;
@@ -245,7 +248,7 @@
             justify-content: space-between;
             align-items: center;
             padding-top: 15px;
-            border-top: 1px solid #333;
+            border-top: 1px solid var(--border-color);
             flex-wrap: wrap;
         }
 
@@ -256,12 +259,12 @@
         }
 
         .stat {
-            color: #888;
+            color: var(--secondary-text);
             font-size: 12px;
         }
 
         .stats-right {
-            color: #666;
+            color: var(--muted-text);
             font-size: 12px;
         }
 
@@ -271,20 +274,20 @@
         }
 
         .empty-state {
-            background: #1a1a1a;
+            background: var(--primary-bg);
             border-radius: 15px;
             padding: 40px;
-            border: 1px solid #333;
+            border: 1px solid var(--border-color);
         }
 
         .empty-state h3 {
-            color: #fff;
+            color: var(--main-text);
             margin-bottom: 15px;
             font-size: 24px;
         }
 
         .empty-state p {
-            color: #888;
+            color: var(--secondary-text);
             margin-bottom: 20px;
             line-height: 1.6;
         }
@@ -364,29 +367,29 @@
             align-items: center;
             gap: 10px;
             padding: 12px 20px;
-            background: #2c2c2c;
+            background: var(--secondary-bg);
             border: none;
             border-radius: 8px;
             width: 100%;
             cursor: pointer;
-            color: #ffffff;
+            color: var(--main-text);
             font-family: inherit;
             font-size: 14px;
             margin: 10px 0;
         }
         
         .logout-btn:hover {
-            background-color: #404040;
+            background-color: var(--hover-bg);
         }
         
         .logout-icon {
             font-size: 16px;
-            color: #ff9500;
+            color: var(--accent-orange);
         }
         
         .logout-btn p {
             font-size: 14px;
-            color: #ffffff;
+            color: var(--main-text);
             margin: 0;
             font-weight: normal;
         }
@@ -543,8 +546,7 @@
         });
     </script>
     
-    <!-- Scripts pour thème et authentification -->
-    <script src="/js/theme_loader.js"></script>
+    <!-- Scripts pour authentification -->
     <script src="/js/auth-handler.js"></script>
 </body>
 </html> 

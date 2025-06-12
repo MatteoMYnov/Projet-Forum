@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="/styles/threads.css?v=1.0">
     <title>Threads / Y</title>
     <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+    
+    <!-- Chargement du thème avant le rendu pour éviter le FOUC -->
+    <script src="/js/theme_loader.js"></script>
     <style>
         /* Styles pour les statuts des threads dans la liste */
         .thread-status-mini {
@@ -209,7 +212,7 @@
                     </a>
                     <div class="thread-main">
                         <div class="thread-author">
-                            <img src="../img/avatar/photo-profil.jpg" alt="Avatar" class="thread-avatar">
+                            <img src="/img/avatars/default-avatar.png" alt="Avatar" class="thread-avatar">
                             <div class="author-info">
                                 <span class="author-name">Username</span>
                                 <span class="author-handle">@username</span>
@@ -309,8 +312,7 @@
     <!-- Script pour pagination -->
     <script src="/js/pagination.js"></script>
     
-    <!-- Scripts pour thème et authentification -->
-    <script src="/js/theme_loader.js"></script>
+    <!-- Scripts pour authentification -->
     <script src="/js/auth-handler.js"></script>
 </body>
 </html> 

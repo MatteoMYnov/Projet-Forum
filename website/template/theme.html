@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thème / Y</title>
+    <link rel="stylesheet" href="/styles/variables.css?v=1.0">
     <link rel="stylesheet" href="/styles/home.css?v=1.0">
     <link rel="stylesheet" href="/styles/theme.css?v=1.0">
     <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+    
+    <!-- Chargement du thème avant le rendu pour éviter le FOUC -->
+    <script src="/js/theme_loader.js"></script>
     <style>
         /* Styles pour le bouton de déconnexion */
         .logout-btn {
