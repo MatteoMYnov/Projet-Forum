@@ -33,7 +33,8 @@ function updateIcons() {
     const navIcons = {
         'home-r.png': 'home-c.png',
         'brush-r.png': 'brush-c.png',
-        'profile-r.png': 'profile-c.png'
+        'profile-r.png': 'profile-c.png',
+        'threads-r.png': 'threads-c.png'
     };
     
     // Sélectionner toutes les icônes de navigation
