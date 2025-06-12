@@ -9,15 +9,17 @@ function getLuminance(hexColor) {
     return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 }
 
-// Fonction pour mettre à jour le logo en fonction de la luminosité
-function updateLogo() {
+// Stocker les chemins originaux des icônes
+const originalIconPaths = new Map();
+
+// Fonction pour mettre à jour les icônes en fonction de la luminosité
+function updateIcons() {
     const mainColor = getComputedStyle(document.documentElement).getPropertyValue('--main-color').trim();
     const luminance = getLuminance(mainColor);
+    
+    // Mettre à jour le logo
     const logoImg = document.querySelector('.icon-logo');
     const favicon = document.getElementById('favicon');
-    
-    // Si la luminosité est supérieure à 0.5, utiliser le logo classique
-    // Sinon, utiliser le logo inversé
     const logoPath = luminance > 0.5 ? '/img/logo/classic.png' : '/img/logo/inverted.png';
     
     if (logoImg) {
@@ -26,6 +28,33 @@ function updateLogo() {
     if (favicon) {
         favicon.href = logoPath;
     }
+    
+    // Mettre à jour les icônes de navigation
+    const navIcons = {
+        'home-r.png': 'home-c.png',
+        'brush-r.png': 'brush-c.png',
+        'profile-r.png': 'profile-c.png'
+    };
+    
+    // Sélectionner toutes les icônes de navigation
+    const icons = document.querySelectorAll('.icon');
+    icons.forEach(icon => {
+        // Si c'est la première fois qu'on voit cette icône, stocker son chemin original
+        if (!originalIconPaths.has(icon)) {
+            originalIconPaths.set(icon, icon.src);
+        }
+        
+        const originalSrc = originalIconPaths.get(icon);
+        const fileName = originalSrc.split('/').pop();
+        
+        // Si c'est une icône que nous voulons changer
+        if (navIcons[fileName]) {
+            // Construire le nouveau chemin
+            const newFileName = luminance > 0.5 ? navIcons[fileName] : fileName;
+            const newSrc = originalSrc.replace(fileName, newFileName);
+            icon.src = newSrc;
+        }
+    });
 }
 
 // Observer les changements de la variable CSS --main-color
@@ -33,7 +62,7 @@ function observeThemeChanges() {
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
             if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                updateLogo();
+                updateIcons();
             }
         });
     });
@@ -48,13 +77,13 @@ function observeThemeChanges() {
 function initializeLogoSwitcher() {
     // Vérifier si le thème est déjà chargé
     if (document.documentElement.style.getPropertyValue('--main-color')) {
-        updateLogo();
+        updateIcons();
         observeThemeChanges();
     } else {
         // Attendre que le thème soit chargé
         const checkTheme = setInterval(() => {
             if (document.documentElement.style.getPropertyValue('--main-color')) {
-                updateLogo();
+                updateIcons();
                 observeThemeChanges();
                 clearInterval(checkTheme);
             }
