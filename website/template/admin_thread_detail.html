@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="/styles/threads.css?v=1.0">
     <title>Administration du Thread - %THREAD_TITLE% / Y</title>
     <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+    
+    <!-- Chargement du thème avant le rendu pour éviter le FOUC -->
+    <script src="/js/theme_loader.js"></script>
     <style>
         .admin-thread-container {
             max-width: 1000px;
@@ -15,15 +18,15 @@
         }
         
         .admin-header {
-            background: #1a1a1a;
+            background: var(--primary-bg);
             border-radius: 15px;
             padding: 25px;
             margin-bottom: 30px;
-            border: 1px solid #333;
+            border: 1px solid var(--border-color);
         }
         
         .admin-header h1 {
-            color: #fff;
+            color: var(--main-text);
             margin: 0 0 15px 0;
             font-size: 24px;
         }
@@ -36,21 +39,21 @@
         }
         
         .info-card {
-            background: #2a2a2a;
+            background: var(--secondary-bg);
             padding: 15px;
             border-radius: 10px;
-            border: 1px solid #444;
+            border: 1px solid var(--border-color);
         }
         
         .info-label {
-            color: #888;
+            color: var(--secondary-text);
             font-size: 12px;
             text-transform: uppercase;
             margin-bottom: 5px;
         }
         
         .info-value {
-            color: #fff;
+            color: var(--main-text);
             font-size: 16px;
             font-weight: bold;
         }
@@ -63,10 +66,10 @@
         
         .admin-btn {
             padding: 10px 20px;
-            border: 1px solid #555;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            background: #333;
-            color: #fff;
+            background: var(--secondary-bg);
+            color: var(--main-text);
             font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
@@ -75,8 +78,8 @@
         }
         
         .admin-btn:hover {
-            background: #444;
-            border-color: #777;
+            background: var(--tertiary-bg);
+            border-color: var(--border-hover);
         }
         
         .btn-close {
@@ -96,10 +99,10 @@
         }
         
         .messages-admin-section {
-            background: #1a1a1a;
+            background: var(--primary-bg);
             border-radius: 15px;
             padding: 25px;
-            border: 1px solid #333;
+            border: 1px solid var(--border-color);
         }
         
         .messages-admin-header {
@@ -110,23 +113,23 @@
         }
         
         .messages-admin-header h2 {
-            color: #fff;
+            color: var(--main-text);
             margin: 0;
             font-size: 20px;
         }
         
         .message-admin-item {
-            background: #2a2a2a;
+            background: var(--secondary-bg);
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 15px;
-            border: 1px solid #444;
+            border: 1px solid var(--border-color);
             position: relative;
             transition: all 0.2s;
         }
         
         .message-admin-item.selected {
-            border-color: #1d9bf0;
+            border-color: var(--accent-blue);
             background: rgba(29, 155, 240, 0.1);
         }
         
@@ -151,7 +154,7 @@
         }
         
         .message-author-details {
-            color: #fff;
+            color: var(--main-text);
         }
         
         .message-author-name {
@@ -160,12 +163,12 @@
         }
         
         .message-time {
-            color: #888;
+            color: var(--secondary-text);
             font-size: 12px;
         }
         
         .message-content {
-            color: #ccc;
+            color: var(--main-text);
             line-height: 1.6;
             margin-bottom: 15px;
         }
@@ -443,7 +446,7 @@
         <div class="admin-thread-container">
             <!-- Navigation retour -->
             <div class="back-nav">
-                <a href="/thread/%THREAD_ID%" class="back-link">← Retour au thread</a>
+                <a href="/my-threads" class="back-link">← Retour à mes threads</a>
             </div>
 
             <!-- En-tête d'administration du thread -->
@@ -823,8 +826,7 @@
         }
     </script>
     
-    <!-- Scripts pour thème et authentification -->
-    <script src="../js/theme_loader.js"></script>
-    <script src="../js/auth-handler.js"></script>
+    <!-- Scripts pour authentification -->
+    <script src="/js/auth-handler.js"></script>
 </body>
 </html> 

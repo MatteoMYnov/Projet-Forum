@@ -605,6 +605,9 @@ func processThreadDetailTemplate(htmlContent string, thread models.Thread) strin
 		if thread.Author.ProfilePicture != nil && *thread.Author.ProfilePicture != "" {
 			// Utiliser le chemin tel qu'il est stocké dans la base de données
 			authorAvatar = *thread.Author.ProfilePicture
+			log.Printf("🖼️ [ThreadDetail] Avatar trouvé pour %s: %s", authorName, authorAvatar)
+		} else {
+			log.Printf("⚪ [ThreadDetail] Pas d'avatar pour %s, utilisation de l'avatar par défaut", authorName)
 		}
 	}
 
@@ -635,11 +638,7 @@ func processThreadDetailTemplate(htmlContent string, thread models.Thread) strin
 	}
 
 	// Remplacer l'avatar de l'auteur dans le template
-	htmlContent = strings.Replace(htmlContent, `src="../img/avatar/photo-profil.jpg"`, 
-		fmt.Sprintf(`src="%s"`, authorAvatar), 1)
-	
-	// Aussi remplacer les autres occurences possibles d'avatar
-	htmlContent = strings.ReplaceAll(htmlContent, `src="../img/avatars/default-avatar.png"`, 
+	htmlContent = strings.ReplaceAll(htmlContent, `src="/img/avatars/default-avatar.png"`, 
 		fmt.Sprintf(`src="%s"`, authorAvatar))
 
 	// Remplacer toutes les informations du thread
@@ -995,6 +994,9 @@ func processThreadsListTemplateWithPagination(htmlContent string, threads []mode
 				if thread.Author.ProfilePicture != nil && *thread.Author.ProfilePicture != "" {
 					// Utiliser le chemin tel qu'il est stocké dans la base de données
 					authorAvatar = *thread.Author.ProfilePicture
+					log.Printf("🖼️ Avatar trouvé pour %s: %s", authorName, authorAvatar)
+				} else {
+					log.Printf("⚪ Pas d'avatar pour %s, utilisation de l'avatar par défaut", authorName)
 				}
 			}
 

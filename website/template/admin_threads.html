@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="/styles/threads.css?v=1.0">
     <title>Administration des Threads / Y</title>
     <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+    
+    <!-- Chargement du thème avant le rendu pour éviter le FOUC -->
+    <script src="/js/theme_loader.js"></script>
     <style>
         .admin-container {
             max-width: 1200px;
@@ -15,34 +18,34 @@
         }
         
         .admin-header {
-            background: #1a1a1a;
+            background: var(--primary-bg);
             border-radius: 15px;
             padding: 20px;
             margin-bottom: 30px;
-            border: 1px solid #333;
+            border: 1px solid var(--border-color);
         }
         
         .admin-header h1 {
-            color: #fff;
+            color: var(--main-text);
             margin: 0 0 10px 0;
             font-size: 28px;
         }
         
         .admin-header p {
-            color: #888;
+            color: var(--secondary-text);
             margin: 0;
         }
         
         .threads-admin-list {
-            background: #1a1a1a;
+            background: var(--primary-bg);
             border-radius: 15px;
-            border: 1px solid #333;
+            border: 1px solid var(--border-color);
             overflow: hidden;
         }
         
         .thread-admin-item {
             padding: 20px;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -57,20 +60,20 @@
         }
         
         .thread-title {
-            color: #fff;
+            color: var(--main-text);
             font-weight: bold;
             font-size: 16px;
             margin-bottom: 8px;
         }
         
         .thread-meta {
-            color: #888;
+            color: var(--secondary-text);
             font-size: 14px;
             margin-bottom: 10px;
         }
         
         .thread-content-preview {
-            color: #ccc;
+            color: var(--main-text);
             font-size: 14px;
             margin-bottom: 10px;
             max-width: 500px;
@@ -83,7 +86,7 @@
             display: flex;
             gap: 15px;
             font-size: 12px;
-            color: #666;
+            color: var(--secondary-text);
         }
         
         .threads-admin-list {
@@ -124,10 +127,10 @@
         
         .admin-btn {
             padding: 8px 16px;
-            border: 1px solid #555;
+            border: 1px solid var(--border-color);
             border-radius: 6px;
-            background: #333;
-            color: #fff;
+            background: var(--secondary-bg);
+            color: var(--main-text);
             font-size: 12px;
             cursor: pointer;
             transition: all 0.2s;
@@ -137,13 +140,13 @@
         }
         
         .admin-btn:hover {
-            background: #444;
-            border-color: #777;
+            background: var(--tertiary-bg);
+            border-color: var(--border-hover);
         }
         
         .btn-view {
-            background: #1d9bf0;
-            border-color: #1d9bf0;
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
         }
         
         .btn-view:hover {
@@ -196,8 +199,8 @@
         
         .filter-btn {
             padding: 8px 16px;
-            background: #333;
-            border: 1px solid #555;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             color: #fff;
             cursor: pointer;
@@ -664,8 +667,7 @@
         const threadAdmin = new ThreadAdmin();
     </script>
     
-    <!-- Scripts pour thème et authentification -->
-    <script src="../js/theme_loader.js"></script>
-    <script src="../js/auth-handler.js"></script>
+    <!-- Scripts pour authentification -->
+    <script src="/js/auth-handler.js"></script>
 </body>
 </html> 
