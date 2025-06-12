@@ -75,6 +75,20 @@
             background: rgba(255,255,255,0.4);
             border-radius: 50%;
         }
+        
+        /* Correction de l'affichage pour éviter le blanc en bas */
+        .main {
+            overflow-y: auto;
+            min-height: 100vh;
+            height: auto !important;
+            padding-bottom: 50px;
+        }
+        
+        /* Assurer que le conteneur principal prend tout l'espace */
+        .container {
+            min-height: 100vh;
+            height: auto;
+        }
     </style>
 </head>
 <body>

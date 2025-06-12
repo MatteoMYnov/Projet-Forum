@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="/styles/profile.css?v=1.1">
     <title>Profile / Y</title>
     <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
+    
+    <!-- Chargement du thème avant le rendu pour éviter le FOUC -->
+    <script src="/js/theme_loader.js"></script>
     <style>
         /* Styles pour le bouton de déconnexion */
         .logout-btn {
@@ -75,6 +78,91 @@
             background: rgba(255,255,255,0.4);
             border-radius: 50%;
         }
+        
+        /* Styles pour le formulaire du mur */
+        .post-form {
+            margin-bottom: 30px;
+        }
+        
+        .post-form textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--secondary-bg);
+            color: var(--main-text);
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+        
+        .post-form textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px rgba(29, 155, 240, 0.1);
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .char-counter {
+            font-size: 12px;
+            color: var(--secondary-text);
+        }
+        
+        .post-form button {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .post-form button:hover {
+            background: #1a8cd8;
+        }
+        
+        .post-form button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        /* Styles pour les posts vides */
+        .empty-wall {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--secondary-text);
+        }
+        
+        .empty-wall p {
+            margin: 5px 0;
+        }
+        
+        /* Correction de l'affichage pour éviter le blanc en bas */
+        .main {
+            overflow-y: auto;
+            min-height: 100vh;
+            height: auto !important;
+        }
+        
+        .wall {
+            min-height: 400px;
+            padding-bottom: 50px;
+        }
+        
+        /* Assurer que le conteneur principal prend tout l'espace */
+        .container {
+            min-height: 100vh;
+            height: auto;
+        }
     </style>
 </head>
 <body>
@@ -138,17 +226,17 @@
             <!-- PROFILE HEAD      -->
             <!-- ================= -->
             <div class="profile-head">
-                <!-- ---> Bannière de profil (fond + couleur) -->
+                <!-- Bannière de profil (fond + couleur) -->
                 <div class="profile-banner">
                     <img
-                      src="/img/avatars/default-avatar.png"
+                      src="%AVATAR_PATH%"
                       alt="Photo de profil"
                       class="profile-pic"
                     />
                     <!-- Optionnel : vous pouvez mettre une image en background via CSS -->
                 </div>
 
-                <!-- ---> Conteneur des informations (photo, bouton, nom, handle, date, stats) -->
+                <!-- Conteneur des informations (photo, bouton, nom, handle, date, stats) -->
                 <div class="profile-info">
                     <!-- Photo de profil -->
 
@@ -192,12 +280,18 @@
                 <h2>Mur</h2>
 
                 <!-- Formulaire pour écrire sur le mur -->
-                <form class="post-form">
+                <form class="post-form" id="wallPostForm">
                     <textarea
-                      name="post-content"
+                      name="content"
+                      id="wallContent"
                       placeholder="Écrivez quelque chose…"
+                      maxlength="1000"
+                      required
                     ></textarea>
-                    <button type="submit">Publier</button>
+                    <div class="form-actions">
+                        <span class="char-counter" id="charCounter">0/1000</span>
+                        <button type="submit" id="publishBtn">Publier</button>
+                    </div>
                 </form>
 
                 <!-- Exemple de post (dupliquez-le dynamiquement en JS/PHP/etc.) -->
@@ -225,7 +319,85 @@
         <!-- ======== SIDEBAR DROITE (vide pour l’instant) ======== -->
         <div class="sidebar"></div>
     </div>
-    <script src="/js/theme_loader.js"></script>
     <script src="/js/auth-handler.js"></script>
+    
+    <!-- Script pour le fonctionnement du mur -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('wallPostForm');
+            const textarea = document.getElementById('wallContent');
+            const charCounter = document.getElementById('charCounter');
+            const publishBtn = document.getElementById('publishBtn');
+            
+            // Compteur de caractères
+            if (textarea && charCounter) {
+                textarea.addEventListener('input', function() {
+                    const length = this.value.length;
+                    charCounter.textContent = `${length}/1000`;
+                    
+                    if (length > 900) {
+                        charCounter.style.color = '#ff6b6b';
+                    } else {
+                        charCounter.style.color = 'var(--secondary-text)';
+                    }
+                });
+            }
+            
+            // Soumission du formulaire
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const content = textarea.value.trim();
+                    if (!content) {
+                        alert('Veuillez saisir du contenu avant de publier.');
+                        return;
+                    }
+                    
+                    if (content.length > 1000) {
+                        alert('Le contenu ne peut pas dépasser 1000 caractères.');
+                        return;
+                    }
+                    
+                    // Désactiver le bouton pendant l'envoi
+                    publishBtn.disabled = true;
+                    publishBtn.textContent = 'Publication...';
+                    
+                    // Préparer les données du formulaire
+                    const formData = new FormData();
+                    formData.append('content', content);
+                    
+                    // Envoyer la requête
+                    fetch('/api/wall', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Vider le formulaire
+                            textarea.value = '';
+                            charCounter.textContent = '0/1000';
+                            charCounter.style.color = 'var(--secondary-text)';
+                            
+                            // Actualiser la page pour afficher le nouveau post
+                            location.reload();
+                        } else {
+                            throw new Error(data.message || 'Erreur lors de la publication');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Erreur lors de la publication: ' + error.message);
+                    })
+                    .finally(() => {
+                        // Réactiver le bouton
+                        publishBtn.disabled = false;
+                        publishBtn.textContent = 'Publier';
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>

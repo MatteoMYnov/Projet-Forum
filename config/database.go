@@ -81,6 +81,53 @@ func checkTables() error {
 			log.Printf("✅ Table '%s' trouvée", table)
 		}
 	}
+	
+	// Créer la table wall_posts si elle n'existe pas
+	if err := createWallPostsTable(); err != nil {
+		log.Printf("⚠️ Erreur création table wall_posts: %v", err)
+	}
+	
+	return nil
+}
+
+// createWallPostsTable crée la table wall_posts si elle n'existe pas
+func createWallPostsTable() error {
+	log.Println("🔧 Vérification/création de la table wall_posts...")
+	
+	// Vérifier si la table existe
+	var exists int
+	query := `SELECT COUNT(*) FROM information_schema.tables 
+			  WHERE table_schema = ? AND table_name = 'wall_posts'`
+
+	err := DbContext.QueryRow(query, DBName).Scan(&exists)
+	if err != nil {
+		return fmt.Errorf("erreur vérification table wall_posts: %v", err)
+	}
+
+	if exists > 0 {
+		log.Printf("✅ Table 'wall_posts' trouvée")
+		return nil
+	}
+
+	// Créer la table sans les contraintes de clé étrangère d'abord
+	createQuery := `
+	CREATE TABLE wall_posts (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		user_id INT NOT NULL,
+		author_id INT NOT NULL,
+		content TEXT NOT NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+		INDEX idx_user_id (user_id),
+		INDEX idx_created_at (created_at)
+	)`
+
+	_, err = DbContext.Exec(createQuery)
+	if err != nil {
+		return fmt.Errorf("erreur création table wall_posts: %v", err)
+	}
+
+	log.Printf("✅ Table 'wall_posts' créée avec succès")
 	return nil
 }
 

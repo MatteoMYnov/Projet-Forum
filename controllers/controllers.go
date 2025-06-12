@@ -22,6 +22,7 @@ type UserControllers struct {
 	uploadService  *services.UploadService
 	reactionService *services.ReactionService
 	messageService *services.MessageService
+	wallService    *services.WallService
 }
 
 // NewUserControllers crée une nouvelle instance du controller
@@ -35,6 +36,7 @@ func NewUserControllers(db *sql.DB) *UserControllers {
 		uploadService:   uploadService,
 		reactionService: services.NewReactionService(db),
 		messageService:  services.NewMessageService(db),
+		wallService:     services.NewWallService(db),
 	}
 }
 
@@ -83,6 +85,10 @@ func (c *UserControllers) UserRouter(r *http.ServeMux) {
 	// API pour les réactions
 	r.HandleFunc("/api/reactions", middleware.RequireAuth(c.ReactionHandler))
 	r.HandleFunc("/api/reactions/", middleware.RequireAuth(c.ReactionAPI))
+	
+	// API pour le mur
+	r.HandleFunc("/api/wall", middleware.RequireAuth(c.WallHandler))
+	r.HandleFunc("/api/wall/", middleware.RequireAuth(c.WallAPI))
 }
 
 // RegisterPage affiche la page d'inscription
@@ -273,6 +279,15 @@ func (c *UserControllers) ProfilePage(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("✅ ProfilePage - Données utilisateur récupérées: %s (%s)", user.Username, user.Email)
 
+	// Récupérer les posts du mur
+	wallPosts, err := c.wallService.GetWallPosts(user.ID)
+	if err != nil {
+		log.Printf("❌ Erreur récupération posts mur: %v", err)
+		wallPosts = []models.WallPostWithAuthor{} // Valeur par défaut
+	}
+
+	log.Printf("✅ ProfilePage - %d posts récupérés pour le mur", len(wallPosts))
+
 	// Lire le template HTML
 	templatePath := "./website/template/profile.html"
 	templateContent, err := os.ReadFile(templatePath)
@@ -288,7 +303,7 @@ func (c *UserControllers) ProfilePage(w http.ResponseWriter, r *http.Request) {
 	htmlContent := string(templateContent)
 	
 	// Traitement spécifique pour chaque placeholder
-	htmlWithUserData := processProfileTemplate(htmlContent, user)
+	htmlWithUserData := processProfileTemplateWithWall(htmlContent, user, wallPosts)
 
 	log.Printf("✅ ProfilePage - Template traité, envoi de la réponse")
 
@@ -547,13 +562,12 @@ func processProfileTemplate(htmlContent string, user *models.User) string {
 		log.Printf("🖼️ Utilisation image par défaut: %s (ProfilePicture=%v)", profilePicture, user.ProfilePicture)
 	}
 	
-	// Remplacer l'image de profil dans la bannière
-	htmlContent = strings.Replace(htmlContent, `src="../img/avatar/photo-profil.jpg"`, 
-		fmt.Sprintf(`src="%s"`, profilePicture), 1)
+	// Remplacer le placeholder %AVATAR_PATH% par le vrai chemin
+	htmlContent = strings.Replace(htmlContent, `%AVATAR_PATH%`, profilePicture, 1)
 	
-	// Remplacer également l'avatar dans les posts (même image)
-	htmlContent = strings.Replace(htmlContent, `src="../img/avatar/avatar-utilisateur.jpg"`, 
-		fmt.Sprintf(`src="%s"`, profilePicture), 1)
+	// Remplacer également l'avatar dans les posts du mur
+	htmlContent = strings.Replace(htmlContent, `src="/img/avatars/default-avatar.png"`, 
+		fmt.Sprintf(`src="%s"`, profilePicture), -1)
 	
 	// Remplacer les placeholders spécifiques
 	htmlContent = strings.Replace(htmlContent, `<h1 class="name">%s</h1>`, 
@@ -583,6 +597,100 @@ func processProfileTemplate(htmlContent string, user *models.User) string {
 	
 	htmlContent = strings.Replace(htmlContent, `Félicitations %s pour ta nouvelle page ! 🎉`, 
 		fmt.Sprintf(`Félicitations %s pour ta nouvelle page ! 🎉`, user.Username), 1)
+	
+	// Compter les placeholders après traitement
+	countAfter := strings.Count(htmlContent, "%s") + strings.Count(htmlContent, "%x")
+	log.Printf("✅ Template traité. Placeholders restants: %d", countAfter)
+	
+	return htmlContent
+}
+
+// processProfileTemplateWithWall remplace les placeholders dans le template de profil avec les vraies données et les posts du mur
+func processProfileTemplateWithWall(htmlContent string, user *models.User, wallPosts []models.WallPostWithAuthor) string {
+	log.Printf("🔄 Traitement template pour utilisateur: %s avec %d posts", user.Username, len(wallPosts))
+	
+	// Compter les placeholders avant traitement
+	countBefore := strings.Count(htmlContent, "%s") + strings.Count(htmlContent, "%x")
+	log.Printf("📊 Placeholders trouvés: %d", countBefore)
+	
+	// Déterminer l'image de profil à utiliser
+	profilePicture := "/img/avatars/default-avatar.png"
+	if user.ProfilePicture != nil && *user.ProfilePicture != "" {
+		profilePicture = *user.ProfilePicture
+		log.Printf("🖼️ Utilisation image personnalisée: %s", profilePicture)
+	} else {
+		log.Printf("🖼️ Utilisation image par défaut: %s (ProfilePicture=%v)", profilePicture, user.ProfilePicture)
+	}
+	
+	// Remplacer le placeholder %AVATAR_PATH% par le vrai chemin
+	htmlContent = strings.Replace(htmlContent, `%AVATAR_PATH%`, profilePicture, 1)
+	
+	// Remplacer les placeholders spécifiques
+	htmlContent = strings.Replace(htmlContent, `<h1 class="name">%s</h1>`, 
+		fmt.Sprintf(`<h1 class="name">%s</h1>`, user.Username), 1)
+	
+	htmlContent = strings.Replace(htmlContent, `<span class="handle">@%s</span>`, 
+		fmt.Sprintf(`<span class="handle">@%s</span>`, user.Username), 1)
+	
+	// Date d'inscription
+	joinDate := user.CreatedAt.Format("January 2006")
+	htmlContent = strings.Replace(htmlContent, `Joined September 2024`, 
+		fmt.Sprintf(`Joined %s`, joinDate), 1)
+	
+	// Stats Following/Followers
+	htmlContent = strings.Replace(htmlContent, `<span><strong>%x</strong> Following</span>`, 
+		fmt.Sprintf(`<span><strong>%d</strong> Following</span>`, user.FollowingCount), 1)
+	
+	htmlContent = strings.Replace(htmlContent, `<span><strong>%x</strong> Followers</span>`, 
+		fmt.Sprintf(`<span><strong>%d</strong> Followers</span>`, user.FollowerCount), 1)
+	
+	// Générer le HTML des posts du mur
+	wallPostsHTML := ""
+	if len(wallPosts) > 0 {
+		for _, post := range wallPosts {
+			timeAgo := formatTimeAgo(post.CreatedAt)
+			wallPostsHTML += fmt.Sprintf(`
+			<div class="post" data-post-id="%d">
+				<div class="post-header">
+					<img src="%s" alt="Avatar" class="post-avatar" />
+					<div class="post-user-info">
+						<span class="post-user-name">%s</span>
+						<span class="post-user-handle">@%s</span>
+						<span class="post-timestamp">%s</span>
+					</div>
+				</div>
+				<p class="post-content">%s</p>
+			</div>`,
+				post.ID,
+				post.AvatarPath,
+				post.AuthorName,
+				post.AuthorName,
+				timeAgo,
+				post.Content,
+			)
+		}
+	} else {
+		wallPostsHTML = `
+		<div class="empty-wall">
+			<p>Aucun post sur ce mur pour le moment.</p>
+			<p>Soyez le premier à écrire quelque chose !</p>
+		</div>`
+	}
+	
+	// Remplacer le post exemple par les vrais posts
+	// Trouver et remplacer tout le contenu entre <!-- Exemple de post --> et <!-- … autres posts dynamiques … -->
+	startMarker := `<!-- Exemple de post (dupliquez-le dynamiquement en JS/PHP/etc.) -->`
+	endMarker := `<!-- … autres posts dynamiques … -->`
+	
+	startIndex := strings.Index(htmlContent, startMarker)
+	endIndex := strings.Index(htmlContent, endMarker)
+	
+	if startIndex != -1 && endIndex != -1 && endIndex > startIndex {
+		// Garder les marqueurs mais remplacer le contenu entre eux
+		beforeContent := htmlContent[:startIndex+len(startMarker)]
+		afterContent := htmlContent[endIndex:]
+		htmlContent = beforeContent + "\n" + wallPostsHTML + "\n" + afterContent
+	}
 	
 	// Compter les placeholders après traitement
 	countAfter := strings.Count(htmlContent, "%s") + strings.Count(htmlContent, "%x")
@@ -2454,4 +2562,131 @@ func processMyThreadsTemplate(htmlContent string, threads []models.Thread, categ
 
 	log.Printf("✅ Template mes threads traité avec succès")
 	return htmlContent
+}
+
+// WallHandler gère la création de posts sur le mur
+func (c *UserControllers) WallHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		WriteErrorResponse(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Récupérer l'utilisateur connecté
+	sessionInfo := middleware.GetUserFromContext(r)
+	if sessionInfo == nil {
+		WriteErrorResponse(w, "Non autorisé", http.StatusUnauthorized)
+		return
+	}
+
+	// Récupérer les données du formulaire
+	content := strings.TrimSpace(r.FormValue("content"))
+	userIDStr := r.FormValue("user_id")
+
+	log.Printf("📝 Tentative de création de post sur le mur par %s", sessionInfo.Username)
+
+	// Validation
+	if content == "" {
+		WriteErrorResponse(w, "Le contenu ne peut pas être vide", http.StatusBadRequest)
+		return
+	}
+
+	if len(content) > 1000 {
+		WriteErrorResponse(w, "Le contenu ne peut pas dépasser 1000 caractères", http.StatusBadRequest)
+		return
+	}
+
+	// Déterminer sur quel mur poster (par défaut, le mur de l'utilisateur connecté)
+	userID := sessionInfo.UserID
+	if userIDStr != "" {
+		if parsedUserID, err := strconv.Atoi(userIDStr); err == nil {
+			userID = parsedUserID
+		}
+	}
+
+	// Créer le post
+	wallPost, err := c.wallService.CreateWallPost(userID, sessionInfo.UserID, content)
+	if err != nil {
+		log.Printf("❌ Erreur création post mur: %v", err)
+		WriteErrorResponse(w, "Erreur lors de la création du post: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("✅ Post créé avec succès (ID: %d)", wallPost.ID)
+
+	// Retourner le post créé en JSON
+	WriteJSONResponse(w, map[string]interface{}{
+		"success": true,
+		"message": "Post créé avec succès",
+		"post":    wallPost,
+	}, http.StatusCreated)
+}
+
+// WallAPI gère les opérations sur les posts du mur (récupération, suppression)
+func (c *UserControllers) WallAPI(w http.ResponseWriter, r *http.Request) {
+	sessionInfo := middleware.GetUserFromContext(r)
+	if sessionInfo == nil {
+		WriteErrorResponse(w, "Non autorisé", http.StatusUnauthorized)
+		return
+	}
+
+	// Extraire l'ID utilisateur de l'URL /api/wall/{userID}
+	pathParts := strings.Split(strings.TrimPrefix(r.URL.Path, "/api/wall/"), "/")
+	if len(pathParts) == 0 || pathParts[0] == "" {
+		WriteErrorResponse(w, "ID utilisateur manquant", http.StatusBadRequest)
+		return
+	}
+
+	userID, err := strconv.Atoi(pathParts[0])
+	if err != nil {
+		WriteErrorResponse(w, "ID utilisateur invalide", http.StatusBadRequest)
+		return
+	}
+
+	switch r.Method {
+	case http.MethodGet:
+		// Récupérer les posts du mur
+		wallPosts, err := c.wallService.GetWallPosts(userID)
+		if err != nil {
+			log.Printf("❌ Erreur récupération posts: %v", err)
+			WriteErrorResponse(w, "Erreur serveur", http.StatusInternalServerError)
+			return
+		}
+
+		WriteJSONResponse(w, map[string]interface{}{
+			"success": true,
+			"posts":   wallPosts,
+			"count":   len(wallPosts),
+		}, http.StatusOK)
+
+	case http.MethodDelete:
+		// Supprimer un post spécifique
+		if len(pathParts) < 2 {
+			WriteErrorResponse(w, "ID du post manquant", http.StatusBadRequest)
+			return
+		}
+
+		postID, err := strconv.Atoi(pathParts[1])
+		if err != nil {
+			WriteErrorResponse(w, "ID du post invalide", http.StatusBadRequest)
+			return
+		}
+
+		// Supprimer le post (seulement l'auteur peut supprimer ses posts)
+		err = c.wallService.DeleteWallPost(postID, sessionInfo.UserID)
+		if err != nil {
+			log.Printf("❌ Erreur suppression post: %v", err)
+			WriteErrorResponse(w, err.Error(), http.StatusForbidden)
+			return
+		}
+
+		log.Printf("✅ Post %d supprimé par %s", postID, sessionInfo.Username)
+
+		WriteJSONResponse(w, map[string]interface{}{
+			"success": true,
+			"message": "Post supprimé avec succès",
+		}, http.StatusOK)
+
+	default:
+		WriteErrorResponse(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+	}
 }

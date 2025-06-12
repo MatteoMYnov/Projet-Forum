@@ -64,16 +64,12 @@
 
 /* 1.e) Nom et handle */
 .name {
-    font-size: 1.6rem;
-    font-weight: bold;
-    margin-left: 10px;                   /* 120px (photo) + 20px (espace) + 20px (padding) */
-    margin-bottom: 4px;
-    color: var(--main-text-color);
+    display: none;                       /* Masquer complètement le nom sur l'image */
 }
 
 .handle {
     display: block;
-    margin-left: 10px;
+    margin-left: 160px;
     font-size: 1rem;
     color: var(--second-text-color);
     margin-bottom: 8px;
@@ -83,7 +79,7 @@
 .join-date {
     display: flex;
     align-items: center;
-    margin-left: 10px;
+    margin-left: 160px;
     font-size: 0.9rem;
     color: var(--second-text-color);
 }
@@ -96,7 +92,7 @@
 .follow-stats {
     display: flex;
     gap: 16px;
-    margin-left: 10px;
+    margin-left: 160px;
     margin-top: 8px;
 }
 .follow-stats span {
