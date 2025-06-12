@@ -12,6 +12,34 @@
     <!-- Chargement du thème avant le rendu pour éviter le FOUC -->
     <script src="/js/theme_loader.js"></script>
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: row-reverse;
+            height: 100vh;
+            width: 25%;
+            background-color: var(--main-color);
+            border-right: var(--main-border-color) solid 1px;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .container {
+            margin-left: 25%;
+            width: 75%;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
         /* Styles pour le bouton de déconnexion */
         .logout-btn {
             display: flex;
@@ -79,6 +107,7 @@
             background: rgba(255,255,255,0.4);
             border-radius: 50%;
         }
+<<<<<<< HEAD
         
         /* Correction de l'affichage pour éviter le blanc en bas */
         .main {
@@ -92,6 +121,246 @@
         .container {
             min-height: 100vh;
             height: auto;
+=======
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .preset-card {
+            background: var(--main-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .preset-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .preset-preview {
+            height: 120px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .preset-info {
+            padding: 15px;
+        }
+
+        .preset-info h4 {
+            margin: 0;
+            color: var(--main-text-color);
+            font-size: 16px;
+        }
+
+        .preset-info p {
+            margin: 5px 0 0;
+            color: var(--second-text-color);
+            font-size: 14px;
+        }
+
+        /* Aperçus des thèmes */
+        .dark-preview {
+            background: linear-gradient(45deg, #000000, #181818);
+        }
+
+        .dark-preview .preview-header {
+            background: #000000;
+            border-bottom: 1px solid #2F3336;
+        }
+
+        .dark-preview .preview-content {
+            background: #181818;
+        }
+
+        .dark-preview .preview-button {
+            background: #000000;
+            border: 1px solid #2F3336;
+        }
+
+        .dark-preview .preview-text {
+            background: #DBDDDE;
+        }
+
+        .dark-preview .preview-border {
+            background: #2F3336;
+        }
+
+        .light-preview {
+            background: linear-gradient(45deg, #ffffff, #f0f0f0);
+        }
+
+        .light-preview .preview-header {
+            background: #ffffff;
+            border-bottom: 1px solid #cccccc;
+        }
+
+        .light-preview .preview-content {
+            background: #f0f0f0;
+        }
+
+        .light-preview .preview-button {
+            background: #ffffff;
+            border: 1px solid #cccccc;
+        }
+
+        .light-preview .preview-text {
+            background: #1c1c1c;
+        }
+
+        .light-preview .preview-border {
+            background: #cccccc;
+        }
+
+        .sunset-preview {
+            background: linear-gradient(45deg, #2c1a1d, #4b1e2b);
+        }
+
+        .sunset-preview .preview-header {
+            background: #2c1a1d;
+            border-bottom: 1px solid #7b2f3a;
+        }
+
+        .sunset-preview .preview-content {
+            background: #4b1e2b;
+        }
+
+        .sunset-preview .preview-button {
+            background: #2c1a1d;
+            border: 1px solid #7b2f3a;
+        }
+
+        .sunset-preview .preview-text {
+            background: #ffe3d8;
+        }
+
+        .sunset-preview .preview-border {
+            background: #7b2f3a;
+        }
+
+        .eclipse-preview {
+            background: linear-gradient(45deg, #121724, #191E30);
+        }
+
+        .eclipse-preview .preview-header {
+            background: #121724;
+            border-bottom: 1px solid #242A3A;
+        }
+
+        .eclipse-preview .preview-content {
+            background: #191E30;
+        }
+
+        .eclipse-preview .preview-button {
+            background: #121724;
+            border: 1px solid #242A3A;
+        }
+
+        .eclipse-preview .preview-text {
+            background: #FFFFFF;
+        }
+
+        .eclipse-preview .preview-border {
+            background: #242A3A;
+        }
+
+        .color-pickers {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+            background: var(--main-color);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .color-picker-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .color-picker {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .color-picker label {
+            font-size: 14px;
+            color: var(--second-text-color);
+        }
+
+        .color-picker input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .apply-button {
+            padding: 10px 20px;
+            background-color: #1da1f2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            height: 40px;
+            align-self: flex-end;
+        }
+
+        .apply-button:hover {
+            background-color: #1a91da;
+        }
+
+        .preset-preview {
+            height: 160px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-header {
+            height: 30px;
+            background: var(--main-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .preview-content {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .preview-button {
+            width: 80px;
+            height: 20px;
+            background: var(--main-color);
+            border-radius: 4px;
+        }
+
+        .preview-text {
+            height: 10px;
+            width: 60%;
+            background: var(--main-text-color);
+            border-radius: 2px;
+        }
+
+        .preview-border {
+            height: 1px;
+            width: 100%;
+            background: var(--border-color);
+>>>>>>> df04f281641dc150c3d062974f81ff288ba34474
         }
     </style>
 </head>
@@ -124,11 +393,11 @@
             <!-- Section threads (bas) -->
             <div class="nav-section nav-section-bottom">
                 <a href="/threads" class="bar-button">
-                    <img src="/img/icon/icon_threads.svg" alt="Threads" class="icon">
+                    <img src="/img/icon/threads-r.png" alt="Threads" class="icon">
                     <p>Threads</p>
                 </a>
                 <a href="/my-threads" class="bar-button">
-                    <img src="/img/icon/icon_threads.svg" alt="Mes Threads" class="icon">
+                    <img src="/img/icon/threads-r.png" alt="Mes Threads" class="icon">
                     <p>Mes Threads</p>
                 </a>
             </div>
@@ -149,35 +418,96 @@
                 <h1>Personnaliser le Thème</h1>
                 <p>Changez les couleurs principales du site selon vos préférences.</p>
 
-                <div style="margin-top: 20px;">
-                    <label for="mainColor">Couleur principale :</label>
-                    <input type="color" id="mainColor" value="#000000">
-                    <br><br>
-
-                    <label for="hoverColor">Couleur au survol :</label>
-                    <input type="color" id="hoverColor" value="#181818">
-                    <br><br>
-
-                    <label for="borderColor">Couleur des bordures :</label>
-                    <input type="color" id="borderColor" value="#2F3336">
-                    <br><br>
-
-                    <label for="textColor">Texte principal :</label>
-                    <input type="color" id="textColor" value="#DBDDDE">
-                    <br><br>
-
-                    <label for="secondaryTextColor">Texte secondaire :</label>
-                    <input type="color" id="secondaryTextColor" value="#71767B">
-                    <br><br>
-
-                    <button onclick="applyTheme()" style="margin-top: 10px; padding: 10px 20px; border: none; background-color: #1da1f2; color: white; border-radius: 5px;">Appliquer</button>
+                <div class="color-pickers">
+                    <div class="color-picker-group">
+                        <div class="color-picker">
+                            <label for="mainColor">Couleur principale</label>
+                            <input type="color" id="mainColor" value="#000000">
+                        </div>
+                        <div class="color-picker">
+                            <label for="hoverColor">Couleur au survol</label>
+                            <input type="color" id="hoverColor" value="#181818">
+                        </div>
+                    </div>
+                    <div class="color-picker-group">
+                        <div class="color-picker">
+                            <label for="borderColor">Couleur des bordures</label>
+                            <input type="color" id="borderColor" value="#2F3336">
+                        </div>
+                        <div class="color-picker">
+                            <label for="textColor">Texte principal</label>
+                            <input type="color" id="textColor" value="#DBDDDE">
+                        </div>
+                    </div>
+                    <div class="color-picker-group">
+                        <div class="color-picker">
+                            <label for="secondaryTextColor">Texte secondaire</label>
+                            <input type="color" id="secondaryTextColor" value="#71767B">
+                        </div>
+                        <button onclick="applyTheme()" class="apply-button">Appliquer</button>
+                    </div>
                 </div>
 
                 <div style="margin-top: 30px;">
                     <h3>Presets :</h3>
-                    <button onclick="loadPreset('dark')" class="preset-button">Sombre</button>
-                    <button onclick="loadPreset('light')" class="preset-button">Clair</button>
-                    <button onclick="loadPreset('sunset')" class="preset-button">Coucher de soleil</button>
+                    <div class="preset-grid">
+                        <div class="preset-card" onclick="loadPreset('dark')">
+                            <div class="preset-preview dark-preview">
+                                <div class="preview-header"></div>
+                                <div class="preview-content">
+                                    <div class="preview-button"></div>
+                                    <div class="preview-text"></div>
+                                    <div class="preview-border"></div>
+                                </div>
+                            </div>
+                            <div class="preset-info">
+                                <h4>Sombre</h4>
+                                <p>Thème classique sombre</p>
+                            </div>
+                        </div>
+                        <div class="preset-card" onclick="loadPreset('light')">
+                            <div class="preset-preview light-preview">
+                                <div class="preview-header"></div>
+                                <div class="preview-content">
+                                    <div class="preview-button"></div>
+                                    <div class="preview-text"></div>
+                                    <div class="preview-border"></div>
+                                </div>
+                            </div>
+                            <div class="preset-info">
+                                <h4>Clair</h4>
+                                <p>Thème lumineux</p>
+                            </div>
+                        </div>
+                        <div class="preset-card" onclick="loadPreset('sunset')">
+                            <div class="preset-preview sunset-preview">
+                                <div class="preview-header"></div>
+                                <div class="preview-content">
+                                    <div class="preview-button"></div>
+                                    <div class="preview-text"></div>
+                                    <div class="preview-border"></div>
+                                </div>
+                            </div>
+                            <div class="preset-info">
+                                <h4>Coucher de soleil</h4>
+                                <p>Thème chaleureux</p>
+                            </div>
+                        </div>
+                        <div class="preset-card" onclick="loadPreset('eclipse')">
+                            <div class="preset-preview eclipse-preview">
+                                <div class="preview-header"></div>
+                                <div class="preview-content">
+                                    <div class="preview-button"></div>
+                                    <div class="preview-text"></div>
+                                    <div class="preview-border"></div>
+                                </div>
+                            </div>
+                            <div class="preset-info">
+                                <h4>Eclipse</h4>
+                                <p>Thème mystérieux</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -216,6 +546,11 @@
 
             // Sauvegarder dans localStorage
             localStorage.setItem('themeSettings', JSON.stringify(values));
+            
+            // Forcer la mise à jour du logo
+            if (typeof updateLogo === 'function') {
+                updateLogo();
+            }
         }
 
         function loadPreset(name) {
@@ -240,6 +575,13 @@
                     border: '#7b2f3a',
                     text: '#ffe3d8',
                     secondary: '#ffb4a2'
+                },
+                eclipse: {
+                    main: '#121724',
+                    hover: '#191E30',
+                    border: '#242A3A',
+                    text: '#FFFFFF',
+                    secondary: '#888888'
                 }
             };
 
@@ -295,5 +637,8 @@
     
     <!-- Script pour authentification -->
     <script src="/js/auth-handler.js"></script>
+    
+    <!-- Script pour le changement de logo -->
+    <script src="/js/logo_switcher.js"></script>
 </body>
 </html>
