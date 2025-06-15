@@ -11,6 +11,7 @@ type User struct {
 	Email          string     `json:"email" db:"email"`
 	PasswordHash   string     `json:"-" db:"password_hash"` // Ne pas exposer en JSON
 	ProfilePicture *string    `json:"profile_picture" db:"profile_picture"`
+	Banner         *string    `json:"banner" db:"banner"`
 	Bio            *string    `json:"bio" db:"bio"`
 	CreatedAt      time.Time  `json:"created_at" db:"created_at"`
 	LastLogin      *time.Time `json:"last_login" db:"last_login"`

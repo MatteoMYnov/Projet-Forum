@@ -1,10 +1,10 @@
 /* ================================================= */
-/*  NOUVEAUX STYLES POUR LA PARTIE “PROFIL” & “MUR”   */
+/*  NOUVEAUX STYLES POUR LA PARTIE "PROFIL" & "MUR"   */
 /* ================================================= */
 
 /* ========== 1) PROFILE HEAD ========== */
 .profile-head {
-    /* Rien de spécial ici : on laisse la <div> prendre ce qu’il faut */
+    /* Rien de spécial ici : on laisse la <div> prendre ce qu'il faut */
     position: relative;
     width: 100%;
     background-color: var(--main-color);
@@ -15,14 +15,21 @@
     width: 100%;
     height: 200px;                        /* On donne 200px de hauteur à la bannière */
     background-color: var(--main-border-color);
-    /* Pour mettre une image, décommentez la ligne ci-dessous et remplacez par votre URL :
-       background-image: url("../img/votre-banniere.jpg");
-       background-size: cover;
-       background-position: center;
-    */
+    background-size: cover;
+    background-position: center;
 }
 
-/* 1.b) Conteneur “profile-info” sous la bannière */
+/* Bannière par défaut */
+.profile-banner.default-banner {
+    background-image: url("../img/banners/banner.jpg");
+}
+
+/* Bannière personnalisée */
+.profile-banner.custom-banner {
+    background-image: var(--user-banner);
+}
+
+/* 1.b) Conteneur "profile-info" sous la bannière */
 .profile-info {
     position: relative;
     padding-top: 20px;                   /* Laisser la place pour que la photo chevauche */
@@ -41,14 +48,14 @@
     position: absolute;
     top: 140px;                            /* 200px (bannière) – (120px/2) = 140px */
     left: 20px;                            /* Même décalage gauche que .profile-info */
-    background-color: #444;                /* Couleur de secours si l’image ne charge pas */
+    background-color: #444;                /* Couleur de secours si l'image ne charge pas */
     object-fit: cover;
 }
 
-/* 1.d) Bouton “Edit profile” */
+/* 1.d) Bouton "Edit profile" */
 .edit-profile {
     position: absolute;
-    top: 10px;                            /* Pour qu’il soit aligné avec le bas de la photo */
+    top: 10px;                            /* Pour qu'il soit aligné avec le bas de la photo */
     right: 20px;
     padding: 6px 16px;
     border: 1px solid var(--main-text-color);
@@ -75,7 +82,7 @@
     margin-bottom: 8px;
 }
 
-/* 1.f) Date d’inscription */
+/* 1.f) Date d'inscription */
 .join-date {
     display: flex;
     align-items: center;
@@ -88,7 +95,7 @@
     color: var(--second-text-color);
 }
 
-/* 1.g) Stats “Following / Followers” */
+/* 1.g) Stats "Following / Followers" */
 .follow-stats {
     display: flex;
     gap: 16px;
@@ -111,7 +118,7 @@
     border-top: 1px solid var(--main-border-color);
 }
 
-/* Titre “Mur” */
+/* Titre "Mur" */
 .wall h2 {
     font-size: 1.2rem;
     margin-bottom: 12px;

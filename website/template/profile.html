@@ -227,7 +227,7 @@
             <!-- ================= -->
             <div class="profile-head">
                 <!-- Bannière de profil (fond + couleur) -->
-                <div class="profile-banner">
+                <div class="profile-banner %BANNER_CLASS%">
                     <img
                       src="%AVATAR_PATH%"
                       alt="Photo de profil"
@@ -244,8 +244,8 @@
                     <button class="edit-profile">Edit profile</button>
 
                     <!-- Nom et @handle -->
-                    <h1 class="name">%s</h1>
-                    <span class="handle">@%s</span>
+                    <h1 class="name">%USERNAME%</h1>
+                    <span class="handle">@%USERNAME%</span>
 
                     <!-- Date d'inscription -->
                     <div class="join-date">
@@ -262,13 +262,13 @@
                             d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h.5A1.5 1.5 0 0 1 15 2.5v11A1.5 1.5 0 0 1 13.5 15h-11A1.5 1.5 0 0 1 1 13.5v-11A1.5 1.5 0 0 1 2.5 1H3v-.5a.5.5 0 0 1 .5-.5zM2 4v9.5a.5.5 0 0 0 .5.5H13.5a.5.5 0 0 0 .5-.5V4H2z"
                           />
                         </svg>
-                        Joined September 2024
+                        %JOIN_DATE%
                     </div>
 
                     <!-- Stats "Following / Followers" -->
                     <div class="follow-stats">
-                        <span><strong>%x</strong> Following</span>
-                        <span><strong>%x</strong> Followers</span>
+                        <span><strong>%FOLLOWING_COUNT%</strong> Following</span>
+                        <span><strong>%FOLLOWERS_COUNT%</strong> Followers</span>
                     </div>
                 </div>
             </div>
@@ -303,13 +303,13 @@
                           class="post-avatar"
                         />
                         <div class="post-user-info">
-                            <span class="post-user-name">%s</span>
-                            <span class="post-user-handle">%s</span>
+                            <span class="post-user-name">%USERNAME%</span>
+                            <span class="post-user-handle">@%USERNAME%</span>
                             <span class="post-timestamp">il y a 2 h</span>
                         </div>
                     </div>
                     <p class="post-content">
-                        Félicitations %s pour ta nouvelle page ! 🎉
+                        Félicitations %USERNAME% pour ta nouvelle page ! 🎉
                     </p>
                 </div>
                 <!-- … autres posts dynamiques … -->

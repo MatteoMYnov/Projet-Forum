@@ -562,6 +562,18 @@ func processProfileTemplate(htmlContent string, user *models.User) string {
 		log.Printf("🖼️ Utilisation image par défaut: %s (ProfilePicture=%v)", profilePicture, user.ProfilePicture)
 	}
 	
+	// Déterminer la classe de bannière à utiliser
+	bannerClass := "default-banner"
+	if user.Banner != nil && *user.Banner != "" {
+		bannerClass = "custom-banner"
+		// Ajouter la variable CSS pour la bannière personnalisée
+		htmlContent = strings.Replace(htmlContent, "</head>", 
+			fmt.Sprintf(`<style>:root { --user-banner: url('%s'); }</style></head>`, *user.Banner), 1)
+	}
+	
+	// Remplacer le placeholder %BANNER_CLASS% par la classe appropriée
+	htmlContent = strings.Replace(htmlContent, `%BANNER_CLASS%`, bannerClass, 1)
+	
 	// Remplacer le placeholder %AVATAR_PATH% par le vrai chemin
 	htmlContent = strings.Replace(htmlContent, `%AVATAR_PATH%`, profilePicture, 1)
 	
@@ -588,16 +600,6 @@ func processProfileTemplate(htmlContent string, user *models.User) string {
 	htmlContent = strings.Replace(htmlContent, `<span><strong>%x</strong> Followers</span>`, 
 		fmt.Sprintf(`<span><strong>%d</strong> Followers</span>`, user.FollowerCount), 1)
 	
-	// Post utilisateur dans le mur
-	htmlContent = strings.Replace(htmlContent, `<span class="post-user-name">%s</span>`, 
-		fmt.Sprintf(`<span class="post-user-name">%s</span>`, user.Username), 1)
-	
-	htmlContent = strings.Replace(htmlContent, `<span class="post-user-handle">%s</span>`, 
-		fmt.Sprintf(`<span class="post-user-handle">@%s</span>`, user.Username), 1)
-	
-	htmlContent = strings.Replace(htmlContent, `Félicitations %s pour ta nouvelle page ! 🎉`, 
-		fmt.Sprintf(`Félicitations %s pour ta nouvelle page ! 🎉`, user.Username), 1)
-	
 	// Compter les placeholders après traitement
 	countAfter := strings.Count(htmlContent, "%s") + strings.Count(htmlContent, "%x")
 	log.Printf("✅ Template traité. Placeholders restants: %d", countAfter)
@@ -622,27 +624,50 @@ func processProfileTemplateWithWall(htmlContent string, user *models.User, wallP
 		log.Printf("🖼️ Utilisation image par défaut: %s (ProfilePicture=%v)", profilePicture, user.ProfilePicture)
 	}
 	
+	// Déterminer la classe de bannière à utiliser
+	bannerClass := "default-banner"
+	if user.Banner != nil && *user.Banner != "" {
+		bannerClass = "custom-banner"
+		// Ajouter la variable CSS pour la bannière personnalisée
+		htmlContent = strings.Replace(htmlContent, "</head>", 
+			fmt.Sprintf(`<style>:root { --user-banner: url('%s'); }</style></head>`, *user.Banner), 1)
+	}
+	
+	// Remplacer le placeholder %BANNER_CLASS% par la classe appropriée
+	htmlContent = strings.Replace(htmlContent, `%BANNER_CLASS%`, bannerClass, 1)
+	
+	// Remplacer le placeholder %AVATAR_PATH% par le vrai chemin
+	htmlContent = strings.Replace(htmlContent, `%AVATAR_PATH%`, profilePicture, 1)
+	
+	// Déterminer la classe de bannière à utiliser
+	bannerClass = "default-banner"
+	if user.Banner != nil && *user.Banner != "" {
+		bannerClass = "custom-banner"
+		// Ajouter la variable CSS pour la bannière personnalisée
+		htmlContent = strings.Replace(htmlContent, "</head>", 
+			fmt.Sprintf(`<style>:root { --user-banner: url('%s'); }</style></head>`, *user.Banner), 1)
+	}
+	
+	// Remplacer le placeholder %BANNER_CLASS% par la classe appropriée
+	htmlContent = strings.Replace(htmlContent, `%BANNER_CLASS%`, bannerClass, 1)
+	
 	// Remplacer le placeholder %AVATAR_PATH% par le vrai chemin
 	htmlContent = strings.Replace(htmlContent, `%AVATAR_PATH%`, profilePicture, 1)
 	
 	// Remplacer les placeholders spécifiques
-	htmlContent = strings.Replace(htmlContent, `<h1 class="name">%s</h1>`, 
-		fmt.Sprintf(`<h1 class="name">%s</h1>`, user.Username), 1)
-	
-	htmlContent = strings.Replace(htmlContent, `<span class="handle">@%s</span>`, 
-		fmt.Sprintf(`<span class="handle">@%s</span>`, user.Username), 1)
+	htmlContent = strings.Replace(htmlContent, `%USERNAME%`, user.Username, -1)
 	
 	// Date d'inscription
 	joinDate := user.CreatedAt.Format("January 2006")
-	htmlContent = strings.Replace(htmlContent, `Joined September 2024`, 
+	htmlContent = strings.Replace(htmlContent, `%JOIN_DATE%`, 
 		fmt.Sprintf(`Joined %s`, joinDate), 1)
 	
 	// Stats Following/Followers
-	htmlContent = strings.Replace(htmlContent, `<span><strong>%x</strong> Following</span>`, 
-		fmt.Sprintf(`<span><strong>%d</strong> Following</span>`, user.FollowingCount), 1)
+	htmlContent = strings.Replace(htmlContent, `%FOLLOWING_COUNT%`, 
+		fmt.Sprintf(`%d`, user.FollowingCount), 1)
 	
-	htmlContent = strings.Replace(htmlContent, `<span><strong>%x</strong> Followers</span>`, 
-		fmt.Sprintf(`<span><strong>%d</strong> Followers</span>`, user.FollowerCount), 1)
+	htmlContent = strings.Replace(htmlContent, `%FOLLOWERS_COUNT%`, 
+		fmt.Sprintf(`%d`, user.FollowerCount), 1)
 	
 	// Générer le HTML des posts du mur
 	wallPostsHTML := ""
@@ -678,7 +703,6 @@ func processProfileTemplateWithWall(htmlContent string, user *models.User, wallP
 	}
 	
 	// Remplacer le post exemple par les vrais posts
-	// Trouver et remplacer tout le contenu entre <!-- Exemple de post --> et <!-- … autres posts dynamiques … -->
 	startMarker := `<!-- Exemple de post (dupliquez-le dynamiquement en JS/PHP/etc.) -->`
 	endMarker := `<!-- … autres posts dynamiques … -->`
 	
