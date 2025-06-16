@@ -21,7 +21,7 @@
 
 /* Bannière par défaut */
 .profile-banner.default-banner {
-    background-image: url("../img/banners/banner.jpg");
+    background-image: url("../img/banners/default-avatar.png");
 }
 
 /* Bannière personnalisée */

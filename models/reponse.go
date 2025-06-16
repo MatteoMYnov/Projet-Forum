@@ -37,6 +37,7 @@ type RegisterRequest struct {
 	Email          string  `json:"email" validate:"required,email"`
 	Password       string  `json:"password" validate:"required,min=12"`
 	ProfilePicture *string `json:"profile_picture,omitempty"`
+	Banner         *string `json:"banner,omitempty"`
 }
 
 // SessionInfo contient les informations de session utilisateur

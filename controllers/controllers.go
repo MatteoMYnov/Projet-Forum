@@ -356,12 +356,38 @@ func (c *UserControllers) RegisterHandler(w http.ResponseWriter, r *http.Request
 		log.Printf("📷 Utilisation de l'image par défaut: %s", defaultPath)
 	}
 
+	// Gérer l'upload de la bannière (optionnel)
+	var bannerPath *string
+	bannerFile, bannerHeader, bannerErr := r.FormFile("banner")
+	if bannerErr == nil {
+		// Un fichier bannière a été téléchargé
+		defer bannerFile.Close()
+		
+		uploadedBannerPath, uploadBannerErr := c.uploadService.UploadBanner(bannerFile, bannerHeader)
+		if uploadBannerErr != nil {
+			log.Printf("❌ Erreur upload bannière: %v", uploadBannerErr)
+			// Nettoyer l'image de profil si elle a été uploadée
+			if profilePicturePath != nil && *profilePicturePath != c.uploadService.GetDefaultAvatarPath() {
+				c.uploadService.DeleteProfilePicture(*profilePicturePath)
+			}
+			showErrorPage(w, r, "Erreur lors du téléchargement de la bannière: "+uploadBannerErr.Error(), "/register")
+			return
+		}
+		
+		bannerPath = &uploadedBannerPath
+		log.Printf("✅ Bannière téléchargée: %s", uploadedBannerPath)
+	} else {
+		// Aucune bannière téléchargée, utiliser la valeur par défaut (définie en base)
+		log.Printf("📷 Aucune bannière téléchargée, utilisation de la valeur par défaut")
+	}
+
 	// Créer la requête d'inscription
 	registerReq := models.RegisterRequest{
 		Username:       username,
 		Email:          email,
 		Password:       password,
 		ProfilePicture: profilePicturePath,
+		Banner:         bannerPath,
 	}
 
 	// Appeler le service d'inscription
@@ -369,9 +395,12 @@ func (c *UserControllers) RegisterHandler(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		log.Printf("❌ Erreur inscription: %v", err)
 		
-		// Si une image a été téléchargée et que l'inscription échoue, la supprimer
+		// Si des images ont été téléchargées et que l'inscription échoue, les supprimer
 		if profilePicturePath != nil && *profilePicturePath != c.uploadService.GetDefaultAvatarPath() {
 			c.uploadService.DeleteProfilePicture(*profilePicturePath)
+		}
+		if bannerPath != nil {
+			c.uploadService.DeleteBanner(*bannerPath)
 		}
 		
 		showErrorPage(w, r, err.Error(), "/register")

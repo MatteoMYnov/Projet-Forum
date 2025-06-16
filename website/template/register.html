@@ -5,142 +5,331 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/styles/home.css" />
   <link rel="stylesheet" href="/styles/register.css" />
-  <title>Inscription / Y</title>
+  <title>Créer un compte • Forum Y</title>
   <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png" />
 </head>
 <body>
   <!-- Bannière (barre latérale gauche) -->
   <div class="banner">
     <div class="bar">
-            <div class="logo-button">
-                <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo">
-            </div>
-            <a href="/home" class="bar-button">
-                <img src="/img/icon/home-r.png" alt="Home" class="icon">
-                <p>Home</p>
-            </a>
-            <a href="/theme" class="bar-button">
-                <img src="/img/icon/brush-r.png" alt="Theme" class="icon">
-                <p>Theme</p>
-            </a>
-            <a href="/profile" class="bar-button">
-                <img src="/img/icon/profile-r.png" alt="Profile" class="icon">
-                <p>Profile</p>
-            </a>
-            <div class="account">
-            </div>
-        </div>
+      <div class="logo-button">
+        <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo">
+      </div>
+      <a href="/home" class="bar-button">
+        <img src="/img/icon/home-r.png" alt="Home" class="icon">
+        <p>Accueil</p>
+      </a>
+      <a href="/theme" class="bar-button">
+        <img src="/img/icon/brush-r.png" alt="Theme" class="icon">
+        <p>Thème</p>
+      </a>
+      <a href="/login" class="bar-button">
+        <img src="/img/icon/profile-r.png" alt="Login" class="icon">
+        <p>Connexion</p>
+      </a>
+      <div class="account"></div>
+    </div>
   </div>
 
   <!-- Contenu principal -->
   <div class="container">
     <div class="main">
-      <div class="register-form">
-        <h2>Créer un compte</h2>
-        
+      <!-- En-tête avec animation -->
+      <div class="register-header">
+        <div class="header-icon">✨</div>
+        <h1>Rejoignez notre communauté</h1>
+        <p class="header-subtitle">Créez votre compte en quelques étapes simples</p>
+      </div>
+
+      <!-- Container principal du formulaire -->
+      <div class="register-container">
         <!-- Affichage des erreurs -->
-        <div id="error-message" style="display: none; color: #ff6b6b; margin-bottom: 15px; padding: 10px; background: #2a1f1f; border-radius: 5px;"></div>
+        <div id="error-message" class="error-alert" style="display: none;">
+          <div class="error-icon">⚠️</div>
+          <span class="error-text"></span>
+        </div>
         
-        <form action="/api/register" method="POST" enctype="multipart/form-data" id="registerForm">
-          <!-- Section photo de profil -->
-          <div class="profile-picture-section">
-            <label for="profile-picture">Photo de profil (optionnel)</label>
-            <div class="profile-picture-upload">
-              <div class="profile-picture-preview">
-                <img id="profilePreview" src="/img/avatars/default-avatar.png" alt="Aperçu photo de profil" />
-                <div class="upload-overlay">
-                  <span>📷</span>
-                  <p>Cliquer pour choisir</p>
-                </div>
-              </div>
-              <input type="file" id="profile-picture" name="profile_picture" accept="image/*" style="display: none;" />
-              <button type="button" id="removePhoto" class="remove-photo-btn" style="display: none;">Supprimer</button>
+        <form action="/api/register" method="POST" enctype="multipart/form-data" id="registerForm" class="register-form">
+          
+          <!-- Section Personnalisation du profil -->
+          <div class="form-section">
+            <div class="section-header">
+              <h3>🎨 Personnalisez votre profil</h3>
+              <p>Ajoutez une touche personnelle à votre compte</p>
             </div>
-            <p class="photo-hint">JPG, PNG ou GIF. Maximum 5MB.</p>
+            
+            <div class="profile-customization">
+              <!-- Photo de profil -->
+              <div class="upload-card profile-card">
+                <div class="card-header">
+                  <h4>Photo de profil</h4>
+                  <span class="optional-badge">Optionnel</span>
+                </div>
+                <div class="profile-picture-upload">
+                  <div class="profile-picture-preview">
+                    <img id="profilePreview" src="/img/avatars/default-avatar.png" alt="Aperçu photo de profil" />
+                    <div class="upload-overlay">
+                      <div class="upload-icon">📷</div>
+                      <p>Cliquer pour choisir</p>
+                    </div>
+                  </div>
+                  <input type="file" id="profile-picture" name="profile_picture" accept="image/*" style="display: none;" />
+                  <button type="button" id="removePhoto" class="remove-btn" style="display: none;">
+                    <span>🗑️</span> Supprimer
+                  </button>
+                </div>
+                <p class="upload-hint">JPG, PNG ou GIF • Max 5MB</p>
+              </div>
+
+              <!-- Bannière de profil -->
+              <div class="upload-card banner-card">
+                <div class="card-header">
+                  <h4>Bannière de profil</h4>
+                  <span class="optional-badge">Optionnel</span>
+                </div>
+                <div class="banner-upload">
+                  <div class="banner-preview" id="bannerPreview">
+                    <div class="banner-placeholder">
+                      <div class="placeholder-icon">🖼️</div>
+                      <p>Cliquer pour ajouter une bannière</p>
+                      <span class="size-recommendation">Recommandé: 1500×500px</span>
+                    </div>
+                    <div class="upload-overlay">
+                      <div class="upload-icon">📷</div>
+                      <p>Choisir une image</p>
+                    </div>
+                  </div>
+                  <input type="file" id="banner" name="banner" accept="image/*" style="display: none;" />
+                  <button type="button" id="removeBanner" class="remove-btn" style="display: none;">
+                    <span>🗑️</span> Supprimer
+                  </button>
+                </div>
+                <p class="upload-hint">JPG, PNG ou GIF • Max 5MB • Format paysage</p>
+              </div>
+            </div>
+
+            <!-- Note sur le thème -->
+            <div class="theme-info-note">
+              <p><strong>🎨 Thème :</strong> Utilisez l'onglet "Thème" dans la barre latérale pour personnaliser l'apparence de votre forum</p>
+            </div>
           </div>
 
-          <label for="username">Nom d'utilisateur</label>
-          <input type="text" id="username" name="username" required 
-                 pattern="[a-zA-Z0-9_]{3,50}" 
-                 title="3-50 caractères, lettres, chiffres et _ uniquement" />
+          <!-- Section Informations du compte -->
+          <div class="form-section">
+            <div class="section-header">
+              <h3>👤 Informations du compte</h3>
+              <p>Ces informations sont nécessaires pour créer votre compte</p>
+            </div>
+            
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="username" class="form-label">
+                  <span class="label-icon">🏷️</span>
+                  Nom d'utilisateur
+                  <span class="required">*</span>
+                </label>
+                <div class="input-container">
+                  <input type="text" id="username" name="username" required 
+                         pattern="[a-zA-Z0-9_]{3,50}" 
+                         title="3-50 caractères, lettres, chiffres et _ uniquement"
+                         class="form-input" 
+                         placeholder="votre_nom_utilisateur" />
+                  <div class="input-icon">@</div>
+                </div>
+                <div class="input-help">3-50 caractères, lettres, chiffres et _ uniquement</div>
+              </div>
 
-          <label for="email">Adresse e-mail</label>
-          <input type="email" id="email" name="email" required />
+              <div class="form-group">
+                <label for="email" class="form-label">
+                  <span class="label-icon">📧</span>
+                  Adresse e-mail
+                  <span class="required">*</span>
+                </label>
+                <div class="input-container">
+                  <input type="email" id="email" name="email" required 
+                         class="form-input" 
+                         placeholder="votre@email.com" />
+                  <div class="input-icon">✉️</div>
+                </div>
+              </div>
 
-          <label for="password">Mot de passe</label>
-          <input type="password" id="password" name="password" required minlength="12" />
+              <div class="form-group password-group">
+                <label for="password" class="form-label">
+                  <span class="label-icon">🔒</span>
+                  Mot de passe
+                  <span class="required">*</span>
+                </label>
+                <div class="input-container">
+                  <input type="password" id="password" name="password" required minlength="12" 
+                         class="form-input" 
+                         placeholder="••••••••••••" />
+                  <div class="input-icon">🔑</div>
+                </div>
+                <div class="password-requirements">
+                  <div class="requirement" id="req-length">
+                    <span class="req-icon">❌</span>
+                    <span>Au moins 12 caractères</span>
+                  </div>
+                  <div class="requirement" id="req-upper">
+                    <span class="req-icon">❌</span>
+                    <span>Au moins une majuscule</span>
+                  </div>
+                  <div class="requirement" id="req-special">
+                    <span class="req-icon">❌</span>
+                    <span>Au moins un caractère spécial</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-          <p class="password-hint">
-            Le mot de passe doit contenir au moins 12 caractères, une majuscule et un caractère spécial.
-          </p>
+          <!-- Bouton de soumission -->
+          <div class="form-section">
+            <button type="submit" class="submit-btn">
+              <span class="btn-icon">🚀</span>
+              <span class="btn-text">Créer mon compte</span>
+              <div class="btn-shine"></div>
+            </button>
+            
+            <div class="form-footer">
+              <p>Déjà un compte ? 
+                <a href="/login" class="login-link">Se connecter</a>
+              </p>
+            </div>
+          </div>
 
-          <button type="submit">S'inscrire</button>
         </form>
-        <p class="login-link">Déjà un compte ? <a href="/login">Connectez-vous</a></p>
       </div>
     </div>
     <div class="sidebar"></div>
   </div>
 
   <script>
-    // Gestion de l'upload de photo de profil
+    // Gestion de l'upload de photo de profil et de bannière
     document.addEventListener('DOMContentLoaded', function() {
+      // Éléments
       const profilePictureInput = document.getElementById('profile-picture');
       const profilePreview = document.getElementById('profilePreview');
-      const uploadArea = document.querySelector('.profile-picture-preview');
+      const profileUploadArea = document.querySelector('.profile-picture-preview');
       const removePhotoBtn = document.getElementById('removePhoto');
       
-      // Cliquer sur la zone d'aperçu ouvre le sélecteur de fichier
-      uploadArea.addEventListener('click', function() {
+      const bannerInput = document.getElementById('banner');
+      const bannerPreview = document.getElementById('bannerPreview');
+      const removeBannerBtn = document.getElementById('removeBanner');
+
+      const passwordInput = document.getElementById('password');
+      
+      // Upload photo de profil
+      profileUploadArea.addEventListener('click', function() {
         profilePictureInput.click();
       });
       
-      // Prévisualiser l'image sélectionnée
       profilePictureInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-          // Validation de la taille (5MB max)
-          if (file.size > 5 * 1024 * 1024) {
-            showError('La taille de l\'image ne doit pas dépasser 5MB');
-            profilePictureInput.value = '';
-            return;
-          }
-          
-          // Validation du type
-          if (!file.type.startsWith('image/')) {
-            showError('Veuillez sélectionner un fichier image valide');
-            profilePictureInput.value = '';
-            return;
-          }
-          
-          // Créer l'aperçu
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            profilePreview.src = e.target.result;
-            removePhotoBtn.style.display = 'block';
-            uploadArea.classList.add('has-image');
-          };
-          reader.readAsDataURL(file);
-        }
+        handleImageUpload(e.target.files[0], 'profile');
       });
       
-      // Supprimer la photo
       removePhotoBtn.addEventListener('click', function(e) {
         e.stopPropagation();
+        resetProfilePicture();
+      });
+
+      // Upload bannière
+      bannerPreview.addEventListener('click', function() {
+        bannerInput.click();
+      });
+      
+      bannerInput.addEventListener('change', function(e) {
+        handleImageUpload(e.target.files[0], 'banner');
+      });
+      
+      removeBannerBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        resetBanner();
+      });
+
+      // Validation mot de passe en temps réel
+      passwordInput.addEventListener('input', function() {
+        validatePassword(this.value);
+      });
+
+      // Fonction générique pour gérer les uploads
+      function handleImageUpload(file, type) {
+        if (!file) return;
+
+        // Validation
+        if (file.size > 5 * 1024 * 1024) {
+          showError(`La taille de ${type === 'profile' ? 'l\'image' : 'la bannière'} ne doit pas dépasser 5MB`);
+          if (type === 'profile') profilePictureInput.value = '';
+          else bannerInput.value = '';
+          return;
+        }
+        
+        if (!file.type.startsWith('image/')) {
+          showError('Veuillez sélectionner un fichier image valide');
+          if (type === 'profile') profilePictureInput.value = '';
+          else bannerInput.value = '';
+          return;
+        }
+        
+        // Prévisualisation
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          if (type === 'profile') {
+            profilePreview.src = e.target.result;
+            removePhotoBtn.style.display = 'block';
+            profileUploadArea.classList.add('has-image');
+          } else {
+            bannerPreview.style.backgroundImage = `url(${e.target.result})`;
+            bannerPreview.classList.add('has-banner');
+            removeBannerBtn.style.display = 'block';
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function resetProfilePicture() {
         profilePictureInput.value = '';
         profilePreview.src = '/img/avatars/default-avatar.png';
         removePhotoBtn.style.display = 'none';
-        uploadArea.classList.remove('has-image');
-      });
+        profileUploadArea.classList.remove('has-image');
+      }
+
+      function resetBanner() {
+        bannerInput.value = '';
+        bannerPreview.style.backgroundImage = '';
+        bannerPreview.classList.remove('has-banner');
+        removeBannerBtn.style.display = 'none';
+      }
+
+      function validatePassword(password) {
+        const requirements = {
+          'req-length': password.length >= 12,
+          'req-upper': /[A-Z]/.test(password),
+          'req-special': /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+        };
+
+        Object.entries(requirements).forEach(([id, isValid]) => {
+          const element = document.getElementById(id);
+          const icon = element.querySelector('.req-icon');
+          
+          if (isValid) {
+            element.classList.add('valid');
+            icon.textContent = '✅';
+          } else {
+            element.classList.remove('valid');
+            icon.textContent = '❌';
+          }
+        });
+      }
     });
 
     // Gestion du formulaire d'inscription
     document.getElementById('registerForm').addEventListener('submit', function(e) {
       const password = document.getElementById('password').value;
       const profilePictureInput = document.getElementById('profile-picture');
-      const errorDiv = document.getElementById('error-message');
+      const bannerInput = document.getElementById('banner');
       
-      // Validation côté client
+      // Validation du mot de passe
       if (password.length < 12) {
         e.preventDefault();
         showError('Le mot de passe doit contenir au moins 12 caractères');
@@ -159,26 +348,33 @@
         return;
       }
       
-      // Validation de l'image si elle est fournie
-      if (profilePictureInput.files[0]) {
-        const file = profilePictureInput.files[0];
-        if (file.size > 5 * 1024 * 1024) {
-          e.preventDefault();
-          showError('La taille de l\'image ne doit pas dépasser 5MB');
-          return;
+      // Validation des images
+      [profilePictureInput, bannerInput].forEach(input => {
+        if (input.files[0]) {
+          const file = input.files[0];
+          if (file.size > 5 * 1024 * 1024) {
+            e.preventDefault();
+            showError('La taille de l\'image ne doit pas dépasser 5MB');
+            return;
+          }
+          
+          if (!file.type.startsWith('image/')) {
+            e.preventDefault();
+            showError('Veuillez sélectionner un fichier image valide');
+            return;
+          }
         }
-        
-        if (!file.type.startsWith('image/')) {
-          e.preventDefault();
-          showError('Veuillez sélectionner un fichier image valide');
-          return;
-        }
-      }
+      });
       
       hideError();
+      
+      // Animation du bouton
+      const submitBtn = this.querySelector('.submit-btn');
+      submitBtn.classList.add('loading');
+      submitBtn.querySelector('.btn-text').textContent = 'Création en cours...';
     });
     
-    // Afficher les erreurs depuis l'URL
+    // Gestion des erreurs
     window.addEventListener('load', function() {
       const urlParams = new URLSearchParams(window.location.search);
       const error = urlParams.get('error');
@@ -189,16 +385,25 @@
     
     function showError(message) {
       const errorDiv = document.getElementById('error-message');
-      errorDiv.textContent = message;
-      errorDiv.style.display = 'block';
+      const errorText = errorDiv.querySelector('.error-text');
+      errorText.textContent = message;
+      errorDiv.style.display = 'flex';
+      
+      // Animation d'apparition
+      setTimeout(() => errorDiv.classList.add('show'), 10);
+      
+      // Auto-hide après 10 secondes
+      setTimeout(() => hideError(), 10000);
     }
     
     function hideError() {
       const errorDiv = document.getElementById('error-message');
-      errorDiv.style.display = 'none';
+      errorDiv.classList.remove('show');
+      setTimeout(() => errorDiv.style.display = 'none', 300);
     }
   </script>
-      <script src="/js/theme_loader.js"></script>
-    <script src="/js/auth-handler.js"></script>
+  
+  <script src="/js/theme_loader.js"></script>
+  <script src="/js/auth-handler.js"></script>
 </body>
 </html>

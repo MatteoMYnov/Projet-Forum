@@ -63,6 +63,7 @@ func (s *AuthService) Register(req models.RegisterRequest) (*models.User, error)
 		Email:          req.Email,
 		PasswordHash:   hashedPassword,
 		ProfilePicture: req.ProfilePicture,
+		Banner:         req.Banner,
 		CreatedAt:      time.Now(),
 		Role:           "user",
 		IsVerified:     false,

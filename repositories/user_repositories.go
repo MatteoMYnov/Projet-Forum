@@ -30,14 +30,15 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 // CreateUser crée un nouvel utilisateur
 func (r *UserRepository) CreateUser(user models.User) (*models.User, error) {
 	query := `
-		INSERT INTO users (username, email, password_hash, profile_picture, created_at, role) 
-		VALUES (?, ?, ?, ?, ?, ?)`
+		INSERT INTO users (username, email, password_hash, profile_picture, banner, created_at, role) 
+		VALUES (?, ?, ?, ?, ?, ?, ?)`
 
 	result, err := r.db.Exec(query,
 		user.Username,
 		user.Email,
 		user.PasswordHash,
 		user.ProfilePicture,
+		user.Banner,
 		time.Now(),
 		"user")
 
@@ -67,7 +68,7 @@ func (r *UserRepository) CreateUser(user models.User) (*models.User, error) {
 // GetUserByID récupère un utilisateur par son ID
 func (r *UserRepository) GetUserByID(id int) (*models.User, error) {
 	query := `
-		SELECT id_user, username, email, password_hash, profile_picture, bio, 
+		SELECT id_user, username, email, password_hash, profile_picture, banner, bio, 
 			   created_at, last_login, is_verified, is_banned, role, 
 			   follower_count, following_count, thread_count
 		FROM users 
@@ -78,7 +79,7 @@ func (r *UserRepository) GetUserByID(id int) (*models.User, error) {
 
 	err := row.Scan(
 		&user.ID, &user.Username, &user.Email, &user.PasswordHash,
-		&user.ProfilePicture, &user.Bio, &user.CreatedAt, &user.LastLogin,
+		&user.ProfilePicture, &user.Banner, &user.Bio, &user.CreatedAt, &user.LastLogin,
 		&user.IsVerified, &user.IsBanned, &user.Role,
 		&user.FollowerCount, &user.FollowingCount, &user.ThreadCount,
 	)
@@ -96,7 +97,7 @@ func (r *UserRepository) GetUserByID(id int) (*models.User, error) {
 // GetUserByUsername récupère un utilisateur par son nom d'utilisateur
 func (r *UserRepository) GetUserByUsername(username string) (*models.User, error) {
 	query := `
-		SELECT id_user, username, email, password_hash, profile_picture, bio, 
+		SELECT id_user, username, email, password_hash, profile_picture, banner, bio, 
 			   created_at, last_login, is_verified, is_banned, role, 
 			   follower_count, following_count, thread_count
 		FROM users 
@@ -107,7 +108,7 @@ func (r *UserRepository) GetUserByUsername(username string) (*models.User, error
 
 	err := row.Scan(
 		&user.ID, &user.Username, &user.Email, &user.PasswordHash,
-		&user.ProfilePicture, &user.Bio, &user.CreatedAt, &user.LastLogin,
+		&user.ProfilePicture, &user.Banner, &user.Bio, &user.CreatedAt, &user.LastLogin,
 		&user.IsVerified, &user.IsBanned, &user.Role,
 		&user.FollowerCount, &user.FollowingCount, &user.ThreadCount,
 	)
@@ -125,7 +126,7 @@ func (r *UserRepository) GetUserByUsername(username string) (*models.User, error
 // GetUserByEmail récupère un utilisateur par son email
 func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
 	query := `
-		SELECT id_user, username, email, password_hash, profile_picture, bio, 
+		SELECT id_user, username, email, password_hash, profile_picture, banner, bio, 
 			   created_at, last_login, is_verified, is_banned, role, 
 			   follower_count, following_count, thread_count
 		FROM users 
@@ -136,7 +137,7 @@ func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
 
 	err := row.Scan(
 		&user.ID, &user.Username, &user.Email, &user.PasswordHash,
-		&user.ProfilePicture, &user.Bio, &user.CreatedAt, &user.LastLogin,
+		&user.ProfilePicture, &user.Banner, &user.Bio, &user.CreatedAt, &user.LastLogin,
 		&user.IsVerified, &user.IsBanned, &user.Role,
 		&user.FollowerCount, &user.FollowingCount, &user.ThreadCount,
 	)
@@ -154,7 +155,7 @@ func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
 // GetUserByIdentifier récupère un utilisateur par nom d'utilisateur ou email
 func (r *UserRepository) GetUserByIdentifier(identifier string) (*models.User, error) {
 	query := `
-		SELECT id_user, username, email, password_hash, profile_picture, bio, 
+		SELECT id_user, username, email, password_hash, profile_picture, banner, bio, 
 			   created_at, last_login, is_verified, is_banned, role, 
 			   follower_count, following_count, thread_count
 		FROM users 
@@ -165,7 +166,7 @@ func (r *UserRepository) GetUserByIdentifier(identifier string) (*models.User, e
 
 	err := row.Scan(
 		&user.ID, &user.Username, &user.Email, &user.PasswordHash,
-		&user.ProfilePicture, &user.Bio, &user.CreatedAt, &user.LastLogin,
+		&user.ProfilePicture, &user.Banner, &user.Bio, &user.CreatedAt, &user.LastLogin,
 		&user.IsVerified, &user.IsBanned, &user.Role,
 		&user.FollowerCount, &user.FollowingCount, &user.ThreadCount,
 	)

@@ -528,6 +528,18 @@
             document.documentElement.style.setProperty('--main-text', values.text);
             document.documentElement.style.setProperty('--secondary-text', values.secondary);
             document.documentElement.style.setProperty('--muted-text', values.secondary);
+            
+            // Variables pour les formulaires et éléments interactifs
+            document.documentElement.style.setProperty('--input-background', values.hover);
+            document.documentElement.style.setProperty('--input-focus-background', values.hover);
+            document.documentElement.style.setProperty('--accent-color', '#1d9bf0');
+            document.documentElement.style.setProperty('--accent-color-alpha', 'rgba(29, 155, 240, 0.2)');
+            document.documentElement.style.setProperty('--accent-gradient', 'linear-gradient(135deg, #1d9bf0 0%, #7877c6 50%, #ff649e 100%)');
+            
+            // Variables pour les erreurs
+            document.documentElement.style.setProperty('--error-color', '#ff6b6b');
+            document.documentElement.style.setProperty('--error-background', 'rgba(244, 33, 46, 0.1)');
+            document.documentElement.style.setProperty('--error-border', 'rgba(244, 33, 46, 0.3)');
 
             // Sauvegarder dans localStorage
             localStorage.setItem('themeSettings', JSON.stringify(values));
@@ -609,6 +621,18 @@
                 document.documentElement.style.setProperty('--main-text', values.text);
                 document.documentElement.style.setProperty('--secondary-text', values.secondary);
                 document.documentElement.style.setProperty('--muted-text', values.secondary);
+                
+                // Variables pour les formulaires et éléments interactifs
+                document.documentElement.style.setProperty('--input-background', values.hover);
+                document.documentElement.style.setProperty('--input-focus-background', values.hover);
+                document.documentElement.style.setProperty('--accent-color', '#1d9bf0');
+                document.documentElement.style.setProperty('--accent-color-alpha', 'rgba(29, 155, 240, 0.2)');
+                document.documentElement.style.setProperty('--accent-gradient', 'linear-gradient(135deg, #1d9bf0 0%, #7877c6 50%, #ff649e 100%)');
+                
+                // Variables pour les erreurs
+                document.documentElement.style.setProperty('--error-color', '#ff6b6b');
+                document.documentElement.style.setProperty('--error-background', 'rgba(244, 33, 46, 0.1)');
+                document.documentElement.style.setProperty('--error-border', 'rgba(244, 33, 46, 0.3)');
             } else {
                 // Sinon, charger les valeurs actuelles du root
                 document.getElementById('mainColor').value = getComputedStyle(document.documentElement).getPropertyValue('--main-color').trim();

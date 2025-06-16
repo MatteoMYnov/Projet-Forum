@@ -125,4 +125,73 @@ func (s *UploadService) DeleteProfilePicture(profilePicturePath string) error {
 // GetDefaultAvatarPath retourne le chemin vers l'avatar par défaut
 func (s *UploadService) GetDefaultAvatarPath() string {
 	return "/img/avatars/default-avatar.png"
-} 
+}
+
+// UploadBanner télécharge et sauvegarde une bannière de profil
+func (s *UploadService) UploadBanner(file multipart.File, header *multipart.FileHeader) (string, error) {
+	// Validation de la taille
+	if header.Size > s.maxSize {
+		return "", fmt.Errorf("fichier trop volumineux (max %d MB)", s.maxSize/(1024*1024))
+	}
+	
+	// Validation du type de fichier
+	if !s.isValidImageType(header.Filename) {
+		return "", fmt.Errorf("type de fichier non supporté")
+	}
+	
+	// Générer un nom de fichier unique
+	filename, err := s.generateUniqueFilename(header.Filename)
+	if err != nil {
+		return "", fmt.Errorf("erreur génération nom de fichier: %v", err)
+	}
+	
+	// Créer le dossier banners s'il n'existe pas
+	bannersDir := filepath.Join(filepath.Dir(s.uploadDir), "banners")
+	if err := os.MkdirAll(bannersDir, 0755); err != nil {
+		return "", fmt.Errorf("impossible de créer le dossier banners: %v", err)
+	}
+	
+	// Créer le chemin complet
+	fullPath := filepath.Join(bannersDir, filename)
+	
+	// Créer le fichier de destination
+	destFile, err := os.Create(fullPath)
+	if err != nil {
+		return "", fmt.Errorf("erreur création fichier: %v", err)
+	}
+	defer destFile.Close()
+	
+	// Copier le contenu
+	_, err = io.Copy(destFile, file)
+	if err != nil {
+		os.Remove(fullPath) // Nettoyer en cas d'erreur
+		return "", fmt.Errorf("erreur sauvegarde fichier: %v", err)
+	}
+	
+	// Retourner le chemin relatif pour la base de données
+	return "/img/banners/" + filename, nil
+}
+
+// DeleteBanner supprime une bannière
+func (s *UploadService) DeleteBanner(bannerPath string) error {
+	if bannerPath == "" || bannerPath == "/img/banners/default-avatar.png" {
+		return nil // Ne pas supprimer la bannière par défaut
+	}
+	
+	// Construire le chemin complet
+	filename := filepath.Base(bannerPath)
+	bannersDir := filepath.Join(filepath.Dir(s.uploadDir), "banners")
+	fullPath := filepath.Join(bannersDir, filename)
+	
+	// Supprimer le fichier s'il existe
+	if _, err := os.Stat(fullPath); err == nil {
+		return os.Remove(fullPath)
+	}
+	
+	return nil // Fichier n'existe pas, pas d'erreur
+}
+
+// GetDefaultBannerPath retourne le chemin vers la bannière par défaut
+func (s *UploadService) GetDefaultBannerPath() string {
+	return "/img/banners/default-avatar.png"
+}
