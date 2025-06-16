@@ -66,33 +66,134 @@ forum/
 
 ### 🔧 Prérequis
 - **Go 1.24.3+** 
-- **MySQL 8.0+**
+- **XAMPP** (pour MySQL facile)
 - **Git**
 
-### 🚀 Démarrage en 3 étapes
+### 🚀 Installation avec XAMPP - Guide Complet
+
+#### 📥 **Étape 1 : Télécharger et installer XAMPP**
+
+1. **Télécharger XAMPP** : https://www.apachefriends.org/fr/download.html
+2. **Installer XAMPP** avec les options par défaut
+3. **Lancer XAMPP Control Panel** en tant qu'administrateur
+
+#### 🔧 **Étape 2 : Démarrer les services**
+
+1. **Ouvrir XAMPP Control Panel**
+2. **Démarrer Apache** (cliquer sur "Start")
+3. **Démarrer MySQL** (cliquer sur "Start")
+4. Vérifier que les deux services sont **verts** ✅
+
+#### 🗄️ **Étape 3 : Configurer la base de données**
+
+1. **Ouvrir phpMyAdmin** :
+   - Cliquer sur "Admin" à côté de MySQL dans XAMPP
+   - Ou aller sur : `http://localhost/phpmyadmin`
+
+2. **Créer la base de données** :
+   ```sql
+   CREATE DATABASE forum_y CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+
+3. **Importer les tables** :
+   - Sélectionner la base `forum_y`
+   - Aller dans l'onglet "Importer"
+   - Choisir le fichier : `website/database/install_all_tables_sql`
+   - Cliquer sur "Exécuter"
+
+#### 💾 **Étape 4 : Cloner et configurer le projet**
 
 ```bash
 # 1️⃣ Cloner le projet
-git clone https://github.com/votre-repo/forum-ynov.git
+git clone https://github.com/MatteoMYnov/Projet-Forum.git
 cd forum-ynov
 
-# 2️⃣ Configuration
-cp .env.example .env
-# ✏️ Éditer .env avec vos paramètres DB
+# 2️⃣ Créer le fichier .env
+echo "DB_HOST=localhost
+DB_PORT=3306  
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=forum_y
+PORT=2557
+JWT_SECRET=mon_secret_jwt_securise_123456789
+DEBUG=true
+UPLOAD_PATH=./website/img" > .env
+```
 
-# 3️⃣ Démarrage
+#### 🚀 **Étape 5 : Lancer le projet**
+
+```bash
+# Télécharger les dépendances Go
 go mod download
+
+# Démarrer le serveur
 go run main.go
 ```
 
-🎉 **C'est parti !** Rendez-vous sur `http://localhost:8080`
+#### 🎉 **Étape 6 : Accéder au forum**
 
-### 🗄️ Base de Données
+Ouvrir votre navigateur et aller sur :
+- **🏠 Accueil** : `http://localhost:2557/home`
+- **👤 Connexion** : `http://localhost:2557/login`
+- **📝 Inscription** : `http://localhost:2557/register`
+
+#### ✅ **Vérification que tout fonctionne**
+
+1. **XAMPP Control Panel** : Apache et MySQL doivent être **verts** ✅
+2. **Terminal Go** : doit afficher `✅ Serveur démarré sur http://localhost:2557`
+3. **Navigateur** : la page d'accueil du forum doit s'afficher
+4. **Test inscription** : créer un compte pour tester la base de données
+
+---
+
+### ⚡ **Démarrage Rapide (Si déjà installé)**
 
 ```bash
-# Configuration automatique
-mysql -u root -p < website/database/create_database.sql
-mysql -u root -p < website/database/install_all_tables_sql
+# 1. Démarrer XAMPP (Apache + MySQL)
+# 2. Aller dans le dossier du projet
+cd Projet-Forum
+
+# 3. Lancer le serveur Go
+go run main.go
+
+# 4. Ouvrir http://localhost:2557/home
+```
+
+---
+
+### 🛠️ **Dépannage XAMPP**
+
+**❌ MySQL ne démarre pas :**
+```bash
+# Changer le port MySQL (dans XAMPP Config > MySQL)
+Port par défaut : 3306 → Essayer : 3307
+# Puis modifier le .env avec le nouveau port
+```
+
+**❌ Port 80 occupé (Apache) :**
+```bash
+# Changer le port Apache (dans XAMPP Config > Apache)  
+Port par défaut : 80 → Essayer : 8080
+```
+
+**❌ Erreur "database connection failed" :**
+1. Vérifier que MySQL est démarré dans XAMPP ✅
+2. Vérifier les credentials dans `.env`
+3. Tester la connexion dans phpMyAdmin
+
+### 🗄️ **Base de Données Alternative (Manuel)**
+
+Si vous préférez MySQL en ligne de commande :
+```bash
+# Se connecter à MySQL
+mysql -u root -p
+
+# Créer la base
+CREATE DATABASE forum_y;
+USE forum_y;
+
+# Importer les tables  
+SOURCE website/database/install_all_tables_sql;
 ```
 
 ## 🛠️ API Endpoints
@@ -177,7 +278,7 @@ Les contributions sont les bienvenues !
 5. 🔄 **Ouvrir** une Pull Request
 
 ### 🐛 Signaler un Bug
-Utilisez les [Issues GitHub](https://github.com/votre-repo/issues) avec le template bug.
+Utilisez les [Issues GitHub](https://github.com/MatteoMYnov/Projet-Forum/issues) avec le template bug.
 
 ## 📊 Performances
 
@@ -194,23 +295,45 @@ Utilisez les [Issues GitHub](https://github.com/votre-repo/issues) avec le templ
 - 🔐 **Hashage bcrypt** des mots de passe
 - 🛡️ **Middleware** de sécurité
 
-## 📚 Documentation
+## 👥 Équipe de Développement
 
-- 📖 [Guide d'installation détaillé](docs/installation.md)
-- 🔧 [Configuration avancée](docs/configuration.md)
-- 🎨 [Guide des thèmes](docs/theming.md)
-- 📡 [Documentation API](docs/api.md)
+<div align="center">
 
-## 📄 Licence
+### 🔥 **Les Développeurs qui ont rendu ce projet possible** 🔥
 
-Ce projet est sous licence **MIT** - voir le fichier [LICENSE](LICENSE) pour plus de détails.
+</div>
+
+| 👤 Développeur | 🎯 Rôle | 🔗 GitHub | 💻 Spécialités |
+|---|---|---|---|
+| **Xerly JI** | 🔧 **Back-end Lead** | [![GitHub](https://img.shields.io/badge/GitHub-@XERCORD-181717?style=for-the-badge&logo=github)](https://github.com/XERCORD) | Go, APIs, Base de données, JWT |
+| **Matteo Martin** | 🎨 **Front-end Lead** | [![GitHub](https://img.shields.io/badge/GitHub-@MatteoMYnov-181717?style=for-the-badge&logo=github)](https://github.com/MatteoMYnov) | HTML/CSS, JavaScript, |
 
 ---
 
 <div align="center">
 
+### 🚀 **Contributions**
+
+**🔧 Back-end (Xerly JI)**
+- Architecture serveur Go
+- API REST complète
+- Authentification JWT
+- Gestion base de données
+- Services et repositories
+
+**🎨 Front-end (Matteo Martin)**  
+- Interface utilisateur moderne
+- Système de thèmes
+- JavaScript interactif
+- Design responsive
+- Expérience utilisateur
+
+---
+
+**🎓 Projet réalisé dans le cadre de la formation Ynov**
+
 **⭐ N'hésitez pas à mettre une étoile si ce projet vous plaît ! ⭐**
 
-Fait avec ❤️ par l'équipe Ynov
+Fait avec ❤️ par l'équipe Ynov 2025
 
 </div> 
