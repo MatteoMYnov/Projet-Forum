@@ -3,10 +3,134 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="/styles/variables.css?v=1.0" />
     <link rel="stylesheet" href="/styles/home.css?v=1.0" />
     <link rel="stylesheet" href="/styles/login.css?v=1.0" />
     <title>Connexion / Y</title>
     <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png" />
+    
+    <!-- Chargement du thème avant le rendu pour éviter le FOUC -->
+    <script src="/js/theme_loader.js"></script>
+    
+    <style>
+        /* Application du thème à la page de connexion */
+        body {
+            background-color: var(--main-color);
+        }
+        
+        .container {
+            background-color: var(--main-color);
+        }
+        
+        .main {
+            background-color: var(--main-color);
+        }
+        
+        /* Correction pour les icônes sur fond sombre */
+        .icon {
+            filter: brightness(0) saturate(100%) invert(85%) sepia(6%) saturate(347%) hue-rotate(178deg) brightness(95%) contrast(89%);
+        }
+        
+        .bar-button:hover .icon {
+            filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(7483%) hue-rotate(29deg) brightness(104%) contrast(101%);
+        }
+        
+        /* Amélioration du formulaire de connexion */
+        .form-box {
+            background-color: var(--main-color-hover);
+            border: 1px solid var(--border-color);
+        }
+        
+        .form-box h1 {
+            color: var(--main-text-color);
+        }
+        
+        .form-box label {
+            color: var(--second-text-color);
+        }
+        
+        .form-box input {
+            background-color: var(--main-color);
+            border: 1px solid var(--border-color);
+            color: var(--main-text-color);
+        }
+        
+        .form-box input:focus {
+            border-color: #1da1f2;
+            background-color: var(--main-color-hover);
+        }
+        
+        .form-box button {
+            background-color: #1da1f2;
+            color: white;
+            border: none;
+        }
+        
+        .form-box button:hover {
+            background-color: #1a91da;
+        }
+        
+        .form-box .redirect {
+            color: var(--second-text-color);
+        }
+        
+        .form-box .redirect a {
+            color: #1da1f2;
+        }
+        
+        .form-box .redirect a:hover {
+            color: #1a91da;
+        }
+        
+        /* Styles pour le champ mot de passe avec bouton voir */
+        .password-field {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .password-field input {
+            padding-right: 50px !important;
+            flex: 1;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: var(--second-text-color);
+            font-size: 18px;
+            transition: var(--transition);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+        
+        .password-toggle:hover {
+            color: var(--main-text-color);
+            background-color: var(--main-color-hover);
+        }
+        
+        .password-toggle:focus {
+            outline: 2px solid #1da1f2;
+            outline-offset: 2px;
+        }
+        
+        /* Animation pour l'icône */
+        .password-toggle .eye-icon {
+            transition: transform 0.2s ease;
+        }
+        
+        .password-toggle:hover .eye-icon {
+            transform: scale(1.1);
+        }
+    </style>
 </head>
 <body>
     <!-- ===== COLONNE GAUCHE (BANNIÈRE + BAR) ===== -->
@@ -47,7 +171,12 @@
                     <input type="text" name="identifiant" id="identifiant" required />
 
                     <label for="password">Mot de passe</label>
-                    <input type="password" name="password" id="password" required />
+                    <div class="password-field">
+                        <input type="password" name="password" id="password" required />
+                        <button type="button" class="password-toggle" id="togglePassword" aria-label="Voir/Masquer le mot de passe" title="Cliquer pour voir le mot de passe">
+                            <span class="eye-icon" id="eyeIcon">👁️</span>
+                        </button>
+                    </div>
 
                     <button type="submit">Se connecter</button>
                 </form>
@@ -113,8 +242,118 @@
             hideError();
             hideSuccess();
         }
+        
+        // Fonctionnalité voir/masquer mot de passe
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('password');
+            const toggleButton = document.getElementById('togglePassword');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            // État initial
+            let isPasswordVisible = false;
+            
+            toggleButton.addEventListener('click', function() {
+                isPasswordVisible = !isPasswordVisible;
+                
+                if (isPasswordVisible) {
+                    // Afficher le mot de passe
+                    passwordInput.type = 'text';
+                    eyeIcon.textContent = '🙈'; // Icône œil fermé
+                    toggleButton.title = 'Cliquer pour masquer le mot de passe';
+                    toggleButton.setAttribute('aria-label', 'Masquer le mot de passe');
+                } else {
+                    // Masquer le mot de passe
+                    passwordInput.type = 'password';
+                    eyeIcon.textContent = '👁️'; // Icône œil ouvert
+                    toggleButton.title = 'Cliquer pour voir le mot de passe';
+                    toggleButton.setAttribute('aria-label', 'Voir le mot de passe');
+                }
+                
+                // Maintenir le focus sur l'input après le clic
+                passwordInput.focus();
+            });
+            
+            // Gérer le raccourci clavier Alt+V pour basculer
+            passwordInput.addEventListener('keydown', function(e) {
+                if (e.altKey && e.key.toLowerCase() === 'v') {
+                    e.preventDefault();
+                    toggleButton.click();
+                }
+            });
+            
+            // Animation subtile lors du survol
+            toggleButton.addEventListener('mouseenter', function() {
+                eyeIcon.style.transform = 'scale(1.1)';
+            });
+            
+            toggleButton.addEventListener('mouseleave', function() {
+                eyeIcon.style.transform = 'scale(1)';
+            });
+        });
     </script>
+    
+    <script>
+        // Forcer l'application du thème noir par défaut
+        function applyDefaultDarkTheme() {
+            const defaultDark = {
+                main: '#000000',
+                hover: '#181818',
+                border: '#2F3336',
+                text: '#DBDDDE',
+                secondary: '#71767B'
+            };
+
+            // Appliquer les variables CSS
+            document.documentElement.style.setProperty('--main-color', defaultDark.main);
+            document.documentElement.style.setProperty('--main-color-hover', defaultDark.hover);
+            document.documentElement.style.setProperty('--main-text-color', defaultDark.text);
+            document.documentElement.style.setProperty('--second-text-color', defaultDark.secondary);
+            document.documentElement.style.setProperty('--main-border-color', defaultDark.border);
+            document.documentElement.style.setProperty('--border-color', defaultDark.border);
+            document.documentElement.style.setProperty('--primary-bg', defaultDark.main);
+            document.documentElement.style.setProperty('--secondary-bg', defaultDark.hover);
+            document.documentElement.style.setProperty('--card-bg', defaultDark.hover);
+            document.documentElement.style.setProperty('--hover-bg', defaultDark.hover);
+            document.documentElement.style.setProperty('--main-text', defaultDark.text);
+            document.documentElement.style.setProperty('--secondary-text', defaultDark.secondary);
+            document.documentElement.style.setProperty('--muted-text', defaultDark.secondary);
+        }
+
+        // Appliquer le thème noir immédiatement
+        applyDefaultDarkTheme();
+
+        // Forcer la mise à jour des icônes après chargement
+        setTimeout(function() {
+            if (typeof window.updateIcons === 'function') {
+                console.log('Mise à jour forcée des icônes depuis login.html');
+                window.updateIcons();
+            }
+        }, 300);
+
+        // Charger le thème sauvegardé s'il existe
+        window.addEventListener('load', function() {
+            const saved = localStorage.getItem('themeSettings');
+            if (saved) {
+                const values = JSON.parse(saved);
+                document.documentElement.style.setProperty('--main-color', values.main);
+                document.documentElement.style.setProperty('--main-color-hover', values.hover);
+                document.documentElement.style.setProperty('--main-text-color', values.text);
+                document.documentElement.style.setProperty('--second-text-color', values.secondary);
+                document.documentElement.style.setProperty('--main-border-color', values.border);
+                document.documentElement.style.setProperty('--border-color', values.border);
+                document.documentElement.style.setProperty('--primary-bg', values.main);
+                document.documentElement.style.setProperty('--secondary-bg', values.hover);
+                document.documentElement.style.setProperty('--card-bg', values.hover);
+                document.documentElement.style.setProperty('--hover-bg', values.hover);
+                document.documentElement.style.setProperty('--main-text', values.text);
+                document.documentElement.style.setProperty('--secondary-text', values.secondary);
+                document.documentElement.style.setProperty('--muted-text', values.secondary);
+            }
+        });
+    </script>
+    
     <script src="/js/theme_loader.js"></script>
     <script src="/js/auth-handler.js"></script>
+    <script src="/js/test_icons.js"></script>
 </body>
 </html>

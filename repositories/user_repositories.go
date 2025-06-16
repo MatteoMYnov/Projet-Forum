@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"forum/models"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -190,6 +191,58 @@ func (r *UserRepository) UpdateLastLogin(userID int) error {
 		return fmt.Errorf("erreur mise à jour last_login: %v", err)
 	}
 
+	return nil
+}
+
+// UpdateProfile met à jour le profil d'un utilisateur
+func (r *UserRepository) UpdateProfile(userID int, displayName, bio, location, website, birthDate string, avatarPath, bannerPath *string) error {
+	// Construire la requête dynamiquement selon les champs fournis
+	var setParts []string
+	var args []interface{}
+	
+	// Nom d'affichage (username)
+	if displayName != "" {
+		setParts = append(setParts, "username = ?")
+		args = append(args, displayName)
+	}
+	
+	// Biographie
+	if bio != "" {
+		setParts = append(setParts, "bio = ?")
+		args = append(args, bio)
+	} else {
+		setParts = append(setParts, "bio = NULL")
+	}
+	
+	// Avatar
+	if avatarPath != nil {
+		setParts = append(setParts, "profile_picture = ?")
+		args = append(args, *avatarPath)
+	}
+	
+	// Bannière
+	if bannerPath != nil {
+		setParts = append(setParts, "banner = ?")
+		args = append(args, *bannerPath)
+	}
+	
+	// Si aucun champ à mettre à jour
+	if len(setParts) == 0 {
+		return fmt.Errorf("aucun champ à mettre à jour")
+	}
+	
+	// Construire et exécuter la requête
+	query := fmt.Sprintf("UPDATE users SET %s WHERE id_user = ?", strings.Join(setParts, ", "))
+	args = append(args, userID)
+	
+	log.Printf("📝 UpdateProfile query: %s", query)
+	
+	_, err := r.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("erreur mise à jour profil: %v", err)
+	}
+	
+	log.Printf("✅ Profil utilisateur %d mis à jour avec succès", userID)
 	return nil
 }
 

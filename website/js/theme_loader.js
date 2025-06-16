@@ -34,4 +34,16 @@
         document.documentElement.style.setProperty('--error-color', '#ff6b6b');
         document.documentElement.style.setProperty('--error-background', 'rgba(244, 33, 46, 0.1)');
         document.documentElement.style.setProperty('--error-border', 'rgba(244, 33, 46, 0.3)');
+        
+        // Déclencher la mise à jour des icônes après le chargement du thème
+        document.addEventListener('DOMContentLoaded', function() {
+            // Attendre que logo_switcher.js soit chargé et que updateIcons soit disponible
+            setTimeout(function() {
+                if (typeof updateIcons === 'function') {
+                    updateIcons();
+                } else if (typeof window.updateIcons === 'function') {
+                    window.updateIcons();
+                }
+            }, 100);
+        });
     })();

@@ -132,6 +132,26 @@ func (s *AuthService) GetUserByID(id int) (*models.User, error) {
 	return s.userRepo.GetUserByID(id)
 }
 
+// UpdateProfile met à jour le profil d'un utilisateur
+func (s *AuthService) UpdateProfile(userID int, displayName, bio, location, website, birthDate string, avatarPath, bannerPath *string) error {
+	log.Printf("💾 UpdateProfile - Mise à jour profil utilisateur %d", userID)
+	
+	// Validation basique du nom d'affichage
+	if displayName != "" {
+		if err := s.validateUsername(displayName); err != nil {
+			return fmt.Errorf("nom d'affichage invalide: %v", err)
+		}
+	}
+	
+	// Validation de l'URL du site web si fournie
+	if website != "" && !strings.HasPrefix(website, "http://") && !strings.HasPrefix(website, "https://") {
+		return fmt.Errorf("URL du site web invalide (doit commencer par http:// ou https://)")
+	}
+	
+	// Mettre à jour via le repository
+	return s.userRepo.UpdateProfile(userID, displayName, bio, location, website, birthDate, avatarPath, bannerPath)
+}
+
 // validateRegistration valide les données d'inscription
 func (s *AuthService) validateRegistration(req models.RegisterRequest) error {
 	// Validation du nom d'utilisateur

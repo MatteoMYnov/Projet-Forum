@@ -195,3 +195,48 @@ func (s *UploadService) DeleteBanner(bannerPath string) error {
 func (s *UploadService) GetDefaultBannerPath() string {
 	return "/img/banners/default-avatar.png"
 }
+
+// SaveImage sauvegarde une image dans le dossier spécifié (générique pour avatars et bannières)
+func (s *UploadService) SaveImage(file multipart.File, header *multipart.FileHeader, subfolder string) (string, error) {
+	// Validation de la taille
+	if header.Size > s.maxSize {
+		return "", fmt.Errorf("fichier trop volumineux (max %d MB)", s.maxSize/(1024*1024))
+	}
+	
+	// Validation du type de fichier
+	if !s.isValidImageType(header.Filename) {
+		return "", fmt.Errorf("type de fichier non supporté")
+	}
+	
+	// Générer un nom de fichier unique
+	filename, err := s.generateUniqueFilename(header.Filename)
+	if err != nil {
+		return "", fmt.Errorf("erreur génération nom de fichier: %v", err)
+	}
+	
+	// Créer le dossier s'il n'existe pas
+	targetDir := filepath.Join("./website/img", subfolder)
+	if err := os.MkdirAll(targetDir, 0755); err != nil {
+		return "", fmt.Errorf("impossible de créer le dossier %s: %v", subfolder, err)
+	}
+	
+	// Créer le chemin complet
+	fullPath := filepath.Join(targetDir, filename)
+	
+	// Créer le fichier de destination
+	destFile, err := os.Create(fullPath)
+	if err != nil {
+		return "", fmt.Errorf("erreur création fichier: %v", err)
+	}
+	defer destFile.Close()
+	
+	// Copier le contenu
+	_, err = io.Copy(destFile, file)
+	if err != nil {
+		os.Remove(fullPath) // Nettoyer en cas d'erreur
+		return "", fmt.Errorf("erreur sauvegarde fichier: %v", err)
+	}
+	
+	// Retourner le chemin relatif pour la base de données
+	return "/img/" + subfolder + "/" + filename, nil
+}

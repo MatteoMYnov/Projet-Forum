@@ -3,10 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/styles/variables.css?v=1.0" />
   <link rel="stylesheet" href="/styles/home.css" />
   <link rel="stylesheet" href="/styles/register.css" />
   <title>Créer un compte • Forum Y</title>
   <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png" />
+  
+  <!-- Chargement du thème avant le rendu pour éviter le FOUC -->
+  <script src="/js/theme_loader.js"></script>
 </head>
 <body>
   <!-- Bannière (barre latérale gauche) -->
@@ -405,5 +409,6 @@
   
   <script src="/js/theme_loader.js"></script>
   <script src="/js/auth-handler.js"></script>
+  <script src="/js/logo_switcher.js"></script>
 </body>
 </html>

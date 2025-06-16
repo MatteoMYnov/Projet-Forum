@@ -44,11 +44,11 @@
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    border: 4px solid var(--main-color);  /* Bordure noire pour séparer du fond */
+    border: 4px solid var(--main-color);  /* Bordure selon le thème */
     position: absolute;
     top: 140px;                            /* 200px (bannière) – (120px/2) = 140px */
     left: 20px;                            /* Même décalage gauche que .profile-info */
-    background-color: #444;                /* Couleur de secours si l'image ne charge pas */
+    background-color: var(--main-color-hover); /* Couleur de secours selon le thème */
     object-fit: cover;
 }
 
@@ -64,9 +64,10 @@
     color: var(--main-text-color);
     font-size: 0.9rem;
     cursor: pointer;
+    transition: var(--transition);
 }
 .edit-profile:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--main-color-hover);
 }
 
 /* 1.e) Nom et handle */
@@ -115,7 +116,7 @@
 .wall {
     background-color: var(--main-color);
     padding: 20px;
-    border-top: 1px solid var(--main-border-color);
+    border-top: 1px solid var(--border-color);
 }
 
 /* Titre "Mur" */
@@ -136,12 +137,19 @@
     resize: vertical;
     min-height: 80px;
     padding: 10px;
-    background-color: #15202b;
-    border: 1px solid #38444d;
+    background-color: var(--main-color-hover);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     color: var(--main-text-color);
     font-size: 1rem;
     margin-bottom: 8px;
+    transition: var(--transition);
+}
+
+.post-form textarea:focus {
+    outline: none;
+    border-color: #1da1f2;
+    box-shadow: 0 0 0 2px rgba(29, 161, 242, 0.2);
 }
 
 .post-form textarea::placeholder {
@@ -157,18 +165,32 @@
     border-radius: 20px;
     cursor: pointer;
     font-size: 0.9rem;
+    transition: var(--transition);
 }
 .post-form button:hover {
     background-color: #0d8ddb;
+    transform: translateY(-1px);
 }
 
-/* 2.b) Exemple de post */
+.post-form button:disabled {
+    background-color: var(--second-text-color);
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 2.b) Styles des posts */
 .post {
-    border: 1px solid #38444d;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 12px;
     margin-bottom: 16px;
-    background-color: #15202b;
+    background-color: var(--main-color-hover);
+    transition: var(--transition);
+}
+
+.post:hover {
+    border-color: var(--main-text-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .post-header {
@@ -183,7 +205,8 @@
     border-radius: 50%;
     margin-right: 12px;
     object-fit: cover;
-    background-color: #555;
+    background-color: var(--border-color);
+    border: 1px solid var(--border-color);
 }
 
 .post-user-info {
@@ -204,11 +227,82 @@
 
 .post-timestamp {
     font-size: 0.8rem;
-    color: #555;
+    color: var(--second-text-color);
 }
 
 .post-content {
     font-size: 1rem;
     color: var(--main-text-color);
     line-height: 1.4;
+    margin-top: 8px;
+}
+
+/* Styles pour les actions des posts */
+.post-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+}
+
+.post-action {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--second-text-color);
+    transition: var(--transition);
+}
+
+.post-action:hover {
+    background-color: var(--main-color);
+    color: var(--main-text-color);
+}
+
+/* Messages vides */
+.empty-wall {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--second-text-color);
+    background-color: var(--main-color-hover);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.empty-wall h3 {
+    color: var(--main-text-color);
+    margin-bottom: 10px;
+}
+
+/* Responsive pour les petits écrans */
+@media (max-width: 768px) {
+    .profile-pic {
+        width: 80px;
+        height: 80px;
+        top: 160px;
+    }
+    
+    .handle, .join-date, .follow-stats {
+        margin-left: 100px;
+    }
+    
+    .edit-profile {
+        position: static;
+        margin-top: 10px;
+        align-self: flex-start;
+    }
+    
+    .post {
+        padding: 10px;
+    }
+    
+    .post-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
 }

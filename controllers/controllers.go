@@ -60,6 +60,7 @@ func (c *UserControllers) UserRouter(r *http.ServeMux) {
 	r.HandleFunc("/api/login", c.LoginHandler)
 	r.HandleFunc("/api/logout", c.LogoutHandler)
 	r.HandleFunc("/api/profile", middleware.RequireAuth(c.ProfileAPI))
+	r.HandleFunc("/api/profile/update", middleware.RequireAuth(c.UpdateProfileHandler))
 	
 	// API pour les threads
 	r.HandleFunc("/api/threads", middleware.RequireAuth(c.CreateThreadHandler))
@@ -513,6 +514,95 @@ func (c *UserControllers) ProfileAPI(w http.ResponseWriter, r *http.Request) {
 		Success: true,
 		Data:    user,
 	})
+}
+
+// UpdateProfileHandler gère la mise à jour du profil utilisateur
+func (c *UserControllers) UpdateProfileHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		WriteErrorResponse(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		return
+	}
+
+	log.Printf("💾 UpdateProfileHandler - Début de la mise à jour du profil")
+
+	// Récupérer l'utilisateur depuis le contexte
+	sessionInfo := middleware.GetUserFromContext(r)
+	if sessionInfo == nil {
+		WriteErrorResponse(w, "Non authentifié", http.StatusUnauthorized)
+		return
+	}
+
+	// Parser le formulaire multipart (pour les fichiers)
+	err := r.ParseMultipartForm(10 << 20) // 10MB max
+	if err != nil {
+		log.Printf("❌ Erreur parsing form: %v", err)
+		WriteErrorResponse(w, "Erreur parsing données", http.StatusBadRequest)
+		return
+	}
+
+	// Récupérer les données du formulaire
+	displayName := r.FormValue("displayName")
+	bio := r.FormValue("bio")
+	location := r.FormValue("location")
+	website := r.FormValue("website")
+	birthDate := r.FormValue("birthDate")
+
+	log.Printf("📝 Données reçues - Username: %s, Bio: %s", displayName, bio)
+
+	// Traitement des fichiers d'image
+	var bannerPath, avatarPath *string
+
+	// Traitement de la bannière
+	if bannerFile, bannerHeader, err := r.FormFile("banner"); err == nil {
+		defer bannerFile.Close()
+		log.Printf("📁 Bannière reçue: %s (%d bytes)", bannerHeader.Filename, bannerHeader.Size)
+
+		// Uploader la bannière
+		uploadedPath, err := c.uploadService.SaveImage(bannerFile, bannerHeader, "banners")
+		if err != nil {
+			log.Printf("❌ Erreur upload bannière: %v", err)
+			WriteErrorResponse(w, "Erreur upload bannière: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		bannerPath = &uploadedPath
+		log.Printf("✅ Bannière sauvegardée: %s", uploadedPath)
+	}
+
+	// Traitement de l'avatar
+	if avatarFile, avatarHeader, err := r.FormFile("avatar"); err == nil {
+		defer avatarFile.Close()
+		log.Printf("👤 Avatar reçu: %s (%d bytes)", avatarHeader.Filename, avatarHeader.Size)
+
+		// Uploader l'avatar
+		uploadedPath, err := c.uploadService.SaveImage(avatarFile, avatarHeader, "avatars")
+		if err != nil {
+			log.Printf("❌ Erreur upload avatar: %v", err)
+			WriteErrorResponse(w, "Erreur upload avatar: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+		avatarPath = &uploadedPath
+		log.Printf("✅ Avatar sauvegardé: %s", uploadedPath)
+	}
+
+	// Mettre à jour le profil dans la base de données
+	err = c.authService.UpdateProfile(sessionInfo.UserID, displayName, bio, location, website, birthDate, avatarPath, bannerPath)
+	if err != nil {
+		log.Printf("❌ Erreur mise à jour profil: %v", err)
+		WriteErrorResponse(w, "Erreur sauvegarde profil: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("✅ Profil mis à jour avec succès pour l'utilisateur %d", sessionInfo.UserID)
+
+	// Retourner une réponse de succès
+	WriteJSONResponse(w, models.APIResponse{
+		Success: true,
+		Message: "Profil mis à jour avec succès",
+		Data: map[string]interface{}{
+			"banner_updated": bannerPath != nil,
+			"avatar_updated": avatarPath != nil,
+		},
+	}, http.StatusOK)
 }
 
 // Helper functions

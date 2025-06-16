@@ -3,11 +3,57 @@
     padding: 8px 16px;
     border: none;
     border-radius: 5px;
-    background-color: #444;
-    color: white;
+    background-color: var(--main-color-hover);
+    color: var(--main-text-color);
     cursor: pointer;
+    transition: var(--transition);
 }
 
 .preset-button:hover {
-    background-color: #666;
+    background-color: var(--border-color);
+}
+
+/* Application du thème au contenu principal */
+.container {
+    background-color: var(--main-color) !important;
+}
+
+.main {
+    background-color: var(--main-color) !important;
+    color: var(--main-text-color) !important;
+}
+
+/* Amélioration de la visibilité du texte */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--main-text-color) !important;
+}
+
+p {
+    color: var(--second-text-color) !important;
+}
+
+/* Correction pour les icônes sur fond sombre */
+.icon {
+    filter: brightness(0) saturate(100%) invert(85%) sepia(6%) saturate(347%) hue-rotate(178deg) brightness(95%) contrast(89%);
+}
+
+.bar-button:hover .icon {
+    filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(7483%) hue-rotate(29deg) brightness(104%) contrast(101%);
+}
+
+/* Styles pour les éléments de formulaire */
+input[type="color"] {
+    background-color: var(--main-color-hover);
+    border: 1px solid var(--border-color);
+}
+
+/* Style pour les cartes de preset */
+.preset-card {
+    background-color: var(--main-color-hover);
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.preset-card:hover {
+    background-color: var(--border-color);
 }
