@@ -98,7 +98,7 @@ forum/
 3. **Importer les tables** :
    - Sélectionner la base `forum_y`
    - Aller dans l'onglet "Importer"
-   - Choisir le fichier : `website/database/install_all_tables_sql`
+   - Choisir le fichier : `forum_y.sql`
    - Cliquer sur "Exécuter"
 
 #### 💾 **Étape 4 : Cloner et configurer le projet**
