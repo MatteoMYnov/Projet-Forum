@@ -131,7 +131,7 @@ func (c *UserControllers) ThreadsListPage(w http.ResponseWriter, r *http.Request
 
 	// Récupérer les paramètres de pagination
 	page := 1
-	limit := 20
+	limit := 10
 	
 	if pageParam := r.URL.Query().Get("page"); pageParam != "" {
 		if p, err := strconv.Atoi(pageParam); err == nil && p > 0 {
@@ -174,7 +174,7 @@ func (c *UserControllers) ThreadsListPage(w http.ResponseWriter, r *http.Request
 
 	// Traiter le template
 	htmlContent := string(templateContent)
-	processedHTML := processThreadsListTemplateWithPagination(htmlContent, threads, categories, meta)
+	processedHTML := c.processThreadsListTemplateWithPagination(htmlContent, threads, categories, meta)
 
 	// Envoyer la réponse
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -200,7 +200,7 @@ func (c *UserControllers) MyThreadsPage(w http.ResponseWriter, r *http.Request) 
 
 	// Récupérer les paramètres de pagination
 	page := 1
-	limit := 20
+	limit := 10
 	
 	if pageParam := r.URL.Query().Get("page"); pageParam != "" {
 		if p, err := strconv.Atoi(pageParam); err == nil && p > 0 {
@@ -1200,7 +1200,7 @@ func (c *UserControllers) ThreadAPI(w http.ResponseWriter, r *http.Request) {
 // =====================================
 
 // processThreadsListTemplate traite le template de liste des threads
-func processThreadsListTemplateWithPagination(htmlContent string, threads []models.Thread, categories []models.Category, meta *models.Meta) string {
+func (c *UserControllers) processThreadsListTemplateWithPagination(htmlContent string, threads []models.Thread, categories []models.Category, meta *models.Meta) string {
 	log.Printf("🔄 Traitement template threads - %d threads, %d catégories, page %d/%d", 
 		len(threads), len(categories), meta.Page, meta.TotalPages)
 
@@ -1344,35 +1344,51 @@ func processThreadsListTemplateWithPagination(htmlContent string, threads []mode
 		}
 	}
 
-	// Statistiques avec métadonnées de pagination
-	totalThreads := meta.TotalCount
-	todayThreads := 0 // TODO: calculer les threads d'aujourd'hui
-	weekThreads := 0  // TODO: calculer les threads de la semaine
+	// Récupérer les statistiques réelles
+	stats, err := c.threadService.GetThreadsStatistics()
+	if err != nil {
+		log.Printf("⚠️ Erreur récupération statistiques: %v", err)
+		stats = map[string]int{"total": meta.TotalCount, "today": 0, "week": 0}
+	}
+
+	// Récupérer les threads trending triés par likes/reactions
+	trendingThreadsList, err := c.threadService.GetTrendingThreads(5)
+	if err != nil {
+		log.Printf("⚠️ Erreur récupération threads trending: %v", err)
+		trendingThreadsList = []models.Thread{}
+	}
 
 	// Remplacer les placeholders
 	htmlContent = strings.ReplaceAll(htmlContent, "%CATEGORIES_LIST%", categoriesList)
 	htmlContent = strings.ReplaceAll(htmlContent, "%THREADS_LIST%", threadsList)
-	htmlContent = strings.ReplaceAll(htmlContent, "%TOTAL_THREADS%", fmt.Sprintf("%d", totalThreads))
-	htmlContent = strings.ReplaceAll(htmlContent, "%TODAY_THREADS%", fmt.Sprintf("%d", todayThreads))
-	htmlContent = strings.ReplaceAll(htmlContent, "%WEEK_THREADS%", fmt.Sprintf("%d", weekThreads))
+	htmlContent = strings.ReplaceAll(htmlContent, "%TOTAL_THREADS%", fmt.Sprintf("%d", stats["total"]))
+	htmlContent = strings.ReplaceAll(htmlContent, "%TODAY_THREADS%", fmt.Sprintf("%d", stats["today"]))
+	htmlContent = strings.ReplaceAll(htmlContent, "%WEEK_THREADS%", fmt.Sprintf("%d", stats["week"]))
 	
-	// Trending threads (simplifié)
+	// Trending threads (triés par likes/reactions)
 	trendingThreads := ""
-	if len(threads) > 0 {
-		// Prendre les 3 premiers threads comme "trending"
-		for i, thread := range threads {
-			if i >= 3 { break }
-			trendingThreads += fmt.Sprintf(`
-			<div class="trending-item">
-				<span class="trending-title">%s</span>
-				<span class="trending-stats">%d 👍 • %d 💬</span>
-			</div>`,
-				thread.Title,
-				thread.LikeCount,
-				thread.MessageCount,
-			)
-		}
+	for _, thread := range trendingThreadsList {
+		trendingThreads += fmt.Sprintf(`
+		<div class="trending-item">
+			<span class="trending-title">%s</span>
+			<span class="trending-stats">%d 👍 • %d ❤️ • %d 💬</span>
+		</div>`,
+			thread.Title,
+			thread.LikeCount,
+			thread.LoveCount,
+			thread.MessageCount,
+		)
 	}
+	
+	// Si pas de trending threads, afficher un message
+	if trendingThreads == "" {
+		trendingThreads = `
+		<div class="trending-item">
+			<span class="trending-title">Aucun thread trending cette semaine</span>
+			<span class="trending-stats">Soyez le premier à créer du contenu populaire !</span>
+		</div>`
+	}
+	
 	htmlContent = strings.ReplaceAll(htmlContent, "%TRENDING_THREADS%", trendingThreads)
 
 	// Catégories populaires
@@ -1931,7 +1947,7 @@ func (c *UserControllers) AdminThreadsPage(w http.ResponseWriter, r *http.Reques
 
 	// Récupérer les paramètres de pagination
 	page := 1
-	limit := 20
+	limit := 10
 	
 	if pageParam := r.URL.Query().Get("page"); pageParam != "" {
 		if p, err := strconv.Atoi(pageParam); err == nil && p > 0 {
@@ -2591,10 +2607,12 @@ func processMyThreadsTemplate(htmlContent string, threads []models.Thread, categ
 
 			// Récupérer le nom de la catégorie
 			categoryName := "Général"
-			for _, category := range categories {
-				if category.ID == *thread.CategoryID {
-					categoryName = category.Name
-					break
+			if thread.CategoryID != nil {
+				for _, category := range categories {
+					if category.ID == *thread.CategoryID {
+						categoryName = category.Name
+						break
+					}
 				}
 			}
 

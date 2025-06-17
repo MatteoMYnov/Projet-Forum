@@ -73,7 +73,7 @@ func (s *ThreadService) GetAllThreads(page, limit int) ([]models.Thread, error) 
 		page = 1
 	}
 	if limit < 1 || limit > 100 {
-		limit = 20 // Limite par défaut
+		limit = 10 // Limite par défaut
 	}
 
 	offset := (page - 1) * limit
@@ -86,7 +86,7 @@ func (s *ThreadService) GetUserThreads(userID, page, limit int) ([]models.Thread
 		page = 1
 	}
 	if limit < 1 || limit > 100 {
-		limit = 20
+		limit = 10
 	}
 
 	offset := (page - 1) * limit
@@ -153,7 +153,7 @@ func (s *ThreadService) GetThreadsWithPagination(page, limit int) ([]models.Thre
 		page = 1
 	}
 	if limit < 1 || limit > 100 {
-		limit = 20 // Limite par défaut
+		limit = 10 // Limite par défaut
 	}
 
 	// Récupérer le total
@@ -189,6 +189,43 @@ func (s *ThreadService) GetThreadsWithPagination(page, limit int) ([]models.Thre
 	}
 
 	return threads, meta, nil
+}
+
+// GetThreadsStatistics récupère les statistiques des threads
+func (s *ThreadService) GetThreadsStatistics() (map[string]int, error) {
+	stats := make(map[string]int)
+
+	// Total des threads
+	total, err := s.threadRepo.GetTotalCount()
+	if err != nil {
+		return nil, fmt.Errorf("erreur récupération total threads: %v", err)
+	}
+	stats["total"] = total
+
+	// Threads créés aujourd'hui
+	today, err := s.threadRepo.GetTodayThreadsCount()
+	if err != nil {
+		return nil, fmt.Errorf("erreur récupération threads aujourd'hui: %v", err)
+	}
+	stats["today"] = today
+
+	// Threads créés cette semaine
+	week, err := s.threadRepo.GetWeekThreadsCount()
+	if err != nil {
+		return nil, fmt.Errorf("erreur récupération threads cette semaine: %v", err)
+	}
+	stats["week"] = week
+
+	return stats, nil
+}
+
+// GetTrendingThreads récupère les threads trending triés par likes/reactions
+func (s *ThreadService) GetTrendingThreads(limit int) ([]models.Thread, error) {
+	if limit < 1 || limit > 10 {
+		limit = 5 // Limite par défaut pour trending
+	}
+
+	return s.threadRepo.GetTrendingThreads(limit)
 }
 
 // ChangeThreadStatus change l'état d'un thread (open, closed, archived)
@@ -246,7 +283,7 @@ func (s *ThreadService) GetVisibleThreadsWithPagination(page, limit int) ([]mode
 		page = 1
 	}
 	if limit < 1 || limit > 100 {
-		limit = 20 // Limite par défaut
+		limit = 10 // Limite par défaut
 	}
 
 	// Récupérer le total des threads visibles (non archivés)
@@ -301,7 +338,7 @@ func (s *ThreadService) GetThreadsByStatus(status string, page, limit int) ([]mo
 		page = 1
 	}
 	if limit < 1 || limit > 100 {
-		limit = 20
+		limit = 10
 	}
 
 	// Valider le statut

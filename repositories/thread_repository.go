@@ -325,9 +325,9 @@ func ProcessHashtags(content string) []string {
 	return hashtags
 }
 
-// GetTotalCount récupère le nombre total de threads (tous statuts)
+// GetTotalCount récupère le nombre total de threads visibles
 func (r *ThreadRepository) GetTotalCount() (int, error) {
-	query := `SELECT COUNT(*) FROM threads WHERE status != 'deleted'`
+	query := `SELECT COUNT(*) FROM threads WHERE status IN ('open', 'closed')`
 	
 	var count int
 	err := r.db.QueryRow(query).Scan(&count)
@@ -336,6 +336,103 @@ func (r *ThreadRepository) GetTotalCount() (int, error) {
 	}
 	
 	return count, nil
+}
+
+// GetTodayThreadsCount récupère le nombre de threads visibles créés aujourd'hui
+func (r *ThreadRepository) GetTodayThreadsCount() (int, error) {
+	query := `
+		SELECT COUNT(*) 
+		FROM threads 
+		WHERE status IN ('open', 'closed')
+		AND DATE(created_at) = CURDATE()
+	`
+	
+	var count int
+	err := r.db.QueryRow(query).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("erreur compte threads aujourd'hui: %v", err)
+	}
+	
+	return count, nil
+}
+
+// GetWeekThreadsCount récupère le nombre de threads visibles créés cette semaine
+func (r *ThreadRepository) GetWeekThreadsCount() (int, error) {
+	query := `
+		SELECT COUNT(*) 
+		FROM threads 
+		WHERE status IN ('open', 'closed')
+		AND created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK)
+	`
+	
+	var count int
+	err := r.db.QueryRow(query).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("erreur compte threads cette semaine: %v", err)
+	}
+	
+	return count, nil
+}
+
+// GetTrendingThreads récupère les threads trending triés par likes/reactions
+func (r *ThreadRepository) GetTrendingThreads(limit int) ([]models.Thread, error) {
+	query := `
+		SELECT t.id_thread, t.title, t.content, t.author_id, t.category_id, t.status,
+		       t.created_at, t.updated_at, t.is_pinned, t.view_count, t.like_count,
+		       t.dislike_count, t.love_count, t.message_count, t.last_activity,
+		       u.username, u.email, u.profile_picture
+		FROM threads t
+		JOIN users u ON t.author_id = u.id_user
+		WHERE t.status IN ('open', 'closed')
+		AND t.created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK)
+		ORDER BY (t.like_count + t.love_count * 2) DESC, t.view_count DESC
+		LIMIT ?
+	`
+
+	rows, err := r.db.Query(query, limit)
+	if err != nil {
+		return nil, fmt.Errorf("erreur récupération threads trending: %v", err)
+	}
+	defer rows.Close()
+
+	var threads []models.Thread
+	for rows.Next() {
+		var thread models.Thread
+		var author models.User
+
+		err := rows.Scan(
+			&thread.ID,
+			&thread.Title,
+			&thread.Content,
+			&thread.AuthorID,
+			&thread.CategoryID,
+			&thread.Status,
+			&thread.CreatedAt,
+			&thread.UpdatedAt,
+			&thread.IsPinned,
+			&thread.ViewCount,
+			&thread.LikeCount,
+			&thread.DislikeCount,
+			&thread.LoveCount,
+			&thread.MessageCount,
+			&thread.LastActivity,
+			&author.Username,
+			&author.Email,
+			&author.ProfilePicture,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("erreur scan thread trending: %v", err)
+		}
+
+		// Attacher l'auteur
+		author.ID = thread.AuthorID
+		thread.Author = &author
+
+		threads = append(threads, thread)
+	}
+
+	return threads, nil
 }
 
 // UpdateStatus met à jour le statut d'un thread
