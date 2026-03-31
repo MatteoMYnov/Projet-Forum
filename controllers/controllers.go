@@ -987,7 +987,7 @@ func processThreadDetailTemplate(htmlContent string, thread models.Thread) strin
 		}
 	} else {
 		messagesHTML = `
-		<div style="text-align: center; padding: 40px; color: var(--second-text-color);">
+		<div class="no-results empty-messages-state">
 			<h3>Aucune réponse pour le moment</h3>
 			<p>Soyez le premier à répondre à ce thread !</p>
 		</div>`
@@ -1215,10 +1215,10 @@ func (c *UserControllers) processThreadsListTemplateWithPagination(htmlContent s
 	threadsList := ""
 	if len(threads) == 0 {
 		threadsList = `
-		<div style="text-align: center; padding: 40px; color: #666;">
+		<div class="no-results empty-threads-state">
 			<h3>Aucun thread trouvé</h3>
 			<p>Soyez le premier à créer un thread !</p>
-			<a href="/create-thread" style="background-color: #17bf63; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Créer un thread</a>
+			<a href="/create-thread" class="empty-create-thread-btn">Créer un thread</a>
 		</div>`
 	} else {
 		for _, thread := range threads {
@@ -2075,7 +2075,7 @@ func processAdminThreadsTemplate(htmlContent string, threads []models.Thread, me
 	threadsHTML := ""
 	if len(threads) == 0 {
 		threadsHTML = `
-		<div style="text-align: center; padding: 40px; color: #666;">
+		<div class="no-results empty-admin-threads-state">
 			<h3>Aucun thread trouvé</h3>
 			<p>Aucun thread à administrer pour le moment.</p>
 		</div>`

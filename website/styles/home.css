@@ -21,6 +21,7 @@ body {
     background-color: var(--main-color);
     border-right: var(--main-border-color) solid 1px;
     overflow: hidden;
+    min-width: 260px;
 }
 
 /* Bar */
@@ -29,7 +30,10 @@ body {
     flex-direction: column;
     height: 100vh;
     width: 70%;
-    margin-top: 2vh;
+    margin-top: 0;
+    padding: 18px 14px 14px;
+    gap: 8px;
+    background: transparent;
 }
 
 /* Container (Main Content Area) */
@@ -60,46 +64,80 @@ body {
 
 /* Logo & Icon Buttons */
 .icon-logo {
-    height: 5vh;
+    height: 36px;
     width: auto;
+    opacity: 0.92;
 }
 
 .icon {
-    height: 4vh;
-    width: 4vh;
+    height: 19px;
+    width: 19px;
+    opacity: 0.92;
 }
 
 /* Button Styling */
 .logo-button {
-    padding: 0px 0px 2vh 15px;
+    padding: 6px 10px 14px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .bar-button {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 2vh;
-    padding: 13px 0px 13px 15px;
+    gap: 12px;
+    padding: 10px 12px;
     text-decoration: none;
-    width: auto;
+    width: 100%;
     cursor: pointer;
+    position: relative;
+    border: none;
+    border-radius: 8px;
+    transition: all 0.2s ease;
 }
 
 .bar-button:hover {
-    background-color: var(--main-color-hover);
-    border-radius: 30px;
+    background-color: rgba(255, 255, 255, 0.04);
+    transform: none;
+}
+
+.bar-button.active {
+    background-color: transparent;
+}
+
+.bar-button.active::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    border-radius: 3px;
+    background-color: #1da1f2;
+}
+
+.bar-button.active p {
+    color: #ffffff;
+}
+
+.bar-button.active .icon {
+    opacity: 1;
 }
 
 .account {
-    height: 8vh;
+    height: auto;
     width: 100%;
     margin-top: auto;
-    margin-bottom: 7vh;
-    border-top: var(--main-border-color) solid 1px;
+    margin-bottom: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
 }
 
 .bar-button p {
-    font-size: 2.7vh;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.1px;
     color: var(--main-text-color);
 }
 

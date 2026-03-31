@@ -10,7 +10,47 @@ class AuthHandler {
 
     init() {
         console.log('🔧 Initialisation AuthHandler');
+        this.setActiveNavigation();
         this.setupAuthUI();
+    }
+
+    setActiveNavigation() {
+        const navLinks = document.querySelectorAll('.bar-button');
+        if (!navLinks.length) {
+            return;
+        }
+
+        const path = window.location.pathname.toLowerCase();
+        let activePath = "";
+
+        if (path === "/" || path.startsWith("/home")) {
+            activePath = "/home";
+        } else if (path.startsWith("/theme")) {
+            activePath = "/theme";
+        } else if (path.startsWith("/profile")) {
+            activePath = "/profile";
+        } else if (path.startsWith("/my-threads")) {
+            activePath = "/my-threads";
+        } else if (
+            path.startsWith("/threads") ||
+            path.startsWith("/thread/") ||
+            path.startsWith("/create-thread") ||
+            path.startsWith("/admin/threads") ||
+            path.startsWith("/admin/thread")
+        ) {
+            activePath = "/threads";
+        }
+
+        navLinks.forEach((link) => link.classList.remove("active"));
+
+        if (!activePath) {
+            return;
+        }
+
+        const activeLink = document.querySelector(`.bar-button[href="${activePath}"]`);
+        if (activeLink) {
+            activeLink.classList.add("active");
+        }
     }
 
     async setupAuthUI() {

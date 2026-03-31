@@ -4,13 +4,39 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/styles/variables.css?v=1.0" />
-  <link rel="stylesheet" href="/styles/home.css" />
+  <link rel="stylesheet" href="/styles/home.css?v=1.2" />
   <link rel="stylesheet" href="/styles/register.css" />
   <title>Créer un compte • Forum Y</title>
   <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png" />
   
   <!-- Chargement du thème avant le rendu pour éviter le FOUC -->
   <script src="/js/theme_loader.js"></script>
+  <style>
+    .nav-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .nav-separator {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      margin: 20px 10px;
+      position: relative;
+    }
+
+    .nav-separator::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: -2px;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 50%;
+    }
+  </style>
 </head>
 <body>
   <!-- Bannière (barre latérale gauche) -->
@@ -19,18 +45,34 @@
       <div class="logo-button">
         <img src="/img/logo/inverted.png" alt="Logo" class="icon-logo">
       </div>
-      <a href="/home" class="bar-button">
-        <img src="/img/icon/home-r.png" alt="Home" class="icon">
-        <p>Accueil</p>
-      </a>
-      <a href="/theme" class="bar-button">
-        <img src="/img/icon/brush-r.png" alt="Theme" class="icon">
-        <p>Thème</p>
-      </a>
-      <a href="/login" class="bar-button">
-        <img src="/img/icon/profile-r.png" alt="Login" class="icon">
-        <p>Connexion</p>
-      </a>
+
+      <div class="nav-section nav-section-top">
+        <a href="/home" class="bar-button">
+          <img src="/img/icon/home-r.png" alt="Home" class="icon">
+          <p>Accueil</p>
+        </a>
+        <a href="/theme" class="bar-button">
+          <img src="/img/icon/brush-r.png" alt="Theme" class="icon">
+          <p>Thème</p>
+        </a>
+        <a href="/profile" class="bar-button">
+          <img src="/img/icon/profile-r.png" alt="Profile" class="icon">
+          <p>Profile</p>
+        </a>
+      </div>
+
+      <div class="nav-separator"></div>
+
+      <div class="nav-section nav-section-bottom">
+        <a href="/threads" class="bar-button">
+          <img src="/img/icon/threads-r.png" alt="Threads" class="icon">
+          <p>Threads</p>
+        </a>
+        <a href="/my-threads" class="bar-button">
+          <img src="/img/icon/threads-r.png" alt="Mes Threads" class="icon">
+          <p>Mes Threads</p>
+        </a>
+      </div>
       <div class="account"></div>
     </div>
   </div>

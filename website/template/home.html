@@ -4,10 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/styles/variables.css?v=1.0">
-    <link rel="stylesheet" href="/styles/home.css?v=1.0">
+    <link rel="stylesheet" href="/styles/home.css?v=1.2">
     <title>Home / Y</title>
     <link id="favicon" rel="icon" href="/img/logo/inverted.png" type="image/png">
     <style>
+        .home-shell {
+            padding: 28px;
+            color: var(--main-text-color);
+            max-width: 920px;
+        }
+
+        .hero-card {
+            border: 1px solid var(--border-color);
+            background: linear-gradient(135deg, rgba(29, 161, 242, 0.14), rgba(29, 161, 242, 0.02));
+            border-radius: 14px;
+            padding: 26px;
+            margin-bottom: 18px;
+        }
+
+        .hero-title {
+            font-size: 30px;
+            margin-bottom: 8px;
+            letter-spacing: 0.2px;
+        }
+
+        .hero-subtitle {
+            color: var(--second-text-color);
+            margin-bottom: 16px;
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 12px;
+        }
+
+        .mini-card {
+            border: 1px solid var(--border-color);
+            background-color: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 14px;
+            min-height: 84px;
+        }
+
+        .mini-title {
+            font-size: 13px;
+            color: var(--second-text-color);
+            margin-bottom: 8px;
+        }
+
+        .mini-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .panel-card {
+            margin-top: 16px;
+            padding: 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .panel-card h3 {
+            margin-bottom: 8px;
+        }
+
+        .panel-card p {
+            color: var(--second-text-color);
+            margin-bottom: 14px;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-actions a {
+            text-decoration: none;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 9px 14px;
+            color: var(--main-text-color);
+            background-color: var(--main-color);
+            transition: all 0.2s ease;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .quick-actions a:hover {
+            border-color: #1da1f2;
+            color: #ffffff;
+            background-color: rgba(29, 161, 242, 0.1);
+        }
+
         /* Styles pour le bouton de déconnexion */
         .logout-btn {
             display: flex;
@@ -89,6 +182,12 @@
             min-height: 100vh;
             height: auto;
         }
+
+        @media (max-width: 900px) {
+            .section-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -140,21 +239,37 @@
     </div>
     <div class="container">
         <div class="main">
-            <div style="padding: 20px; color: var(--main-text-color);">
-                <h1>Bienvenue sur le Forum Y</h1>
-                <p>Rejoignez notre communauté et partagez vos idées !</p>
-                
-                <div id="user-welcome" style="display: none; margin-top: 20px; padding: 15px; background-color: var(--main-color-hover); border-radius: 10px;">
+            <div class="home-shell">
+                <div class="hero-card">
+                    <h1 class="hero-title">Bienvenue sur le Forum Y</h1>
+                    <p class="hero-subtitle">Un espace moderne pour discuter, créer et partager avec la communauté.</p>
+                    <div class="section-grid">
+                        <div class="mini-card">
+                            <div class="mini-title">Statut</div>
+                            <div class="mini-value">En ligne</div>
+                        </div>
+                        <div class="mini-card">
+                            <div class="mini-title">Mode</div>
+                            <div class="mini-value">Communauté</div>
+                        </div>
+                        <div class="mini-card">
+                            <div class="mini-title">Expérience</div>
+                            <div class="mini-value">Moderne</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="user-welcome" class="panel-card" style="display: none;">
                     <!-- Message de bienvenue pour utilisateur connecté -->
                 </div>
                 
-                <div id="guest-welcome" style="margin-top: 20px; padding: 15px; background-color: var(--main-color-hover); border-radius: 10px;">
+                <div id="guest-welcome" class="panel-card">
                     <h3>Pas encore membre ?</h3>
                     <p>Créez votre compte pour accéder à toutes les fonctionnalités du forum.</p>
-                    <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-                        <a href="/register" style="background-color: var(--main-color); color: var(--main-text-color); padding: 10px 20px; text-decoration: none; border-radius: 5px; border: 1px solid var(--border-color);">S'inscrire</a>
-                        <a href="/login" style="background-color: var(--main-color); color: var(--main-text-color); padding: 10px 20px; text-decoration: none; border-radius: 5px; border: 1px solid var(--border-color);">Se connecter</a>
-                        <a href="/threads" style="background-color: var(--main-color); color: var(--main-text-color); padding: 10px 20px; text-decoration: none; border-radius: 5px; border: 1px solid var(--border-color);">🧵 Voir les threads</a>
+                    <div class="quick-actions">
+                        <a href="/register">S'inscrire</a>
+                        <a href="/login">Se connecter</a>
+                        <a href="/threads">Voir les threads</a>
                     </div>
                 </div>
             </div>
@@ -178,9 +293,9 @@
                     userWelcome.innerHTML = `
                         <h3>Bonjour ${user.username} ! 👋</h3>
                         <p>Bon retour sur le forum. Découvrez les dernières discussions et participez aux conversations.</p>
-                        <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-                            <a href="/threads" style="background-color: var(--main-color); color: var(--main-text-color); padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block; border: 1px solid var(--border-color);">🧵 Voir les threads</a>
-                            <a href="/create-thread" style="background-color: var(--main-color); color: var(--main-text-color); padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block; border: 1px solid var(--border-color);">✏️ Créer un thread</a>
+                        <div class="quick-actions">
+                            <a href="/threads">Voir les threads</a>
+                            <a href="/create-thread">Créer un thread</a>
                         </div>
                     `;
                     
